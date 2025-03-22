@@ -1,3 +1,5 @@
+import { ListaPermisos } from "../components/ListaPermisos";
+
 export function PermisosPage() {
-  return <div>PermisosPage</div>;
+  return <ListaPermisos></ListaPermisos>;
 }

@@ -1,4 +1,9 @@
 body {
-  background: #202020;
-  color: white;
+  background: white;
+  color: #515afa;
+}
+
+h2,
+h3 {
+  color: black;
 }

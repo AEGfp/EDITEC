@@ -11,6 +11,7 @@ function App() {
         <Route path="/" element={<Navigate to="/" />}></Route>
         <Route path="/permisos" element={<PermisosPage />}></Route>
         <Route path="/permisos-crear" element={<PermisosFormPage />}></Route>
+        <Route path="/permisos/:id" element={<PermisosFormPage />}></Route>
       </Routes>
     </BrowserRouter>
   );
