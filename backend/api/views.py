@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from .serializer import PermisoSerializer, UserSerializer
 from .models import Permiso
+from Roles.roles import EsDirector
 
 # Create your views here.
 
@@ -29,6 +30,7 @@ def login(request):
         )
 
     refresh = RefreshToken.for_user(user)
+
     return Response(
         {"access": str(refresh.access_token), "refresh": str(refresh)},
         status=status.HTTP_200_OK,
@@ -88,8 +90,10 @@ def logout(request):
     )
 
 
-@authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
+# @authentication_classes([JWTAuthentication])
+# @permission_classes([IsAuthenticated])
 class PermisoView(viewsets.ModelViewSet):
+
     serializer_class = PermisoSerializer
     queryset = Permiso.objects.all()
+    permission_classes = [EsDirector]
