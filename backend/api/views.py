@@ -96,4 +96,6 @@ class PermisoView(viewsets.ModelViewSet):
 
     serializer_class = PermisoSerializer
     queryset = Permiso.objects.all()
-    permission_classes = [EsDirector]
+
+    #!! Para probar sin permisos
+    #permission_classes = [EsDirector]
