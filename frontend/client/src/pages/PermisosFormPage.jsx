@@ -42,19 +42,22 @@ export function PermisosFormPage() {
   return (
     <div>
       <form onSubmit={onSubmit}>
+        <h4>Descripción</h4>
         <input
           type="text"
           placeholder="descripcion"
           {...register("descripcion", { required: true })}
         />
         {errors.descripcion && <span>Campo requerido</span>}
+        <h4>Activo</h4>
         <input
           type="checkbox"
           {...register("activo", { required: false })}
         ></input>
-
+        <br />
         <button>Guardar</button>
       </form>
+      <br />
       {params.id && (
         <button
           onClick={async () => {
