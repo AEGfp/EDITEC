@@ -1,45 +1,21 @@
-import axios from "axios";
-
-const permisosApi = axios.create({
-  baseURL: "http://localhost:8000/api/permisos/",
-});
-/*
-const permisosApi = axios.create({
-  baseURL: "http://localhost:8000/api/permisos/",
-  headers: { "Content-Type": "application/json" },
-  withCredentials: true,
-});
-permisosApi.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-*/
+import { Api } from "./api";
 
 export const obtenerTodosPermisos = () => {
-  return permisosApi.get("/");
+  return Api.get("permisos/");
 };
 
 export const crearPermiso = (permiso) => {
-  return permisosApi.post("/", permiso);
+  return Api.post("permisos/", permiso);
 };
 
 export const obtenerPermiso = (id) => {
-  return permisosApi.get(`/${id}/`);
+  return Api.get(`permisos/${id}/`);
 };
 
 export const eliminarPermiso = (id) => {
-  return permisosApi.delete(`/${id}/`);
+  return Api.delete(`permisos/${id}/`);
 };
 
 export const actualizarPermiso = (id, datos) => {
-  return permisosApi.put(`/${id}/`, datos);
+  return Api.put(`permisos/${id}/`, datos);
 };
