@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
+from rest_framework.views import APIView
 from rest_framework.decorators import (
     api_view,
     authentication_classes,
@@ -8,7 +10,7 @@ from rest_framework.decorators import (
 )
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
@@ -19,22 +21,24 @@ from Roles.roles import EsDirector
 # Create your views here.
 
 
-@api_view(["POST"])
-def login(request):
+class LoginView(APIView):
+    permission_classes = [AllowAny]
 
-    user = get_object_or_404(User, username=request.data["username"])
+    def post(self, request):
+        username = request.data.get("username")
+        password = request.data.get("password")
+       
+        user = authenticate(username=username, password=password)
+        if user:
+            refresh = RefreshToken.for_user(user)
+            return Response(
+                {"access": str(refresh.access_token), "refresh": str(refresh)},
+                status=status.HTTP_200_OK,
+            )
 
-    if not user.check_password(request.data["password"]):
         return Response(
-            {"error": "Contraseña no válida"}, status=status.HTTP_400_BAD_REQUEST
+            {"error": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED
         )
-
-    refresh = RefreshToken.for_user(user)
-
-    return Response(
-        {"access": str(refresh.access_token), "refresh": str(refresh)},
-        status=status.HTTP_200_OK,
-    )
 
 
 @api_view(["POST"])
@@ -98,4 +102,4 @@ class PermisoView(viewsets.ModelViewSet):
     queryset = Permiso.objects.all()
 
     #!! Para probar sin permisos
-    #permission_classes = [EsDirector]
+    # permission_classes = [EsDirector]
