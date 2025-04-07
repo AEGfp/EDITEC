@@ -14,8 +14,13 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
-from .serializer import PermisoSerializer, UserSerializer
-from .models import Permiso
+from .serializer import (
+    PermisoSerializer,
+    UserSerializer,
+    PersonaSerializer,
+    PerfilUsuarioSerializer,
+)
+from .models import Permiso, Persona, PerfilUsuario
 from Roles.roles import EsDirector
 
 # Create your views here.
@@ -27,7 +32,7 @@ class LoginView(APIView):
     def post(self, request):
         username = request.data.get("username")
         password = request.data.get("password")
-       
+
         user = authenticate(username=username, password=password)
         if user:
             refresh = RefreshToken.for_user(user)
@@ -46,10 +51,9 @@ def register(request):
     serializer = UserSerializer(data=request.data)
 
     if serializer.is_valid():
-        serializer.save()
+        user = serializer.save()
 
-        user = User.objects.get(username=serializer.data["username"])
-        user.set_password(serializer.data["password"])
+        user.set_password(request.data["password"])
         user.save()
 
         refresh = RefreshToken.for_user(user)
@@ -92,6 +96,18 @@ def logout(request):
         {"message": "No existe una sesión activa"},
         status=status.HTTP_400_BAD_REQUEST,
     )
+
+
+@permission_classes([AllowAny])
+class PersonaView(viewsets.ModelViewSet):
+    serializer_class = PersonaSerializer
+    queryset = Persona.objects.all()
+
+
+@permission_classes([AllowAny])
+class PerfilUsuarioView(viewsets.ModelViewSet):
+    serializer_class = PerfilUsuarioSerializer
+    queryset = PerfilUsuario.objects.all()
 
 
 # @authentication_classes([JWTAuthentication])
