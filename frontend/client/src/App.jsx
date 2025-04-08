@@ -4,6 +4,8 @@ import { PermisosPage } from "./pages/PermisosPage";
 import { PermisosFormPage } from "./pages/PermisosFormPage";
 import { Navigation } from "./components/Navigation";
 import PrivateRoute from "./components/PrivateRoute";
+import InfantesList from "./pages/InfantesList";
+import InfanteForm from "./pages/InfanteForm";
 
 export function App() {
   return (
@@ -36,7 +38,35 @@ export function App() {
               <PermisosFormPage />
             </PrivateRoute>
           }
-        />
+          />
+
+          {/* 🧒 Infantes */}
+          <Route
+            path="/infantes"
+            element={
+              <PrivateRoute>
+                <Navigation />
+                <InfantesList />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/infantes-crear"
+            element={
+              <PrivateRoute>
+                <Navigation />
+                <InfanteForm />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/infantes/:id"
+            element={
+              <PrivateRoute>
+                <InfanteForm />
+              </PrivateRoute>
+            }
+          />  
       </Routes>
     </BrowserRouter>
   );

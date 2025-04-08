@@ -12,7 +12,7 @@ class Persona(models.Model):
     sexo = models.CharField(
         max_length=1, choices=[("M", "Masculino"), ("F", "Femenino")]
     )
-    ci = models.IntegerField()
+    ci = models.CharField(max_length=20, null=False)
     domicilio = models.CharField(max_length=200)
 
     def __str__(self):
