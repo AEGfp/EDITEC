@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Api } from "../api/api/";
 import { loginApi } from "../api/login.api";
-
+import logo from '../components/images/5235784.png'
 export function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -22,62 +21,105 @@ export function LoginPage() {
         navigate("/permisos");
       }
     } catch (err) {
-      setError("Contraseña o usario inválidos");
+      setError("Contraseña o usuario inválidos");
       console.error("Error de login:", err);
     } finally {
       setLoading(false);
     }
   };
-  /*
-  const handleSignUp = () => {
-    navigate("/signup");
-  };*/
 
   return (
-    <div className="flex items-center justify-center h-screen text-xl">
-      <div className="p-4 bg-white rounded shadow-md w-full max-w-lg">
-        <h2 className="mb-4 text-2xl text-black text-left px-1 ">Login</h2>
-        <form onSubmit={login}>
-          <div className="text-left  mb-1 text-black pb-1 px-1">
-            <h3>Usuario: </h3>
-          </div>
+    <div style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      height: "100vh",
+      backgroundColor: "#f5f5f5"
+    }}>
+      <div style={{
+        width: "100%",
+        maxWidth: "400px",
+        padding: "2rem",
+        backgroundColor: "white",
+        borderRadius: "8px",
+        boxShadow: "0 0 15px rgba(0,0,0,0.1)"
+      }}>
+        <div style={{ textAlign: "center", marginBottom: "1rem" }}>
+          <img
+            src={logo}
+            alt="Logo"
+            style={{ width: "100px", height: "auto" }}
+          />
+          <h2 style={{ fontSize: "1.5rem", color: "#333", marginTop: "1rem" }}>
+            Iniciar Sesión
+          </h2>
+        </div>
 
+        <form onSubmit={login}>
+          <label style={{ display: "block", marginBottom: "0.5rem", color: "#555" }}>
+            Usuario
+          </label>
           <input
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             placeholder="Username"
-            className="bg-slate-200 rounded w-full text-black px-1"
+            style={{
+              width: "100%",
+              padding: "0.5rem",
+              marginBottom: "1rem",
+              borderRadius: "4px",
+              border: "1px solid #ccc"
+            }}
           />
 
-          <div className="text-left  mb-1 text-black pt-4 pb-1 px-1">
-            <h3>Contraseña: </h3>
-          </div>
+          <label style={{ display: "block", marginBottom: "0.5rem", color: "#555" }}>
+            Contraseña
+          </label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
-            className="bg-slate-200 rounded w-full text-black px-1"
+            style={{
+              width: "100%",
+              padding: "0.5rem",
+              marginBottom: "1rem",
+              borderRadius: "4px",
+              border: "1px solid #ccc"
+            }}
           />
 
           <button
-            className="bg-blue-500 text-white w-full p-2 rounded mt-6 cursor-pointer"
             type="submit"
+            disabled={loading}
+            style={{
+              width: "100%",
+              padding: "0.75rem",
+              backgroundColor: "#007bff",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer"
+            }}
           >
-            Ingresar
+            {loading ? "Ingresando..." : "Ingresar"}
           </button>
         </form>
-        {/* <div className="flex justify-end mt-2">
-          <button
-            onClick={handleSignUp}
-            className="text-sm text-blue-400 w-auto "
-          >
-            Crear Cuenta
-          </button>
-        </div>*/}
-        {error && <p className="text-red-600 font-bold text-sm">{error}</p>}
+
+        {error && (
+          <p style={{
+            color: "red",
+            marginTop: "1rem",
+            fontWeight: "bold",
+            textAlign: "center"
+          }}>
+            {error}
+          </p>
+        )}
       </div>
     </div>
   );
 }
+
+export default LoginPage;
