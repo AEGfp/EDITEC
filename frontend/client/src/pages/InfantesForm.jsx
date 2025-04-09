@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { crearInfante } from "../api/infantes.api";
 import { obtenerPersonas } from "../api/personas.api.js"; // Asegurate de crear esto
-
+import { useNavigate } from "react-router-dom";
 function InfanteForm() {
   const [form, setForm] = useState({
     id_persona: "",
@@ -14,7 +14,7 @@ function InfanteForm() {
   });
 
   const [personas, setPersonas] = useState([]);
-
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchPersonas = async () => {
       try {
@@ -35,6 +35,7 @@ function InfanteForm() {
     try {
       await crearInfante(form);
       alert("Infante creado con éxito");
+      navigate("/infantes");
     } catch (error) {
       console.error("Error al crear infante", error);
     }
