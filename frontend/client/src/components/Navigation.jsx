@@ -5,9 +5,14 @@ export function Navigation() {
   const navigate = useNavigate();
   const [showPermisosMenu, setShowPermisosMenu] = useState(false);
   const [showInfantesMenu, setShowInfantesMenu] = useState(false);
+  const [showTurnosMenu, setShowTurnosMenu] = useState(false);
+  const [showTutoresMenu, setShowTutoresMenu] = useState(false);
+  const [showSalasMenu, setShowSalasMenu] = useState(false);
   const permisosRef = useRef(null);
   const infantesRef = useRef(null);
-
+  const turnosRef = useRef(null);
+  const tutoresRef = useRef(null);
+  const salasRef = useRef(null);
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
@@ -25,6 +30,21 @@ export function Navigation() {
         infantesRef.current && !infantesRef.current.contains(event.target)
       ) {
         setShowInfantesMenu(false);
+      }
+      if (
+        turnosRef.current && !turnosRef.current.contains(event.target)
+      ) {
+        setShowTurnosMenu(false);
+      }
+      if (
+        tutoresRef.current && !tutoresRef.current.contains(event.target)
+      ) {
+        setShowTutoresMenu(false);
+      }
+      if (
+        salasRef.current && !salasRef.current.contains(event.target)
+      ) {
+        setShowSalasMenu(false);
       }
     };
 
@@ -128,7 +148,109 @@ export function Navigation() {
             </div>
           )}
         </div>
+        {/* Turnos Dropdown */}
+        <div ref={turnosRef} style={{ position: "relative" }}>
+          <span
+            onClick={() => setShowTurnosMenu(!showTurnosMenu)}
+            style={{
+              cursor: "pointer",
+              color: "#F8FAFC",
+              fontSize: "1rem",
+              padding: "0.5rem",
+              userSelect: "none",
+            }}
+          >
+            Turnos ▾
+          </span>
 
+          {showTurnosMenu && (
+            <div
+              style={{
+                position: "absolute",
+                top: "2.5rem",
+                left: 0,
+                backgroundColor: "#334155",
+                padding: "0.5rem 0",
+                borderRadius: "0.5rem",
+                boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
+                zIndex: 20,
+                minWidth: "160px",
+              }}
+            >
+              <Link to="/turnos" style={menuLinkStyle}>Ver Turnos</Link>
+              <Link to="/turnos-crear" style={menuLinkStyle}>Crear Turnos</Link>
+            </div>
+          )}
+        </div>
+        {/* Tutores Dropdown */}
+        <div ref={tutoresRef} style={{ position: "relative" }}>
+          <span
+            onClick={() => setShowTutoresMenu(!showTutoresMenu)}
+            style={{
+              cursor: "pointer",
+              color: "#F8FAFC",
+              fontSize: "1rem",
+              padding: "0.5rem",
+              userSelect: "none",
+            }}
+          >
+            Tutores ▾
+          </span>
+
+          {showTutoresMenu && (
+            <div
+              style={{
+                position: "absolute",
+                top: "2.5rem",
+                left: 0,
+                backgroundColor: "#334155",
+                padding: "0.5rem 0",
+                borderRadius: "0.5rem",
+                boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
+                zIndex: 20,
+                minWidth: "160px",
+              }}
+            >
+              <Link to="/tutores" style={menuLinkStyle}>Ver Tutores</Link>
+              <Link to="/tutores-crear" style={menuLinkStyle}>Crear Tutores</Link>
+            </div>
+          )}
+        </div>
+        {/* Salas Dropdown */}
+        <div ref={salasRef} style={{ position: "relative" }}>
+          <span
+            onClick={() => setShowSalasMenu(!showSalasMenu)}
+            style={{
+              cursor: "pointer",
+              color: "#F8FAFC",
+              fontSize: "1rem",
+              padding: "0.5rem",
+              userSelect: "none",
+            }}
+          >
+            Salas ▾
+          </span>
+
+          {showSalasMenu && (
+            <div
+              style={{
+                position: "absolute",
+                top: "2.5rem",
+                left: 0,
+                backgroundColor: "#334155",
+                padding: "0.5rem 0",
+                borderRadius: "0.5rem",
+                boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
+                zIndex: 20,
+                minWidth: "160px",
+              }}
+            >
+              <Link to="/salas" style={menuLinkStyle}>Ver Salas</Link>
+              <Link to="/salas-crear" style={menuLinkStyle}>Crear Salas</Link>
+            </div>
+          )}
+        </div>
+        
         {/* Botón logout */}
         <button
           onClick={handleLogout}
