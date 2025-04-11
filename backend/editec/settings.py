@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "api",
     "apps.educativo",
+    "empresas",
+    "locales",
 ]
 
 MIDDLEWARE = [
