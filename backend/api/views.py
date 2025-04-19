@@ -1,6 +1,4 @@
-from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
-from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.decorators import (
@@ -11,9 +9,7 @@ from rest_framework.decorators import (
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.authentication import TokenAuthentication
 from rest_framework.response import Response
-from rest_framework.authtoken.models import Token
 from .serializer import (
     PermisoSerializer,
     UserSerializer,
@@ -24,8 +20,6 @@ from .models import Permiso, Persona, PerfilUsuario
 from Roles.roles import EsDirector
 
 # Create your views here.
-
-
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -110,12 +104,12 @@ class PerfilUsuarioView(viewsets.ModelViewSet):
     queryset = PerfilUsuario.objects.all()
 
 
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 class PermisoView(viewsets.ModelViewSet):
 
     serializer_class = PermisoSerializer
     queryset = Permiso.objects.all()
 
     #!! Para probar sin permisos
-    # permission_classes = [EsDirector]
+    permission_classes = [EsDirector]

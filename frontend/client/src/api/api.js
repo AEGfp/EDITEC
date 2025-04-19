@@ -18,3 +18,37 @@ Api.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+
+Api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const solicitudOriginal = error.config;
+    console.log("Dentro del interceptor");
+
+    if (error.response?.status === 401 && !solicitudOriginal._retry) {
+      solicitudOriginal._retry = true;
+
+      try {
+        const refreshToken = localStorage.getItem("refreshToken");
+        const res = await axios.post(
+          "http://localhost:8000/api/token/refresh/",
+          {
+            refresh: refreshToken,
+          }
+        );
+
+        const newAccessToken = res.data.access;
+        localStorage.setItem("accessToken", newAccessToken);
+        console.log("Dentro mas dentro");
+        solicitudOriginal.headers["Authorization"] = `Bearer ${newAccessToken}`;
+        return axios(solicitudOriginal);
+      } catch (err) {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        //!! Agregar mensaje de advertencia
+        window.location.href = "/login";
+      }
+    }
+    return Promise.reject(error);
+  }
+);
