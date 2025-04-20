@@ -12,6 +12,7 @@ import TurnosFormPage from "./pages/TurnosFormPage";
 import TurnosList from "./pages/TurnosList";
 import TutoresList from "./pages/TutoresList";
 import TutoresFormPage from "./pages/TutoresFormPage";
+import SignUpPage from "./pages/SignUpPage";
 
 export function App() {
   return (
@@ -19,6 +20,7 @@ export function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignUpPage />} />
         <Route
           path="/permisos"
           element={
@@ -44,56 +46,56 @@ export function App() {
               <PermisosFormPage />
             </PrivateRoute>
           }
-          />
+        />
 
-          {/* 🧒 Infantes */}
-          <Route
-            path="/infantes"
-            element={
-              <PrivateRoute>
-                <Navigation />
-                <InfantesList />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/infantes-crear"
-            element={
-              <PrivateRoute>
-                <Navigation />
-                <InfanteForm />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/infantes/:id"
-            element={
-              <PrivateRoute>
-                <InfanteForm />
-              </PrivateRoute>
-            }
-          />
-          {/* Salas */} 
-          <Route
-            path="/salas"
-            element={
-              <PrivateRoute>
-                <Navigation />
-                <SalasList />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/salas-crear"
-            element={
-              <PrivateRoute>
-                <Navigation />
-                <SalasFormPage />
-              </PrivateRoute>
-            }
-          />
-             {/* Turnos */} 
-          <Route
+        {/* 🧒 Infantes */}
+        <Route
+          path="/infantes"
+          element={
+            <PrivateRoute>
+              <Navigation />
+              <InfantesList />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/infantes-crear"
+          element={
+            <PrivateRoute>
+              <Navigation />
+              <InfanteForm />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/infantes/:id"
+          element={
+            <PrivateRoute>
+              <InfanteForm />
+            </PrivateRoute>
+          }
+        />
+        {/* Salas */}
+        <Route
+          path="/salas"
+          element={
+            <PrivateRoute>
+              <Navigation />
+              <SalasList />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/salas-crear"
+          element={
+            <PrivateRoute>
+              <Navigation />
+              <SalasFormPage />
+            </PrivateRoute>
+          }
+        />
+        {/* Turnos */}
+        <Route
           path="/turnos"
           element={
             <PrivateRoute>
@@ -110,8 +112,8 @@ export function App() {
               <TurnosFormPage />
             </PrivateRoute>
           }
-          />
-          <Route
+        />
+        <Route
           path="/turnos-id"
           element={
             <PrivateRoute>
@@ -119,64 +121,64 @@ export function App() {
               <TurnosFormPage />
             </PrivateRoute>
           }
-          />
-          {/* Tutores */}
-          <Route
-            path="/tutores"
-            element={
-              <PrivateRoute>
-                <Navigation />
-                <TutoresList />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/tutores-crear"
-            element={
-              <PrivateRoute>
-                <Navigation />
-                <TutoresFormPage />
-              </PrivateRoute>
-            }
-          />
-          {/* Turnos */}
-          <Route
-            path="/turnos"
-            element={
-              <PrivateRoute>
-                <Navigation />
-                <TurnosList />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/turnos-crear"
-            element={
-              <PrivateRoute>
-                <Navigation />
-                <TurnosFormPage />
-              </PrivateRoute>  
-            }
-          />
-          {/* Salas */}
-          <Route
-            path="/salas"
-            element={
-              <PrivateRoute>
-                <Navigation />
-                <SalasList />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/salas-crear"
-            element={
-              <PrivateRoute>
-                <Navigation />
-                <SalasFormPage />
-              </PrivateRoute>
-            }
-          />
+        />
+        {/* Tutores */}
+        <Route
+          path="/tutores"
+          element={
+            <PrivateRoute>
+              <Navigation />
+              <TutoresList />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/tutores-crear"
+          element={
+            <PrivateRoute>
+              <Navigation />
+              <TutoresFormPage />
+            </PrivateRoute>
+          }
+        />
+        {/* Turnos */}
+        <Route
+          path="/turnos"
+          element={
+            <PrivateRoute>
+              <Navigation />
+              <TurnosList />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/turnos-crear"
+          element={
+            <PrivateRoute>
+              <Navigation />
+              <TurnosFormPage />
+            </PrivateRoute>
+          }
+        />
+        {/* Salas */}
+        <Route
+          path="/salas"
+          element={
+            <PrivateRoute>
+              <Navigation />
+              <SalasList />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/salas-crear"
+          element={
+            <PrivateRoute>
+              <Navigation />
+              <SalasFormPage />
+            </PrivateRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );
