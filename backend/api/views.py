@@ -19,6 +19,7 @@ from .serializer import (
 from .models import Permiso, Persona, PerfilUsuario
 from Roles.roles import EsDirector
 
+
 # Create your views here.
 class LoginView(APIView):
     permission_classes = [AllowAny]
@@ -41,6 +42,7 @@ class LoginView(APIView):
 
 
 @api_view(["POST"])
+@permission_classes([AllowAny])
 def register(request):
     serializer = UserSerializer(data=request.data)
 
@@ -105,11 +107,8 @@ class PerfilUsuarioView(viewsets.ModelViewSet):
 
 
 @authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([EsDirector])
 class PermisoView(viewsets.ModelViewSet):
 
     serializer_class = PermisoSerializer
     queryset = Permiso.objects.all()
-
-    #!! Para probar sin permisos
-    permission_classes = [EsDirector]
