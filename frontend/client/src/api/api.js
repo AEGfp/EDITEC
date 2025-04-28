@@ -49,6 +49,12 @@ Api.interceptors.response.use(
         window.location.href = "/login";
       }
     }
+
+    if (error.response?.status === 403) {
+      //alert("No tiene los permisos necesarios para visitar esta página");
+      window.location.href = "/signup";
+    }
+
     return Promise.reject(error);
   }
 );

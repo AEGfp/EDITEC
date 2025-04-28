@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { LoginPage } from "./pages/LoginPage";
 import { PermisosPage } from "./pages/PermisosPage";
 import { PermisosFormPage } from "./pages/PermisosFormPage";
-import { Navigation } from "./components/Navigation";
 import PrivateRoute from "./components/PrivateRoute";
 import InfantesList from "./pages/InfantesList";
 import InfanteForm from "./pages/InfantesForm";
@@ -13,6 +12,7 @@ import TurnosList from "./pages/TurnosList";
 import TutoresList from "./pages/TutoresList";
 import TutoresFormPage from "./pages/TutoresFormPage";
 import SignUpPage from "./pages/SignUpPage";
+import AccesoDenegado from "./pages/AccesoDenegado";
 
 export function App() {
   return (
@@ -21,11 +21,11 @@ export function App() {
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/acceso-denegado" element={<AccesoDenegado />} />
         <Route
           path="/permisos"
           element={
-            <PrivateRoute>
-              <Navigation />
+            <PrivateRoute rolesPermitidos={["director"]}>
               <PermisosPage />
             </PrivateRoute>
           }
@@ -34,7 +34,6 @@ export function App() {
           path="/permisos-crear"
           element={
             <PrivateRoute>
-              <Navigation />
               <PermisosFormPage />
             </PrivateRoute>
           }
@@ -53,7 +52,6 @@ export function App() {
           path="/infantes"
           element={
             <PrivateRoute>
-              <Navigation />
               <InfantesList />
             </PrivateRoute>
           }
@@ -62,7 +60,6 @@ export function App() {
           path="/infantes-crear"
           element={
             <PrivateRoute>
-              <Navigation />
               <InfanteForm />
             </PrivateRoute>
           }
@@ -80,7 +77,6 @@ export function App() {
           path="/salas"
           element={
             <PrivateRoute>
-              <Navigation />
               <SalasList />
             </PrivateRoute>
           }
@@ -89,7 +85,6 @@ export function App() {
           path="/salas-crear"
           element={
             <PrivateRoute>
-              <Navigation />
               <SalasFormPage />
             </PrivateRoute>
           }
@@ -99,7 +94,6 @@ export function App() {
           path="/turnos"
           element={
             <PrivateRoute>
-              <Navigation />
               <TurnosList />
             </PrivateRoute>
           }
@@ -108,7 +102,6 @@ export function App() {
           path="/turnos-crear"
           element={
             <PrivateRoute>
-              <Navigation />
               <TurnosFormPage />
             </PrivateRoute>
           }
@@ -117,7 +110,6 @@ export function App() {
           path="/turnos-id"
           element={
             <PrivateRoute>
-              <Navigation />
               <TurnosFormPage />
             </PrivateRoute>
           }
@@ -127,7 +119,6 @@ export function App() {
           path="/tutores"
           element={
             <PrivateRoute>
-              <Navigation />
               <TutoresList />
             </PrivateRoute>
           }
@@ -136,7 +127,6 @@ export function App() {
           path="/tutores-crear"
           element={
             <PrivateRoute>
-              <Navigation />
               <TutoresFormPage />
             </PrivateRoute>
           }
@@ -146,7 +136,6 @@ export function App() {
           path="/turnos"
           element={
             <PrivateRoute>
-              <Navigation />
               <TurnosList />
             </PrivateRoute>
           }
@@ -155,7 +144,6 @@ export function App() {
           path="/turnos-crear"
           element={
             <PrivateRoute>
-              <Navigation />
               <TurnosFormPage />
             </PrivateRoute>
           }
@@ -165,7 +153,6 @@ export function App() {
           path="/salas"
           element={
             <PrivateRoute>
-              <Navigation />
               <SalasList />
             </PrivateRoute>
           }
@@ -174,7 +161,6 @@ export function App() {
           path="/salas-crear"
           element={
             <PrivateRoute>
-              <Navigation />
               <SalasFormPage />
             </PrivateRoute>
           }

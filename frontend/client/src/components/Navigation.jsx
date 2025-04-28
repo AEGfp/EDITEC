@@ -16,34 +16,25 @@ export function Navigation() {
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
+    localStorage.removeItem("usuario");
     navigate("/login");
   };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        permisosRef.current && !permisosRef.current.contains(event.target)
-      ) {
+      if (permisosRef.current && !permisosRef.current.contains(event.target)) {
         setShowPermisosMenu(false);
       }
-      if (
-        infantesRef.current && !infantesRef.current.contains(event.target)
-      ) {
+      if (infantesRef.current && !infantesRef.current.contains(event.target)) {
         setShowInfantesMenu(false);
       }
-      if (
-        turnosRef.current && !turnosRef.current.contains(event.target)
-      ) {
+      if (turnosRef.current && !turnosRef.current.contains(event.target)) {
         setShowTurnosMenu(false);
       }
-      if (
-        tutoresRef.current && !tutoresRef.current.contains(event.target)
-      ) {
+      if (tutoresRef.current && !tutoresRef.current.contains(event.target)) {
         setShowTutoresMenu(false);
       }
-      if (
-        salasRef.current && !salasRef.current.contains(event.target)
-      ) {
+      if (salasRef.current && !salasRef.current.contains(event.target)) {
         setShowSalasMenu(false);
       }
     };
@@ -108,8 +99,12 @@ export function Navigation() {
                 minWidth: "160px",
               }}
             >
-              <Link to="/permisos" style={menuLinkStyle}>Ver Permisos</Link>
-              <Link to="/permisos-crear" style={menuLinkStyle}>Crear Permiso</Link>
+              <Link to="/permisos" style={menuLinkStyle}>
+                Ver Permisos
+              </Link>
+              <Link to="/permisos-crear" style={menuLinkStyle}>
+                Crear Permiso
+              </Link>
             </div>
           )}
         </div>
@@ -143,8 +138,12 @@ export function Navigation() {
                 minWidth: "160px",
               }}
             >
-              <Link to="/infantes" style={menuLinkStyle}>Ver Infantes</Link>
-              <Link to="/infantes-crear" style={menuLinkStyle}>Crear Infante</Link>
+              <Link to="/infantes" style={menuLinkStyle}>
+                Ver Infantes
+              </Link>
+              <Link to="/infantes-crear" style={menuLinkStyle}>
+                Crear Infante
+              </Link>
             </div>
           )}
         </div>
@@ -177,8 +176,12 @@ export function Navigation() {
                 minWidth: "160px",
               }}
             >
-              <Link to="/turnos" style={menuLinkStyle}>Ver Turnos</Link>
-              <Link to="/turnos-crear" style={menuLinkStyle}>Crear Turnos</Link>
+              <Link to="/turnos" style={menuLinkStyle}>
+                Ver Turnos
+              </Link>
+              <Link to="/turnos-crear" style={menuLinkStyle}>
+                Crear Turnos
+              </Link>
             </div>
           )}
         </div>
@@ -211,8 +214,12 @@ export function Navigation() {
                 minWidth: "160px",
               }}
             >
-              <Link to="/tutores" style={menuLinkStyle}>Ver Tutores</Link>
-              <Link to="/tutores-crear" style={menuLinkStyle}>Crear Tutores</Link>
+              <Link to="/tutores" style={menuLinkStyle}>
+                Ver Tutores
+              </Link>
+              <Link to="/tutores-crear" style={menuLinkStyle}>
+                Crear Tutores
+              </Link>
             </div>
           )}
         </div>
@@ -245,12 +252,16 @@ export function Navigation() {
                 minWidth: "160px",
               }}
             >
-              <Link to="/salas" style={menuLinkStyle}>Ver Salas</Link>
-              <Link to="/salas-crear" style={menuLinkStyle}>Crear Salas</Link>
+              <Link to="/salas" style={menuLinkStyle}>
+                Ver Salas
+              </Link>
+              <Link to="/salas-crear" style={menuLinkStyle}>
+                Crear Salas
+              </Link>
             </div>
           )}
         </div>
-        
+
         {/* Botón logout */}
         <button
           onClick={handleLogout}

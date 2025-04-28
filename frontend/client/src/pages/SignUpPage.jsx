@@ -26,7 +26,7 @@ export default function SignUpPage() {
         persona,
       });
       if (response.status === 201) {
-        console.log("");
+        console.log(response);
         navigate("/login");
       }
     } catch (err) {
