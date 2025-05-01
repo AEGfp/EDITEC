@@ -13,6 +13,7 @@ import TutoresList from "./pages/TutoresList";
 import TutoresFormPage from "./pages/TutoresFormPage";
 import SignUpPage from "./pages/SignUpPage";
 import AccesoDenegado from "./pages/AccesoDenegado";
+import HomePage from "./pages/HomePage";
 
 export function App() {
   return (
@@ -22,6 +23,14 @@ export function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/acceso-denegado" element={<AccesoDenegado />} />
+        <Route
+          path="/home"
+          element={
+            <PrivateRoute>
+              <HomePage></HomePage>
+            </PrivateRoute>
+          }
+        />
         <Route
           path="/permisos"
           element={

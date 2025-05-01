@@ -18,7 +18,7 @@ from .serializer import (
     PerfilUsuarioSerializer,
 )
 from .models import Permiso, Persona, PerfilUsuario
-from Roles.roles import EsDirector
+from Roles.roles import EsDirector,EsProfesor,EsAdministrador,EsTutor
 
 
 # Create your views here.

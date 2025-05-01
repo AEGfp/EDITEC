@@ -26,7 +26,7 @@ export function LoginPage() {
         localStorage.setItem("accessToken", response.data.access);
         localStorage.setItem("refreshToken", response.data.refresh);
         localStorage.setItem("usuario", JSON.stringify(response.data.user));
-        navigate("/permisos");
+        navigate("/home");
       }
     } catch (err) {
       setError("Contraseña o usuario inválidos");

@@ -52,7 +52,7 @@ Api.interceptors.response.use(
 
     if (error.response?.status === 403) {
       //alert("No tiene los permisos necesarios para visitar esta página");
-      window.location.href = "/signup";
+      window.location.href = "/acceso-denegado";
     }
 
     return Promise.reject(error);
