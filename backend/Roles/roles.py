@@ -31,3 +31,12 @@ class EsTutor(permissions.BasePermission):
             request.user.is_authenticated
             and request.user.groups.filter(name="tutor").exists()
         )
+
+
+class ControlarRoles(permissions.BasePermission):
+    def has_permission(self, request, view):
+        roles_permitidos = getattr(view, "roles_permitidos", [])
+        return (
+            request.user.is_authenticated
+            and request.user.groups.filter(name__in=roles_permitidos).exists()
+        )

@@ -18,7 +18,13 @@ from .serializer import (
     PerfilUsuarioSerializer,
 )
 from .models import Permiso, Persona, PerfilUsuario
-from Roles.roles import EsDirector,EsProfesor,EsAdministrador,EsTutor
+from Roles.roles import (
+    EsDirector,
+    EsProfesor,
+    EsAdministrador,
+    EsTutor,
+    ControlarRoles,
+)
 
 
 # Create your views here.
@@ -32,9 +38,13 @@ class LoginView(APIView):
         user = authenticate(username=username, password=password)
         if user:
             refresh = RefreshToken.for_user(user)
-            serializer=UserSerializer(user).data
+            serializer = UserSerializer(user).data
             return Response(
-                {"access": str(refresh.access_token), "refresh": str(refresh),"user":serializer},
+                {
+                    "access": str(refresh.access_token),
+                    "refresh": str(refresh),
+                    "user": serializer,
+                },
                 status=status.HTTP_200_OK,
             )
 
@@ -54,10 +64,10 @@ def register(request):
         user.set_password(request.data["password"])
         user.save()
 
-        groups=request.data.get('groups',[])
+        groups = request.data.get("groups", [])
         for nombre_rol in groups:
             try:
-                rol=Group.objects.get(name=nombre_rol)
+                rol = Group.objects.get(name=nombre_rol)
                 user.groups.add(rol)
             except:
                 pass
@@ -116,8 +126,9 @@ class PerfilUsuarioView(viewsets.ModelViewSet):
 
 
 @authentication_classes([JWTAuthentication])
-@permission_classes([EsDirector])
+@permission_classes([ControlarRoles])
 class PermisoView(viewsets.ModelViewSet):
+    roles_permitidos = ["director", "profesor"]
 
     serializer_class = PermisoSerializer
     queryset = Permiso.objects.all()
