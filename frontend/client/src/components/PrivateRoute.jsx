@@ -1,7 +1,13 @@
 import { Navigate } from "react-router-dom";
 import { Navigation } from "./Navigation";
+import tienePermiso from "../utils/tienePermiso";
 
-export default function PrivateRoute({ children, rolesPermitidos = [] }) {
+export default function PrivateRoute({
+  children,
+  entidad,
+  permisoRequerido = "lectura",
+  abierto = false,
+}) {
   const isAuthenticated = localStorage.getItem("accessToken");
   const stringUsuario = localStorage.getItem("usuario");
   const usuario = stringUsuario ? JSON.parse(stringUsuario) : null;
@@ -10,7 +16,18 @@ export default function PrivateRoute({ children, rolesPermitidos = [] }) {
     return <Navigate to="/login" replace />;
   }
 
-  if (rolesPermitidos.length > 0) {
+  if (!abierto) {
+    const puedeAcceder = tienePermiso(entidad, permisoRequerido);
+
+    if (!puedeAcceder) {
+      return <Navigate to="/acceso-denegado" replace />;
+    }
+  }
+
+  /*  if (rolesPermitidos.length > 0) {
+    // console.log("Usuario: " + usuario.groups);
+    //console.log("Permitidos: " + rolesPermitidos);
+
     const accesoPermitido = usuario.groups.some((rol) =>
       rolesPermitidos.includes(rol)
     );
@@ -18,7 +35,7 @@ export default function PrivateRoute({ children, rolesPermitidos = [] }) {
     if (!accesoPermitido) {
       return <Navigate to="/acceso-denegado" replace />;
     }
-  }
+  }*/
   return (
     <>
       <Navigation />
