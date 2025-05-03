@@ -8,7 +8,7 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect } from "react";
 import { useState } from "react";
-import controlarRoles from "../utils/tienePermiso";
+import tienePermiso from "../utils/tienePermiso";
 
 export function PermisosFormPage() {
   const {
@@ -18,10 +18,26 @@ export function PermisosFormPage() {
     setValue,
   } = useForm();
 
+  //Desbloquea los campos,
+  //  Ademas habilita los botones Guardar y Eliminar
   const [editable, setEditable] = useState(false);
 
   const navigate = useNavigate();
   const params = useParams();
+
+  useEffect(() => {
+    async function cargarPermiso() {
+      if (params.id) {
+        const { data } = await obtenerPermiso(params.id);
+        setValue("descripcion", data.descripcion);
+        setValue("activo", data.activo);
+      } else {
+        //Necesario para poder habilitar los campos
+        setEditable(true);
+      }
+    }
+    cargarPermiso();
+  }, []);
 
   const onSubmit = handleSubmit(async (data) => {
     if (params.id) {
@@ -31,17 +47,6 @@ export function PermisosFormPage() {
     }
     navigate("/permisos");
   });
-
-  useEffect(() => {
-    async function cargarPermiso() {
-      if (params.id) {
-        const { data } = await obtenerPermiso(params.id);
-        setValue("descripcion", data.descripcion);
-        setValue("activo", data.activo);
-      }
-    }
-    cargarPermiso();
-  }, []);
 
   const habilitarEdicion = async () => {
     setEditable(true);
@@ -56,9 +61,9 @@ export function PermisosFormPage() {
       navigate("/permisos");
     }
   };
-
-  const puedeEscribir = controlarRoles("escritura");
-  //const puedeLeer=controlarRoles("lectura");
+  //                          campo que tiene que leer ---- permiso necesario
+  const puedeEscribir = tienePermiso("permisos", "escritura");
+  //const puedeLeer=tienePermiso("permisos","lectura");
 
   return (
     <div>
@@ -80,10 +85,12 @@ export function PermisosFormPage() {
         </fieldset>
       </form>
 
+      {/*Los botones se activan y desactiva dependiendo del rol
+        y de la opcion*/}
+
       {puedeEscribir && !editable && (
         <button onClick={habilitarEdicion}> Editar</button>
       )}
-
       {puedeEscribir && editable && (
         <button type="submit" form="editar-permiso">
           Guardar
