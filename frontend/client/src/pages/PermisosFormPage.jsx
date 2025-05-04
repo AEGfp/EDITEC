@@ -66,40 +66,54 @@ export function PermisosFormPage() {
   //const puedeLeer=tienePermiso("permisos","lectura");
 
   return (
-    <div>
-      <form onSubmit={onSubmit} id="editar-permiso">
-        <fieldset disabled={!editable}>
-          <h4>Descripción</h4>
-          <input
-            type="text"
-            placeholder="descripcion"
-            {...register("descripcion", { required: true })}
-          />
-          {errors.descripcion && <span>Campo requerido</span>}
-          <h4>Activo</h4>
-          <input
-            type="checkbox"
-            {...register("activo", { required: false })}
-          ></input>
-          <br />
-        </fieldset>
-      </form>
+    <div className="formulario">
+      <div className="formulario-dentro">
+        <form onSubmit={onSubmit} id="editar-permiso">
+          <fieldset disabled={!editable}>
+            <h4 className="formulario-elemento">Descripción</h4>
+            <input
+              type="text"
+              placeholder="descripcion"
+              className="formulario-input"
+              {...register("descripcion", { required: true })}
+            />
+            {errors.descripcion && <span>Campo requerido</span>}
+            <div className="flex items-center mt-2">
+              <h4 className="formulario-elemento mb-0 mr-2">Activo: </h4>
+              <input
+                type="checkbox"
+                {...register("activo", { required: false })}
+              ></input>
+            </div>
+          </fieldset>
+        </form>
 
-      {/*Los botones se activan y desactiva dependiendo del rol
+        {/*Los botones se activan y desactiva dependiendo del rol
         y de la opcion*/}
-
-      {puedeEscribir && !editable && (
-        <button onClick={habilitarEdicion}> Editar</button>
-      )}
-      {puedeEscribir && editable && (
-        <button type="submit" form="editar-permiso">
-          Guardar
-        </button>
-      )}
-      <br />
-      {params.id && puedeEscribir && editable && (
-        <button onClick={descartarPermiso}>Eliminar</button>
-      )}
+        <div className="botones-grupo">
+          {puedeEscribir && !editable && (
+            <button onClick={habilitarEdicion} className="boton-editar">
+              {" "}
+              Editar
+            </button>
+          )}
+          {puedeEscribir && editable && (
+            <button
+              type="submit"
+              form="editar-permiso"
+              className="boton-guardar"
+            >
+              Guardar
+            </button>
+          )}
+          <br />
+          {params.id && puedeEscribir && editable && (
+            <button onClick={descartarPermiso} className="boton-eliminar">
+              Eliminar
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
