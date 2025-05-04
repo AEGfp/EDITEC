@@ -1,3 +1,5 @@
+@import "tailwindcss";
+/*
 body {
   background: white;
   color: #515afa;
@@ -7,4 +9,46 @@ h2,
 h3,
 h4 {
   color: black;
+}
+*/
+@layer components {
+  .boton-guardar {
+    @apply font-semibold px-4 py-2 rounded bg-green-600 text-green-100;
+  }
+
+  .boton-editar {
+    @apply font-semibold px-4 py-2 rounded bg-orange-500 text-orange-100;
+  }
+
+  .boton-eliminar {
+    @apply font-semibold px-4 py-2 rounded  bg-red-600 text-red-100;
+  }
+
+  .botones-grupo {
+    @apply flex justify-center space-x-3;
+  }
+
+  .formulario {
+    @apply flex items-center justify-center h-screen text-xl;
+  }
+
+  .formulario-dentro {
+    @apply p-4 bg-white rounded shadow-md w-full max-w-lg border border-gray-300;
+  }
+
+  .formulario-titulo {
+    @apply mb-4 text-2xl text-white text-center bg-blue-500 rounded-sm w-full h-12 flex items-center justify-center font-bold;
+  }
+
+  .formulario-elemento {
+    @apply text-left  mb-1 text-black pb-1 px-1 font-bold;
+  }
+
+  .formulario-input {
+    @apply bg-slate-200 rounded w-full text-black px-1 mb-4;
+  }
+
+  .formulario-lista {
+    @apply flex flex-col gap-1 p-1;
+  }
 }
