@@ -9,7 +9,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useEffect } from "react";
 import { useState } from "react";
 import tienePermiso from "../utils/tienePermiso";
-
+import CampoRequerido from "../components/CampoRequerido";
 export function PermisosFormPage() {
   const {
     register,
@@ -68,16 +68,17 @@ export function PermisosFormPage() {
   return (
     <div className="formulario">
       <div className="formulario-dentro">
+        <h1 className="formulario-titulo">Permiso</h1>
         <form onSubmit={onSubmit} id="editar-permiso">
           <fieldset disabled={!editable}>
             <h4 className="formulario-elemento">Descripción</h4>
             <input
               type="text"
-              placeholder="descripcion"
+              placeholder="Ingrese un permiso..."
               className="formulario-input"
               {...register("descripcion", { required: true })}
             />
-            {errors.descripcion && <span>Campo requerido</span>}
+            {errors.descripcion && <CampoRequerido></CampoRequerido>}
             <div className="flex items-center mt-2">
               <h4 className="formulario-elemento mb-0 mr-2">Activo: </h4>
               <input
