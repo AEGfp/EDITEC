@@ -16,6 +16,7 @@ export function PermisosFormPage() {
     handleSubmit,
     formState: { errors },
     setValue,
+    reset,
   } = useForm();
 
   //Desbloquea los campos,
@@ -33,13 +34,15 @@ export function PermisosFormPage() {
         const { data } = await obtenerPermiso(params.id);
         setValue("descripcion", data.descripcion);
         setValue("activo", data.activo);
+        setEditable(false);
       } else {
+        reset();
         //Necesario para poder habilitar los campos si se tiene permiso
         setEditable(true);
       }
     }
     cargarPermiso();
-  }, []);
+  }, [params.id]);
 
   const onSubmit = handleSubmit(async (data) => {
     if (params.id) {
