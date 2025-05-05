@@ -11,8 +11,10 @@ export function ListaPermisosTable() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    //Cambiar el nombre de la función
     async function loadPermisos() {
       try {
+        //Cambiar la API para las demás páginas
         const res = await obtenerTodosPermisos();
 
         if (res.data.length > 0) {
@@ -21,6 +23,8 @@ export function ListaPermisosTable() {
           //!!! Desactivar si se quiere mostrar el id
           const columnasFiltradas = keys.filter((key) => key !== "id");
 
+          //Esta lógica puede variar un poco según las columnas que tengan
+          // que mostrar
           const arrayColumnas = columnasFiltradas.map((columna) => ({
             name: columna.charAt(0).toUpperCase() + columna.slice(1),
             selector: (row) => row[columna],
@@ -34,6 +38,7 @@ export function ListaPermisosTable() {
           }));
 
           setColumnas(arrayColumnas);
+          //Cambiar el nombre de la función
           setPermisos(res.data);
           setLoading(false);
         }
@@ -42,6 +47,7 @@ export function ListaPermisosTable() {
         setLoading(false);
       }
     }
+    //Cambiar el nombre de la función
     loadPermisos();
   }, []);
 
@@ -58,6 +64,8 @@ export function ListaPermisosTable() {
 
   return (
     <div>
+      {/*Cambiar el nombre de la página
+      y de data={--nombre---} según la página*/}
       <h1 className="text-2xl font-semibold p-2 pl-3">Permisos</h1>
       <DataTable
         columns={columnas}

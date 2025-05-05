@@ -1,5 +1,7 @@
 const permisosRoles = {
+  //nombre de la entidad
   permisos: {
+    //permisos
     lectura: ["director", "profesor"],
     escritura: ["director"],
   },

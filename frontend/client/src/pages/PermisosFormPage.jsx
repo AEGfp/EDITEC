@@ -23,6 +23,8 @@ export function PermisosFormPage() {
   const [editable, setEditable] = useState(false);
 
   const navigate = useNavigate();
+  // Modificar según la página padre
+  const pagina = "/permisos";
   const params = useParams();
 
   useEffect(() => {
@@ -32,7 +34,7 @@ export function PermisosFormPage() {
         setValue("descripcion", data.descripcion);
         setValue("activo", data.activo);
       } else {
-        //Necesario para poder habilitar los campos
+        //Necesario para poder habilitar los campos si se tiene permiso
         setEditable(true);
       }
     }
@@ -45,7 +47,7 @@ export function PermisosFormPage() {
     } else {
       await crearPermiso(data);
     }
-    navigate("/permisos");
+    navigate(pagina);
   });
 
   const habilitarEdicion = async () => {
@@ -58,9 +60,10 @@ export function PermisosFormPage() {
     );
     if (aceptar) {
       await eliminarPermiso(params.id);
-      navigate("/permisos");
+      navigate(pagina);
     }
   };
+
   //                          campo que tiene que leer ---- permiso necesario
   const puedeEscribir = tienePermiso("permisos", "escritura");
   //const puedeLeer=tienePermiso("permisos","lectura");
@@ -68,8 +71,11 @@ export function PermisosFormPage() {
   return (
     <div className="formulario">
       <div className="formulario-dentro">
+        {/*Modificar el título según la página*/}
         <h1 className="formulario-titulo">Permiso</h1>
+        {/*Modificar el formulario de acuerdo a los campos necesarios*/}
         <form onSubmit={onSubmit} id="editar-permiso">
+          {/*El fieldset permite bloquear la escritura*/}
           <fieldset disabled={!editable}>
             <h4 className="formulario-elemento">Descripción</h4>
             <input
@@ -78,6 +84,7 @@ export function PermisosFormPage() {
               className="formulario-input"
               {...register("descripcion", { required: true })}
             />
+            {/*Mensaje de error si no se completa un campo obligatorio*/}
             {errors.descripcion && <CampoRequerido></CampoRequerido>}
             <div className="flex items-center mt-2">
               <h4 className="formulario-elemento mb-0 mr-2">Activo: </h4>
