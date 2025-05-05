@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { obtenerTodosPermisos } from "../api/permisos.api";
 import DataTable from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
+import { estiloTablas } from "../assets/estiloTablas";
 
 export function ListaPermisosTable() {
   const navigate = useNavigate();
@@ -57,6 +58,7 @@ export function ListaPermisosTable() {
 
   return (
     <div>
+      <h1 className="text-2xl font-semibold p-2 pl-3">Permisos</h1>
       <DataTable
         columns={columnas}
         data={permisos}
@@ -64,6 +66,8 @@ export function ListaPermisosTable() {
         pagination
         paginationComponentOptions={paginationComponentOptions}
         onRowClicked={handleRowClick}
+        highlightOnHover
+        customStyles={estiloTablas}
       ></DataTable>
     </div>
   );
