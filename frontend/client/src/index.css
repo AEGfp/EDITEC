@@ -11,21 +11,22 @@ h4 {
   color: black;
 }
 */
+
 @layer components {
   .boton-guardar {
-    @apply font-semibold px-4 py-2 rounded bg-green-600 text-green-100;
+    @apply font-semibold px-4 py-2 rounded bg-green-600 text-green-100 cursor-pointer;
   }
 
   .boton-editar {
-    @apply font-semibold px-4 py-2 rounded bg-orange-500 text-orange-100;
+    @apply font-semibold px-4 py-2 rounded bg-orange-500 text-orange-100 cursor-pointer;
   }
 
   .boton-eliminar {
-    @apply font-semibold px-4 py-2 rounded  bg-red-600 text-red-100;
+    @apply font-semibold px-4 py-2 rounded  bg-red-600 text-red-100 cursor-pointer;
   }
 
   .botones-grupo {
-    @apply flex justify-center space-x-3;
+    @apply flex justify-center space-x-3 cursor-pointer;
   }
 
   .formulario {
@@ -33,7 +34,7 @@ h4 {
   }
 
   .formulario-dentro {
-    @apply p-4 bg-white rounded shadow-md w-full max-w-lg border border-gray-300;
+    @apply p-4 bg-slate-50 rounded shadow-md w-full max-w-lg border border-gray-300;
   }
 
   .formulario-titulo {
@@ -41,14 +42,19 @@ h4 {
   }
 
   .formulario-elemento {
-    @apply text-left  mb-1 text-black pb-1 px-1 font-bold;
+    @apply text-left  mb-1 mt-1 text-black pb-1 px-1 font-semibold;
   }
 
   .formulario-input {
-    @apply bg-slate-200 rounded w-full text-black px-1 mb-4;
+    @apply p-1 pl-2  bg-white border rounded-sm w-full border-gray-300;
   }
 
   .formulario-lista {
     @apply flex flex-col gap-1 p-1;
   }
+
+  .mensaje-error {
+    @apply text-red-500 text-sm;
+  }
 }
+/*bg-white border border-gray-300 rounded w-full text-black px-1 mb-4;*/
