@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: editec-api
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn editec.wsgi:application"
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: editec.settings.production
+      - key: DB_HOST
+        fromDatabase:
+          name: editec
+          property: host
+      - key: DB_NAME
+        fromDatabase:
+          name: editec
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: editec
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: editec
+          property: password
