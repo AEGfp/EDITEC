@@ -9,6 +9,7 @@ export function ListaPermisosTable() {
   const [permisos, setPermisos] = useState([]);
   const [columnas, setColumnas] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [busqueda, setBusqueda] = useState("");
 
   useEffect(() => {
     //Cambiar el nombre de la función
@@ -55,6 +56,14 @@ export function ListaPermisosTable() {
     navigate(`/permisos/${fila.id}`);
   }
 
+  //Cambiar el nombre de 'permiso' según la página
+  const elementosFiltrados = permisos.filter((permiso) =>
+    columnas.some((columna) => {
+      const elem = columna.selector(permiso);
+      return elem?.toString().toLowerCase().includes(busqueda.toLowerCase());
+    })
+  );
+
   const paginationComponentOptions = {
     rowsPerPageText: "Filas por página",
     rangeSeparatorText: "de",
@@ -67,9 +76,19 @@ export function ListaPermisosTable() {
       {/*Cambiar el nombre de la página
       y de data={--nombre---} según la página*/}
       <h1 className="text-2xl font-semibold p-2 pl-3">Permisos</h1>
+
+      <div className="p-2">
+        <input
+          type="text"
+          placeholder="Buscar..."
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          className="border border-gray-300 rounded px-3 py-1 w-full max-w-xs"
+        />
+      </div>
       <DataTable
         columns={columnas}
-        data={permisos}
+        data={elementosFiltrados}
         progressPending={loading}
         pagination
         paginationComponentOptions={paginationComponentOptions}
