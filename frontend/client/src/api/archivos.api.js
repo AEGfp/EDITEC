@@ -4,7 +4,7 @@ import { Api } from "./api";
 const DIRECCION = "archivos/";
 
 export const obtenerTodosArchivos = () => {
-  return Api.get(DIRECCION);
+  return Api.get(`${DIRECCION}?fields=descripcion`);
 };
 
 export const crearArchivo = (archivo) => {
