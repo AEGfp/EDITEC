@@ -22,7 +22,7 @@ h4 {
   }
 
   .boton-detalles {
-    @apply font-semibold px-4 py-2 rounded bg-blue-500 text-blue-100 cursor-pointer;
+    @apply font-semibold px-4 py-2 rounded bg-blue-900 text-blue-100 cursor-pointer;
   }
 
   .boton-eliminar {
@@ -42,7 +42,7 @@ h4 {
   }
 
   .formulario-titulo {
-    @apply mb-4 text-2xl text-white text-center bg-blue-500 rounded-sm w-full h-12 flex items-center justify-center font-bold;
+    @apply mb-4 text-2xl text-white text-center bg-blue-900 rounded-sm w-full h-12 flex items-center justify-center font-bold;
   }
 
   .formulario-elemento {
