@@ -21,12 +21,16 @@ h4 {
     @apply font-semibold px-4 py-2 rounded bg-orange-500 text-orange-100 cursor-pointer;
   }
 
+  .boton-detalles {
+    @apply font-semibold px-4 py-2 rounded bg-blue-500 text-blue-100 cursor-pointer;
+  }
+
   .boton-eliminar {
     @apply font-semibold px-4 py-2 rounded  bg-red-600 text-red-100 cursor-pointer;
   }
 
   .botones-grupo {
-    @apply flex justify-center space-x-3 cursor-pointer;
+    @apply flex justify-center space-x-3;
   }
 
   .formulario {

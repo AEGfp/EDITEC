@@ -9,4 +9,9 @@ router.register(r"archivos", views.ArchivosViewSet, "archivos")
 
 urlpatterns = [
     path("", include(router.urls)),
+    path(
+        "archivos/descargar/<int:arch_id>/",
+        views.descargar_archivo,
+        name="descargar-archivos",
+    ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

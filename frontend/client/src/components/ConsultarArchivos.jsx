@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { obtenerTodosArchivos } from "../api/archivos.api";
+import { descargarArchivo, obtenerTodosArchivos } from "../api/archivos.api";
 import DataTable from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
 import { estiloTablas } from "../assets/estiloTablas";
@@ -7,6 +7,7 @@ import { estiloTablas } from "../assets/estiloTablas";
 export default function ConsultarArchivos() {
   const navigate = useNavigate();
   const [archivos, setArchivos] = useState([]);
+  const [columnas, setColumnas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busqueda, setBusqueda] = useState("");
 
@@ -19,14 +20,39 @@ export default function ConsultarArchivos() {
         if (res.data.length > 0) {
           const keys = Object.keys(res.data[0]);
 
-          //!!! Desactivar si se quiere mostrar el id
-          const columnasFiltradas = res.data.map((archivo) => ({
-            descripcion: archivo.descripcion,
+          const columnasFiltradas = keys.filter((key) => key === "descripcion");
+
+          //Esta lógica puede variar un poco según las columnas que tengan
+          // que mostrar
+          const arrayColumnas = columnasFiltradas.map((columna) => ({
+            name: columna.charAt(0).toUpperCase() + columna.slice(1),
+            selector: (row) => row[columna],
+            sortable: true,
+            cell: (row) => row[columna],
           }));
 
-          // setColumnas(columnasFiltradas);
+          arrayColumnas.push({
+            name: "",
+            selector: (row) => row.id,
+            right: true,
+            cell: (row) => (
+              <div className="">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    descargarArchivo(row.id); // Llama a la función de descarga
+                  }}
+                  className="boton-guardar"
+                >
+                  Descargar
+                </button>
+              </div>
+            ),
+          });
+
+          setColumnas(arrayColumnas);
           //Cambiar el nombre de la función
-          setArchivos(columnasFiltradas);
+          setArchivos(res.data);
           setLoading(false);
         }
       } catch (err) {
@@ -37,19 +63,7 @@ export default function ConsultarArchivos() {
     //Cambiar el nombre de la función
     loadArchivos();
   }, []);
-  /*
-  function handleRowClick(fila) {
-    navigate(`/archivos/${fila.id}`);
-  }
-*/
 
-  const columnas = [
-    {
-      name: "Descripción",
-      selector: (row) => row.descripcion,
-      sortable: true,
-    },
-  ];
   //Cambiar el nombre de 'Archivo' según la página
   const elementosFiltrados = archivos.filter((archivo) =>
     columnas.some((columna) => {

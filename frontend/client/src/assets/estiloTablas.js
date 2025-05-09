@@ -47,7 +47,6 @@ export const estiloTablas = {
     },
     highlightOnHoverStyle: {
       backgroundColor: "#f3f4f6",
-      cursor: "pointer",
     },
   },
   cells: {
