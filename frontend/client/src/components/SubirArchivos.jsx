@@ -38,6 +38,7 @@ export default function SubirArchivos() {
 
       setMensaje("Archivo subido correctamente.");
       reset();
+      setNombreArchivo("No se ha seleccionado ningún archivo.");
     } catch (error) {
       console.error(error);
       setMensaje("Ha ocurrido un error al subir el archivo.");
