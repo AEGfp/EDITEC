@@ -1,12 +1,12 @@
 from rest_framework import viewsets
-from .models import Infante, Tutor, Turno, Sala, AnhoLectivo, Inscripcion
+from .models import Infante, Tutor, Turno, Sala, AnhoLectivo# Inscripcion
 from .serializers import (
     InfanteSerializer,
     TutorSerializer,
     TurnoSerializer,
     SalaSerializer,
     AnhoLectivoSerializer,
-    InscripcionSerializer,
+   # InscripcionSerializer,
 )
 
 class InfanteView(viewsets.ModelViewSet):
@@ -28,7 +28,8 @@ class SalaView(viewsets.ModelViewSet):
 class AnhoLectivoView(viewsets.ModelViewSet):
     queryset = AnhoLectivo.objects.all()
     serializer_class = AnhoLectivoSerializer
-
+"""
 class InscripcionView(viewsets.ModelViewSet):
     queryset = Inscripcion.objects.all()
     serializer_class = InscripcionSerializer
+"""

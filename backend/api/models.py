@@ -24,6 +24,7 @@ class Persona(models.Model):
         return self.nombre + " " + self.apellido + " " + self.segundo_apellido
 
 
+"""
 class PerfilUsuario(models.Model):
     usuario = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name="perfil"
@@ -35,6 +36,7 @@ class PerfilUsuario(models.Model):
         null=True,
         blank=True,
     )
+"""
 
 
 class Permiso(models.Model):

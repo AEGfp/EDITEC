@@ -50,6 +50,7 @@ class AnhoLectivo(models.Model):
     def __str__(self):
         return str(self.anho)
 
+"""
 class Inscripcion(models.Model):
     id_infante = models.ForeignKey(Infante, on_delete=models.CASCADE)
     id_sala = models.ForeignKey(Sala, on_delete=models.CASCADE)
@@ -60,3 +61,4 @@ class Inscripcion(models.Model):
 
     def __str__(self):
         return f"Insc. {self.id_infante} - {self.id_anho_lectivo}"
+        """

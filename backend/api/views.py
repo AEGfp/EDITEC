@@ -15,9 +15,9 @@ from .serializer import (
     PermisoSerializer,
     UserSerializer,
     PersonaSerializer,
-    PerfilUsuarioSerializer,
+    # PerfilUsuarioSerializer,
 )
-from .models import Permiso, Persona, PerfilUsuario
+from .models import Permiso, Persona  # , PerfilUsuario
 from Roles.roles import (
     EsDirector,
     EsProfesor,
@@ -119,10 +119,12 @@ class PersonaView(viewsets.ModelViewSet):
     queryset = Persona.objects.all()
 
 
+"""
 @permission_classes([AllowAny])
 class PerfilUsuarioView(viewsets.ModelViewSet):
     serializer_class = PerfilUsuarioSerializer
     queryset = PerfilUsuario.objects.all()
+"""
 
 
 @authentication_classes([JWTAuthentication])

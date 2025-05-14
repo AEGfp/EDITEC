@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
-from .models import Permiso, Persona, PerfilUsuario
+from .models import Permiso, Persona  # , PerfilUsuario
 from django.db import models
 
 
@@ -10,11 +10,13 @@ class PersonaSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+"""
 # ! REVISAR
 class PerfilUsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = PerfilUsuario
         fields = "__all__"
+"""
 
 
 class UserSerializer(serializers.ModelSerializer):
