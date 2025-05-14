@@ -60,17 +60,6 @@ def register(request):
 
     if serializer.is_valid():
         user = serializer.save()
-
-        user.set_password(request.data["password"])
-        user.save()
-
-        groups = request.data.get("groups", [])
-        for nombre_rol in groups:
-            try:
-                rol = Group.objects.get(name=nombre_rol)
-                user.groups.add(rol)
-            except:
-                pass
         refresh = RefreshToken.for_user(user)
 
         return Response(
@@ -81,7 +70,7 @@ def register(request):
             },
             status=status.HTTP_201_CREATED,
         )
-        print(serializer.errors)
+
     return Response(
         serializer.errors,
         status=status.HTTP_400_BAD_REQUEST,

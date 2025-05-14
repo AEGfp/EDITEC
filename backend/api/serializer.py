@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
 from .models import Permiso, Persona  # , PerfilUsuario
-from django.db import models
+from django.db import transaction
 
 
 class PersonaSerializer(serializers.ModelSerializer):
@@ -32,19 +32,18 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "username", "email", "persona", "groups", "password"]
+        fields = ["id", "username", "email", "groups", "password", "persona"]
 
     def create(self, validated_data):
         persona_data = validated_data.pop("persona")
         groups_data = validated_data.pop("groups", [])
         password = validated_data.pop("password")
 
-        user = User(**validated_data)
-        user.set_password(password)
-        user.save()
-        user.groups.set(groups_data)
-        Persona.objects.create(user=user, **persona_data)
+        with transaction.atomic():
+            user = User.objects.create_user(password=password, **validated_data)
+            user.groups.set(groups_data)
 
+            persona = Persona.objects.create(user=user, **persona_data)
         return user
 
 

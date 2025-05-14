@@ -18,7 +18,7 @@ class Persona(models.Model):
     )
     ci = models.CharField(max_length=20, null=False, unique=True)
     domicilio = models.CharField(max_length=200, null=True, blank=True)
-    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return self.nombre + " " + self.apellido + " " + self.segundo_apellido
