@@ -12,7 +12,8 @@ export const estiloTablas = {
   },
   head: {
     style: {
-      backgroundColor: "#3b82f6",
+      //backgroundColor: "#3b82f6",
+      backgroundColor: "#1c398e",
       color: "#ffffff",
       fontSize: "1rem", // más pequeño que text-2xl
       fontWeight: "600",
@@ -25,7 +26,8 @@ export const estiloTablas = {
   },
   headRow: {
     style: {
-      backgroundColor: "#3b82f6",
+      //backgroundColor: "#3b82f6",
+      backgroundColor: "#1c398e",
       color: "#ffffff",
       fontWeight: "600",
       fontSize: "0.875rem",

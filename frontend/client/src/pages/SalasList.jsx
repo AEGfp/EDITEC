@@ -1,73 +1,133 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import DataTable from "react-data-table-component";
-import { obtenerSalas, eliminarSala } from "../api/salas.api";
+import { useNavigate } from "react-router-dom";
+import { obtenerSalas } from "../api/salas.api";
+import { estiloTablas } from "../assets/estiloTablas";
+import tienePermiso from "../utils/tienePermiso";
 
-function SalasList() {
+export default function ListaSalasTable() {
+  const navigate = useNavigate();
   const [salas, setSalas] = useState([]);
+  const [columnas, setColumnas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [busqueda, setBusqueda] = useState("");
+  const puedeEscribir = tienePermiso("salas", "escritura");
 
   useEffect(() => {
-    cargarSalas();
+    async function loadSalas() {
+      try {
+        const res = await obtenerSalas();
+
+        if (res.data.length > 0) {
+          const arrayColumnas = [
+            {
+              name: "Descripción",
+              selector: (fila) => fila.descripcion,
+              sortable: true,
+              cell: (fila) => fila.descripcion,
+            },
+          ];
+
+          agregarBotonDetalles(arrayColumnas);
+          setColumnas(arrayColumnas);
+          setSalas(res.data);
+        }
+
+        setLoading(false);
+      } catch (error) {
+        console.error("Error al cargar salas:", error);
+        setLoading(false);
+      }
+    }
+
+    loadSalas();
   }, []);
 
-  const cargarSalas = async () => {
-    try {
-      const res = await obtenerSalas();
-      setSalas(res.data);
-    } catch (error) {
-      console.error("Error al obtener salas", error);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (confirm("¿Estás seguro que deseas eliminar esta sala?")) {
-      await eliminarSala(id);
-      cargarSalas();
-    }
-  };
-
-  const columns = [
-    {
-      name: "Descripción",
-      selector: (row) => row.descripcion,
-      sortable: true,
-    },
-    {
-      name: "Usuario Aud.",
-      selector: (row) => row.id_usuario_aud,
-    },
-    {
-      name: "Acciones",
-      cell: (row) => (
-        <button
-          onClick={() => handleDelete(row.id)}
-          style={{
-            backgroundColor: "#ef4444",
-            color: "#fff",
-            padding: "4px 8px",
-            borderRadius: "4px",
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
-          Eliminar
-        </button>
+  function agregarBotonDetalles(arrayColumnas) {
+    arrayColumnas.push({
+      name: "",
+      selector: (fila) => fila,
+      right: true,
+      cell: (fila) => (
+        <div className="flex gap-2">
+          <button
+            className="boton-detalles"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/salas/${fila.id}`);
+            }}
+          >
+            Detalles
+          </button>
+          <button
+            className="boton-eliminar bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
+            onClick={async (e) => {
+              e.stopPropagation();
+              const confirmar = window.confirm("¿Seguro que deseas eliminar esta sala?");
+              if (confirmar) {
+                try {
+                  await eliminarSala(fila.id);
+                  setSalas((prev) => prev.filter((s) => s.id !== fila.id));
+                } catch (err) {
+                  console.error("Error al eliminar sala:", err);
+                }
+              }
+            }}
+          >
+            Eliminar
+          </button>
+        </div>
       ),
-    },
-  ];
+    });
+  }
+  
+
+  const elementosFiltrados = salas.filter((sala) =>
+    columnas.some((columna) => {
+      const elem = columna.selector(sala);
+      return elem?.toString().toLowerCase().includes(busqueda.toLowerCase());
+    })
+  );
+
+  const paginationComponentOptions = {
+    rowsPerPageText: "Filas por página",
+    rangeSeparatorText: "de",
+    selectAllRowsItem: true,
+    selectAllRowsItemText: "Todas",
+  };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>🏫 Lista de Salas</h2>
+    <div>
+      <h1 className="align-baseline text-2xl font-semibold p-2 pl-3">
+        Salas
+      </h1>
+      <div className="p-2 flex flex-row justify-between">
+        <input
+          type="text"
+          placeholder="Buscar..."
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          className="border border-gray-300 rounded px-3 py-1 w-full max-w-xs"
+        />
+        {puedeEscribir && (
+          <button
+            className="boton-guardar items-end"
+            onClick={() => navigate("/salas-crear")}
+          >
+            Agregar...
+          </button>
+        )}
+      </div>
+
       <DataTable
-        columns={columns}
-        data={salas}
+        columns={columnas}
+        data={elementosFiltrados}
+        progressPending={loading}
         pagination
-        responsive
+        paginationComponentOptions={paginationComponentOptions}
         highlightOnHover
-        striped
+        customStyles={estiloTablas}
       />
     </div>
   );
 }
-
-export default SalasList;

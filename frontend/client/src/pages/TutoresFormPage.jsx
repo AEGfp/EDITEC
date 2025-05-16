@@ -1,168 +1,199 @@
-import React, { useState, useEffect } from "react";
-import { crearTutor } from "../api/tutores.api";
-import { obtenerPersonas } from "../api/personas.api";
-import { useNavigate} from "react-router-dom";
-function TutoresForm() {
-  const [form, setForm] = useState({
-    es_docente: false,
-    es_estudiante: false,
-    es_funcionario: false,
-    id_persona: "",
-    telefono_casa: "",
-    telefono_particular: "",
-    telefono_trabajo: "",
-    nombre_empresa_trabajo: "",
-    direccion_trabajo: "",
-    observaciones: "",
-    id_usuario_aud: 1,
-  });
+import { useForm } from "react-hook-form";
+import {
+  crearTutor,
+  actualizarTutor,
+  eliminarTutor,
+  obtenerTutor,
+} from "../api/tutores.api";
+import {
+  crearPersona,
+  actualizarPersona,
+} from "../api/personas.api";
+import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import tienePermiso from "../utils/tienePermiso";
+import CampoRequerido from "../components/CampoRequerido";
 
-  const [personas, setPersonas] = useState([]);
+function TutoresFormPage() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    reset,
+    watch,
+  } = useForm();
+
+  const [editable, setEditable] = useState(false);
   const navigate = useNavigate();
+  const params = useParams();
+  const pagina = "/tutores";
+  const puedeEscribir = tienePermiso("tutores", "escritura");
+
   useEffect(() => {
-    const fetchPersonas = async () => {
+    async function cargarTutor() {
       try {
-        const res = await obtenerPersonas();
-        setPersonas(res.data);
-      } catch (err) {
-        console.error("Error al cargar personas", err);
+        if (params.id) {
+          const { data } = await obtenerTutor(params.id);
+          const persona = data.id_persona || {};
+          const personaId = typeof persona === "object" ? persona.id : persona;
+
+          setValue("id_persona", personaId);
+          setValue("nombre", persona.nombre || "");
+          setValue("apellido", persona.apellido || "");
+          setValue("ci", persona.ci || "");
+
+          setValue("es_docente", data.es_docente);
+          setValue("es_estudiante", data.es_estudiante);
+          setValue("es_funcionario", data.es_funcionario);
+          setValue("telefono_casa", data.telefono_casa);
+          setValue("telefono_particular", data.telefono_particular);
+          setValue("telefono_trabajo", data.telefono_trabajo);
+          setValue("nombre_empresa_trabajo", data.nombre_empresa_trabajo);
+          setValue("direccion_trabajo", data.direccion_trabajo);
+          setValue("observaciones", data.observaciones);
+
+          setEditable(false);
+        } else {
+          reset();
+          setEditable(true);
+        }
+      } catch (error) {
+        console.error("Error al cargar el tutor", error);
       }
-    };
-    fetchPersonas();
-  }, []);
+    }
 
-  const handleChange = (e) => {
-    const { name, type, value, checked } = e.target;
-    setForm({
-      ...form,
-      [name]: type === "checkbox" ? checked : value,
-    });
-  };
+    cargarTutor();
+  }, [params.id, reset, setValue]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     try {
-      await crearTutor(form);
-      alert("Tutor creado con éxito");
-      navigate("/tutores");
+      const idPersona = data.id_persona || watch("id_persona");
+
+      if (params.id) {
+        await actualizarPersona(idPersona, {
+          nombre: data.nombre,
+          apellido: data.apellido,
+          ci: data.ci,
+        });
+
+        await actualizarTutor(params.id, {
+          id_persona: idPersona,
+          es_docente: data.es_docente,
+          es_estudiante: data.es_estudiante,
+          es_funcionario: data.es_funcionario,
+          telefono_casa: data.telefono_casa,
+          telefono_particular: data.telefono_particular,
+          telefono_trabajo: data.telefono_trabajo,
+          nombre_empresa_trabajo: data.nombre_empresa_trabajo,
+          direccion_trabajo: data.direccion_trabajo,
+          observaciones: data.observaciones,
+        });
+
+        navigate(pagina);
+        return;
+      }
+
+      const resPersona = await crearPersona({
+        nombre: data.nombre,
+        apellido: data.apellido,
+        ci: data.ci,
+      });
+
+      await crearTutor({
+        id_persona: resPersona.data.id,
+        es_docente: data.es_docente,
+        es_estudiante: data.es_estudiante,
+        es_funcionario: data.es_funcionario,
+        telefono_casa: data.telefono_casa,
+        telefono_particular: data.telefono_particular,
+        telefono_trabajo: data.telefono_trabajo,
+        nombre_empresa_trabajo: data.nombre_empresa_trabajo,
+        direccion_trabajo: data.direccion_trabajo,
+        observaciones: data.observaciones,
+      });
+
+      navigate(pagina);
     } catch (error) {
-      console.error("Error al crear tutor", error);
+      console.error("Error al guardar el tutor", error);
     }
   };
 
-  const style = {
-    container: {
-      maxWidth: "600px",
-      margin: "2rem auto",
-      padding: "2rem",
-      background: "#f8fafc",
-      borderRadius: "10px",
-      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-    },
-    label: {
-      display: "block",
-      marginBottom: "0.4rem",
-      fontWeight: "bold",
-    },
-    input: {
-      width: "100%",
-      padding: "0.5rem",
-      marginBottom: "1rem",
-      border: "1px solid #ccc",
-      borderRadius: "5px",
-    },
-    checkbox: {
-      marginRight: "0.5rem",
-    },
-    button: {
-      backgroundColor: "#2563eb",
-      color: "white",
-      padding: "0.7rem",
-      border: "none",
-      borderRadius: "8px",
-      fontWeight: "bold",
-      width: "100%",
-      marginTop: "1rem",
-    },
+  const habilitarEdicion = () => setEditable(true);
+
+  const descartarTutor = async () => {
+    const confirmar = window.confirm("¿Estás seguro que quieres eliminar este tutor?");
+    if (confirmar) {
+      await eliminarTutor(params.id);
+      navigate(pagina);
+    }
   };
 
   return (
-    <div style={style.container}>
-      <h2 style={{ textAlign: "center", marginBottom: "1.5rem" }}>Crear Tutor</h2>
-      <form onSubmit={handleSubmit}>
-        <label>
-          <input
-            type="checkbox"
-            name="es_docente"
-            checked={form.es_docente}
-            onChange={handleChange}
-            style={style.checkbox}
-          />
-          Es docente
-        </label>
+    <div className="formulario">
+      <div className="formulario-dentro">
+        <h1 className="formulario-titulo">Tutor</h1>
+        <form onSubmit={handleSubmit(onSubmit)} id="editar-tutor">
+          <input type="hidden" {...register("id_persona")} />
 
-        <label>
-          <input
-            type="checkbox"
-            name="es_estudiante"
-            checked={form.es_estudiante}
-            onChange={handleChange}
-            style={style.checkbox}
-          />
-          Es estudiante
-        </label>
+          <fieldset disabled={!editable}>
+            <label className="formulario-elemento">
+              <input type="checkbox" {...register("es_docente")} /> Es docente
+            </label>
+            <label className="formulario-elemento">
+              <input type="checkbox" {...register("es_estudiante")} /> Es estudiante
+            </label>
+            <label className="formulario-elemento">
+              <input type="checkbox" {...register("es_funcionario")} /> Es funcionario
+            </label>
 
-        <label>
-          <input
-            type="checkbox"
-            name="es_funcionario"
-            checked={form.es_funcionario}
-            onChange={handleChange}
-            style={style.checkbox}
-          />
-          Es funcionario
-        </label>
+            <h4 className="formulario-elemento">Nombre</h4>
+            <input className="formulario-input" {...register("nombre", { required: true })} />
+            {errors.nombre && <CampoRequerido />}
 
-        <label style={style.label}>Persona</label>
-        <select
-          name="id_persona"
-          value={form.id_persona}
-          onChange={handleChange}
-          style={style.input}
-        >
-          <option value="">Seleccionar persona...</option>
-          {personas.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.nombre} {p.apellido}
-            </option>
-          ))}
-        </select>
+            <h4 className="formulario-elemento">Apellido</h4>
+            <input className="formulario-input" {...register("apellido", { required: true })} />
+            {errors.apellido && <CampoRequerido />}
 
-        <label style={style.label}>Teléfono casa</label>
-        <input name="telefono_casa" value={form.telefono_casa} onChange={handleChange} style={style.input} />
+            <h4 className="formulario-elemento">CI</h4>
+            <input className="formulario-input" {...register("ci", { required: true })} />
+            {errors.ci && <CampoRequerido />}
 
-        <label style={style.label}>Teléfono particular</label>
-        <input name="telefono_particular" value={form.telefono_particular} onChange={handleChange} style={style.input} />
+            <h4 className="formulario-elemento">Teléfono casa</h4>
+            <input className="formulario-input" {...register("telefono_casa")} />
 
-        <label style={style.label}>Teléfono trabajo</label>
-        <input name="telefono_trabajo" value={form.telefono_trabajo} onChange={handleChange} style={style.input} />
+            <h4 className="formulario-elemento">Teléfono particular</h4>
+            <input className="formulario-input" {...register("telefono_particular")} />
 
-        <label style={style.label}>Nombre empresa trabajo</label>
-        <input name="nombre_empresa_trabajo" value={form.nombre_empresa_trabajo} onChange={handleChange} style={style.input} />
+            <h4 className="formulario-elemento">Teléfono trabajo</h4>
+            <input className="formulario-input" {...register("telefono_trabajo")} />
 
-        <label style={style.label}>Dirección trabajo</label>
-        <input name="direccion_trabajo" value={form.direccion_trabajo} onChange={handleChange} style={style.input} />
+            <h4 className="formulario-elemento">Nombre empresa trabajo</h4>
+            <input className="formulario-input" {...register("nombre_empresa_trabajo")} />
 
-        <label style={style.label}>Observaciones</label>
-        <textarea name="observaciones" value={form.observaciones} onChange={handleChange} style={style.input} />
+            <h4 className="formulario-elemento">Dirección trabajo</h4>
+            <input className="formulario-input" {...register("direccion_trabajo")} />
 
-        <label style={style.label}>ID Usuario Auditor</label>
-        <input type="number" name="id_usuario_aud" value={form.id_usuario_aud} onChange={handleChange} style={style.input} />
+            <h4 className="formulario-elemento">Observaciones</h4>
+            <textarea className="formulario-input" {...register("observaciones")} />
+          </fieldset>
+        </form>
 
-        <button type="submit" style={style.button}>Crear Tutor</button>
-      </form>
+        <div className="botones-grupo">
+          {puedeEscribir && !editable && (
+            <button onClick={habilitarEdicion} className="boton-editar">Editar</button>
+          )}
+          {puedeEscribir && editable && (
+            <button type="submit" form="editar-tutor" className="boton-guardar">Guardar</button>
+          )}
+          <br />
+          {params.id && puedeEscribir && editable && (
+            <button onClick={descartarTutor} className="boton-eliminar">Eliminar</button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
 
-export default TutoresForm;
+export default TutoresFormPage;

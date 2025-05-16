@@ -3,6 +3,7 @@ import { obtenerTodosPermisos } from "../api/permisos.api";
 import DataTable from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
 import { estiloTablas } from "../assets/estiloTablas";
+import tienePermiso from "../utils/tienePermiso";
 
 export function ListaPermisosTable() {
   const navigate = useNavigate();
@@ -10,6 +11,7 @@ export function ListaPermisosTable() {
   const [columnas, setColumnas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busqueda, setBusqueda] = useState("");
+  const puedeEscribir = tienePermiso("permisos", "escritura");
 
   useEffect(() => {
     //Cambiar el nombre de la función
@@ -28,16 +30,17 @@ export function ListaPermisosTable() {
           // que mostrar
           const arrayColumnas = columnasFiltradas.map((columna) => ({
             name: columna.charAt(0).toUpperCase() + columna.slice(1),
-            selector: (row) => row[columna],
+            selector: (fila) => fila[columna],
             sortable: true,
-            cell: (row) =>
-              typeof row[columna] === "boolean"
-                ? row[columna]
+            cell: (fila) =>
+              typeof fila[columna] === "boolean"
+                ? fila[columna]
                   ? "Sí"
                   : "No"
-                : row[columna],
+                : fila[columna],
           }));
 
+          agregarBotonDetalles(arrayColumnas);
           setColumnas(arrayColumnas);
           //Cambiar el nombre de la función
           setPermisos(res.data);
@@ -54,6 +57,29 @@ export function ListaPermisosTable() {
 
   function handleRowClick(fila) {
     navigate(`/permisos/${fila.id}`);
+  }
+
+  function agregarElemento() {
+    navigate(`/permisos-crear/`);
+  }
+
+  function agregarBotonDetalles(arrayColumnas) {
+    arrayColumnas.push({
+      name: "",
+      selector: (fila) => fila,
+      right: true,
+      cell: (fila) => (
+        <button
+          className="boton-detalles"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleRowClick(fila); // Llama a la función de descarga
+          }}
+        >
+          Detalles
+        </button>
+      ),
+    });
   }
 
   //Cambiar el nombre de 'permiso' según la página
@@ -75,16 +101,22 @@ export function ListaPermisosTable() {
     <div>
       {/*Cambiar el nombre de la página
       y de data={--nombre---} según la página*/}
-      <h1 className="text-2xl font-semibold p-2 pl-3">Permisos</h1>
-
-      <div className="p-2">
+      <h1 className="align-baseline text-2xl font-semibold p-2 pl-3">
+        Permisos
+      </h1>
+      <div className="p-2 flex flex-row justify-between">
         <input
           type="text"
           placeholder="Buscar..."
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-1 w-full max-w-xs"
+          className=" border border-gray-300 rounded px-3 py-1 w-full max-w-xs"
         />
+        {puedeEscribir && (
+          <button className="boton-guardar items-end" onClick={agregarElemento}>
+            Agregar...
+          </button>
+        )}
       </div>
       <DataTable
         columns={columnas}
@@ -92,7 +124,6 @@ export function ListaPermisosTable() {
         progressPending={loading}
         pagination
         paginationComponentOptions={paginationComponentOptions}
-        onRowClicked={handleRowClick}
         highlightOnHover
         customStyles={estiloTablas}
       ></DataTable>

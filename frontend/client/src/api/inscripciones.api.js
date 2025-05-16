@@ -1,22 +1,11 @@
-import axios from "axios";
+// inscripciones.api.js
+import { Api } from "./api";
 
-const inscripcionesApi = axios.create({
-  baseURL: "http://localhost:8000/api/educativo/inscripciones/",
-});
+// Ruta relativa del recurso
+const DIRECCION = "educativo/inscripciones/";
 
-inscripcionesApi.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-export const obtenerInscripciones = () => inscripcionesApi.get("/");
-export const crearInscripcion = (inscripcion) => inscripcionesApi.post("/", inscripcion);
-export const obtenerInscripcion = (id) => inscripcionesApi.get(`/${id}/`);
-export const actualizarInscripcion = (id, datos) => inscripcionesApi.put(`/${id}/`, datos);
-export const eliminarInscripcion = (id) => inscripcionesApi.delete(`/${id}/`);
+export const obtenerInscripciones = () => Api.get(DIRECCION);
+export const crearInscripcion = (inscripcion) => Api.post(DIRECCION, inscripcion);
+export const obtenerInscripcion = (id) => Api.get(`${DIRECCION}${id}/`);
+export const actualizarInscripcion = (id, datos) => Api.put(`${DIRECCION}${id}/`, datos);
+export const eliminarInscripcion = (id) => Api.delete(`${DIRECCION}${id}/`);
