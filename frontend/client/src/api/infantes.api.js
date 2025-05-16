@@ -1,23 +1,24 @@
-import axios from "axios";
+// infantes.api.js
+import { Api } from "./api";
 
-const infantesApi = axios.create({
-  baseURL: "http://localhost:8000/api/educativo/infantes/",
-});
+// Ruta relativa al endpoint
+const DIRECCION = "educativo/infantes/";
 
-// Agregar token automáticamente
-infantesApi.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+export const obtenerInfantes = () => Api.get(DIRECCION);
 
-export const obtenerInfantes = () => infantesApi.get("/");
-export const crearInfante = (infante) => infantesApi.post("/", infante);
-export const obtenerInfante = (id) => infantesApi.get(`/${id}/`);
-export const actualizarInfante = (id, datos) => infantesApi.put(`/${id}/`, datos);
-export const eliminarInfante = (id) => infantesApi.delete(`/${id}/`);
+export const crearInfante = (infante) => {
+  console.log("📤 Enviando datos a /api/educativo/infantes/:", infante);
+  return Api.post(DIRECCION, infante);
+};
+
+export const obtenerInfante = (id) => Api.get(`${DIRECCION}${id}/`);
+
+export const actualizarInfante = (id, datos) => {
+  console.log(`📤 Actualizando infante ID ${id} con:`, datos);
+  return Api.put(`${DIRECCION}${id}/`, datos);
+};
+
+export const eliminarInfante = (id) => {
+  console.log(`🗑️ Eliminando infante ID ${id}`);
+  return Api.delete(`${DIRECCION}${id}/`);
+};

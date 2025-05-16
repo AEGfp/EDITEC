@@ -1,23 +1,11 @@
-import axios from "axios";
+// salas.api.js
+import { Api } from "./api";
 
-const salasApi = axios.create({
-  baseURL: "http://localhost:8000/api/educativo/salas/",
-});
+// Ruta relativa dentro de la API
+const DIRECCION = "educativo/salas/";
 
-// Agregar token automáticamente
-salasApi.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-export const obtenerSalas = () => salasApi.get("/");
-export const crearSala = (sala) => salasApi.post("/", sala);
-export const obtenerSala = (id) => salasApi.get(`/${id}/`);
-export const actualizarSala = (id, datos) => salasApi.put(`/${id}/`, datos);
-export const eliminarSala = (id) => salasApi.delete(`/${id}/`);
+export const obtenerSalas = () => Api.get(DIRECCION);
+export const crearSala = (sala) => Api.post(DIRECCION, sala);
+export const obtenerSala = (id) => Api.get(`${DIRECCION}${id}/`);
+export const actualizarSala = (id, datos) => Api.put(`${DIRECCION}${id}/`, datos);
+export const eliminarSala = (id) => Api.delete(`${DIRECCION}${id}/`);

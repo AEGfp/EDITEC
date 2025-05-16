@@ -1,22 +1,22 @@
-import axios from "axios";
+import { Api } from "./api";
 
-const tutoresApi = axios.create({
-  baseURL: "http://localhost:8000/api/educativo/tutores/",
-});
+const DIRECCION = "educativo/tutores/";
 
-tutoresApi.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+export const obtenerTutores = () => Api.get(DIRECCION);
 
-export const obtenerTutores = () => tutoresApi.get("/");
-export const crearTutor = (tutor) => tutoresApi.post("/", tutor);
-export const obtenerTutor = (id) => tutoresApi.get(`/${id}/`);
-export const actualizarTutor = (id, datos) => tutoresApi.put(`/${id}/`, datos);
-export const eliminarTutor = (id) => tutoresApi.delete(`/${id}/`);
+export const crearTutor = (tutor) => {
+  console.log("📝 Enviando datos a /api/educativo/tutores/*", tutor);
+  return Api.post(DIRECCION, tutor);
+};
+
+export const obtenerTutor = (id) => Api.get(`${DIRECCION}${id}/`);
+
+export const actualizarTutor = (id, datos) => {
+  console.log("🔄 Actualizando tutor:", id, datos);
+  return Api.put(`${DIRECCION}${id}/`, datos);
+};
+
+export const eliminarTutor = (id) => {
+  console.log("🗑️ Eliminando tutor:", id);
+  return Api.delete(`${DIRECCION}${id}/`);
+};

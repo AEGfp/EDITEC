@@ -1,66 +1,113 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import DataTable from "react-data-table-component";
-import { obtenerTurnos, eliminarTurno } from "../api/turnos.api";
+import { useNavigate } from "react-router-dom";
+import { obtenerTurnos } from "../api/turnos.api";
+import { estiloTablas } from "../assets/estiloTablas";
+import tienePermiso from "../utils/tienePermiso";
 
-function TurnosList() {
+export default function TurnosList() {
+  const navigate = useNavigate();
   const [turnos, setTurnos] = useState([]);
+  const [columnas, setColumnas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [busqueda, setBusqueda] = useState("");
+  const puedeEscribir = tienePermiso("turnos", "escritura");
 
   useEffect(() => {
-    cargarTurnos();
+    async function loadTurnos() {
+      try {
+        const res = await obtenerTurnos();
+
+        if (res.data.length > 0) {
+          const arrayColumnas = [
+            {
+              name: "Descripción",
+              selector: (fila) => fila.descripcion,
+              sortable: true,
+              cell: (fila) => fila.descripcion,
+            },
+          ];
+
+          agregarBotonDetalles(arrayColumnas);
+          setColumnas(arrayColumnas);
+          setTurnos(res.data);
+        }
+
+        setLoading(false);
+      } catch (error) {
+        console.error("Error al cargar turnos:", error);
+        setLoading(false);
+      }
+    }
+
+    loadTurnos();
   }, []);
 
-  const cargarTurnos = async () => {
-    try {
-      const res = await obtenerTurnos();
-      setTurnos(res.data);
-    } catch (error) {
-      console.error("Error al obtener turnos", error);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (confirm("¿Estás seguro que deseas eliminar este turno?")) {
-      await eliminarTurno(id);
-      cargarTurnos();
-    }
-  };
-
-  const columns = [
-    { name: "Descripción", selector: (row) => row.descripcion, sortable: true },
-    { name: "Usuario Auditor", selector: (row) => row.id_usuario_aud },
-    {
-      name: "Acciones",
-      cell: (row) => (
+  function agregarBotonDetalles(arrayColumnas) {
+    arrayColumnas.push({
+      name: "",
+      selector: (fila) => fila,
+      right: true,
+      cell: (fila) => (
         <button
-          onClick={() => handleDelete(row.id)}
-          style={{
-            backgroundColor: "#ef4444",
-            color: "#fff",
-            padding: "4px 8px",
-            borderRadius: "4px",
-            border: "none",
-            cursor: "pointer",
+          className="boton-detalles"
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/turnos/${fila.id}`);
           }}
         >
-          Eliminar
+          Detalles
         </button>
       ),
-    },
-  ];
+    });
+  }
+
+  const elementosFiltrados = turnos.filter((turno) =>
+    columnas.some((columna) => {
+      const valor = columna.selector(turno);
+      return valor?.toString().toLowerCase().includes(busqueda.toLowerCase());
+    })
+  );
+
+  const paginationComponentOptions = {
+    rowsPerPageText: "Filas por página",
+    rangeSeparatorText: "de",
+    selectAllRowsItem: true,
+    selectAllRowsItemText: "Todos",
+  };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>⏰ Lista de Turnos</h2>
+    <div>
+      <h1 className="align-baseline text-2xl font-semibold p-2 pl-3">
+        Turnos
+      </h1>
+      <div className="p-2 flex flex-row justify-between">
+        <input
+          type="text"
+          placeholder="Buscar..."
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          className="border border-gray-300 rounded px-3 py-1 w-full max-w-xs"
+        />
+        {puedeEscribir && (
+          <button
+            className="boton-guardar items-end"
+            onClick={() => navigate("/turnos-crear")}
+          >
+            Agregar...
+          </button>
+        )}
+      </div>
+
       <DataTable
-        columns={columns}
-        data={turnos}
+        columns={columnas}
+        data={elementosFiltrados}
+        progressPending={loading}
         pagination
+        paginationComponentOptions={paginationComponentOptions}
         highlightOnHover
-        striped
-        responsive
+        customStyles={estiloTablas}
       />
     </div>
   );
 }
-
-export default TurnosList;

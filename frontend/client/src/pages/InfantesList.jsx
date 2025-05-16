@@ -1,106 +1,135 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import DataTable from "react-data-table-component";
+import { useNavigate } from "react-router-dom";
 import { obtenerInfantes, eliminarInfante } from "../api/infantes.api";
-import { obtenerPersonas } from "../api/personas.api"; // 👈 importa la API
+import { obtenerPersonas } from "../api/personas.api";
+import { estiloTablas } from "../assets/estiloTablas";
+import tienePermiso from "../utils/tienePermiso";
 
-function InfantesList() {
+export default function InfantesList() {
+  const navigate = useNavigate();
   const [infantes, setInfantes] = useState([]);
   const [personasMap, setPersonasMap] = useState({});
+  const [columnas, setColumnas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [busqueda, setBusqueda] = useState("");
+  const puedeEscribir = tienePermiso("infantes", "escritura");
 
   useEffect(() => {
-    cargarDatos();
+    async function loadInfantes() {
+      try {
+        const [resInfantes, resPersonas] = await Promise.all([
+          obtenerInfantes(),
+          obtenerPersonas(),
+        ]);
+
+        const map = {};
+        resPersonas.data.forEach((p) => {
+          map[p.id] = `${p.nombre} ${p.apellido}`;
+        });
+
+        setPersonasMap(map);
+        setInfantes(resInfantes.data);
+
+        const arrayColumnas = [
+          {
+            name: "Nombre",
+            selector: (fila) => map[fila.id_persona] || "Desconocido",
+            sortable: true,
+            cell: (fila) => map[fila.id_persona] || "Desconocido",
+            wrap: true,
+          },
+
+        ];
+
+        agregarBotonDetalles(arrayColumnas);
+        setColumnas(arrayColumnas);
+      } catch (error) {
+        console.error("Error al cargar infantes o personas:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadInfantes();
   }, []);
 
-  const cargarDatos = async () => {
-    try {
-      const [resInfantes, resPersonas] = await Promise.all([
-        obtenerInfantes(),
-        obtenerPersonas(),
-      ]);
-
-      const personas = resPersonas.data;
-      const map = {};
-      personas.forEach((p) => {
-        map[p.id] = `${p.nombre} ${p.apellido}`;
-      });
-      setPersonasMap(map);
-      setInfantes(resInfantes.data);
-    } catch (error) {
-      console.error("Error al obtener datos", error);
-    }
-  };
+  function agregarBotonDetalles(arrayColumnas) {
+    arrayColumnas.push({
+      name: "",
+      selector: (fila) => fila,
+      right: true,
+      cell: (fila) => (
+        <div className="flex gap-2">
+          <button
+            className="boton-detalles"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/infantes/${fila.id}`);
+            }}
+          >
+            Detalles
+          </button>
+         
+        </div>
+      ),
+    });
+  }
 
   const handleDelete = async (id) => {
     if (confirm("¿Estás seguro que deseas eliminar este infante?")) {
       await eliminarInfante(id);
-      cargarDatos();
+      const actualizados = infantes.filter((i) => i.id !== id);
+      setInfantes(actualizados);
     }
   };
 
-  const columns = [
-    {
-      name: "Nombre",
-      selector: (row) => personasMap[row.id_persona] || "Desconocido",
-      sortable: true,
-      wrap : true
-    },
-    {
-      name: "Alergia",
-      selector: (row) => row.ind_alergia,
-    },
-    {
-      name: "Lactosa",
-      selector: (row) => row.ind_intolerancia_lactosa,
-    },
-    {
-      name: "Celiaquismo",
-      selector: (row) => row.ind_celiaquismo,
-    },
-    {
-      name: "Cambio Pañal",
-      selector: (row) => row.permiso_cambio_panhal,
-    },
-    {
-      name: "Permiso Fotos",
-      selector: (row) => row.permiso_fotos,
-    },
-    {
-      name: "Usuario Aud.",
-      selector: (row) => row.id_usuario_aud,
-    },
-    {
-      name: "Acciones",
-      cell: (row) => (
-        <button
-          onClick={() => handleDelete(row.id)}
-          style={{
-            backgroundColor: "#ef4444",
-            color: "#fff",
-            padding: "4px 8px",
-            borderRadius: "4px",
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
-          Eliminar
-        </button>
-      ),
-    },
-  ];
+  const elementosFiltrados = infantes.filter((infante) =>
+    columnas.some((columna) => {
+      const valor = columna.selector(infante);
+      return valor?.toString().toLowerCase().includes(busqueda.toLowerCase());
+    })
+  );
+
+  const paginationComponentOptions = {
+    rowsPerPageText: "Filas por página",
+    rangeSeparatorText: "de",
+    selectAllRowsItem: true,
+    selectAllRowsItemText: "Todos",
+  };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>🧒 Lista de Infantes</h2>
+    <div>
+      <h1 className="align-baseline text-2xl font-semibold p-2 pl-3">
+        Infantes
+      </h1>
+      <div className="p-2 flex flex-row justify-between">
+        <input
+          type="text"
+          placeholder="Buscar..."
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          className="border border-gray-300 rounded px-3 py-1 w-full max-w-xs"
+        />
+        {puedeEscribir && (
+          <button
+            className="boton-guardar items-end"
+            onClick={() => navigate("/infantes-crear")}
+          >
+            Agregar...
+          </button>
+        )}
+      </div>
+
       <DataTable
-        columns={columns}
-        data={infantes}
+        columns={columnas}
+        data={elementosFiltrados}
+        progressPending={loading}
         pagination
-        responsive
+        paginationComponentOptions={paginationComponentOptions}
         highlightOnHover
-        striped
+        customStyles={estiloTablas}
       />
     </div>
   );
 }
-
-export default InfantesList;
