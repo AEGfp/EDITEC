@@ -22,5 +22,8 @@ class Inscripcion(models.Model):
     fecha_inscripcion = models.DateField(auto_now_add=True)
     observaciones = models.TextField(blank=True, null=True)
 
+    class Meta:
+        unique_together = ["id_tutor", "id_infante"]
+
     def __str__(self):
         return f"Inscripción de {self.id_infante} por {self.id_tutor} ({self.estado})"

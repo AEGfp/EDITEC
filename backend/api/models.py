@@ -9,12 +9,11 @@ class Persona(models.Model):
     segundo_apellido = models.CharField(blank=True, max_length=50)
     # TODO: Agregar validators
     #! Corregir null y blank
-    fecha_nacimiento = models.DateField(null=True, blank=True)
+    fecha_nacimiento = models.DateField( blank=False)
     sexo = models.CharField(
         max_length=1,
         choices=[("M", "Masculino"), ("F", "Femenino")],
-        null=True,
-        blank=True,
+        blank=False,
     )
     ci = models.CharField(max_length=20, null=False, unique=True)
     domicilio = models.CharField(max_length=200, null=True, blank=True)
