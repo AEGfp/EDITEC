@@ -34,7 +34,6 @@ export function PermisosFormPage() {
         const { data } = await obtenerPermiso(params.id);
         setValue("descripcion", data.descripcion);
         setValue("activo", data.activo);
-        setEditable(false);
       } else {
         reset();
         //Necesario para poder habilitar los campos si se tiene permiso

@@ -74,6 +74,12 @@ export default [
     ],
   },
   {
+    path: "/salas/:id", // <-- ESTA LÍNEA AGREGA LA EDICIÓN
+    componente: SalasFormPage,
+    publico: true,
+  },
+  
+  {
     path: "/turnos",
     componente: TurnosList,
     publico: true,
@@ -88,6 +94,12 @@ export default [
     ],
   },
   {
+    path: "/turnos/:id",
+    componente: TurnosFormPage,
+    publico: true,
+  },
+  
+  {
     path: "/tutores",
     componente: TutoresList,
     publico: true,
@@ -101,4 +113,11 @@ export default [
       },
     ],
   },
+  {
+    path: "/tutores/:id",
+    componente: TutoresFormPage,
+    publico: true,
+  },
+  
+  
 ];
