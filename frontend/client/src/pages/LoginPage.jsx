@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { loginApi } from "../api/login.api";
 import logo from "../components/images/5235784.png";
+import { loginUsuario } from "../utils/loginUsuario";
 
 export function LoginPage() {
   const [username, setUsername] = useState("");
@@ -12,28 +12,8 @@ export function LoginPage() {
 
   const login = async (event) => {
     event.preventDefault();
-    setError("");
-    setLoading(true);
-
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("usuario");
-
-    try {
-      const response = await loginApi({ username, password });
-      if (response.data.access && response.data.refresh) {
-        console.log(response.data.user);
-        localStorage.setItem("accessToken", response.data.access);
-        localStorage.setItem("refreshToken", response.data.refresh);
-        localStorage.setItem("usuario", JSON.stringify(response.data.user));
-        navigate("/home");
-      }
-    } catch (err) {
-      setError("Contraseña o usuario inválidos");
-      console.error("Error de login:", err);
-    } finally {
-      setLoading(false);
-    }
+    await loginUsuario({ username, password, setError, setLoading });
+    navigate("/home");
   };
 
   return (
@@ -137,7 +117,7 @@ export function LoginPage() {
             borderRadius: "4px",
             cursor: "pointer",
           }}
-          onClick={() => navigate("/signup")}
+          onClick={() => navigate("/signup-falso")}
         >
           Sign Up
         </button>

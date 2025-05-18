@@ -1,9 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { LoginPage } from "./pages/LoginPage";
-import SignUpPage from "./pages/SignUpPage";
+import SignUpFalso from "./pages/SignUpFalso";
 import AccesoDenegado from "./pages/AccesoDenegado";
 import rutasProtegidas from "./config/rutasProtegidas";
 import PrivateRoute from "./components/PrivateRoute";
+import InscripcionPage from "./pages/InscripcionPage";
 
 export function App() {
   const obtenerRutas = (ruta) => {
@@ -31,7 +32,8 @@ export function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/signup-falso" element={<SignUpFalso />} />
+        <Route path="/signup" element={<InscripcionPage />} />
         <Route path="/acceso-denegado" element={<AccesoDenegado />} />
         {rutasProtegidas.flatMap((ruta) => {
           const subrutas = ruta.subrutas || [];
