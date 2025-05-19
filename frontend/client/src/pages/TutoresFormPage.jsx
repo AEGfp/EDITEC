@@ -5,10 +5,7 @@ import {
   eliminarTutor,
   obtenerTutor,
 } from "../api/tutores.api";
-import {
-  crearPersona,
-  actualizarPersona,
-} from "../api/personas.api";
+import { crearPersona, actualizarPersona } from "../api/personas.api";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import tienePermiso from "../utils/tienePermiso";
@@ -42,6 +39,8 @@ function TutoresFormPage() {
           setValue("nombre", persona.nombre || "");
           setValue("apellido", persona.apellido || "");
           setValue("ci", persona.ci || "");
+          setValue("fecha_nacimiento", persona.fecha_nacimiento || "");
+          setValue("sexo", persona.sexo || "");
 
           setValue("es_docente", data.es_docente);
           setValue("es_estudiante", data.es_estudiante);
@@ -67,6 +66,7 @@ function TutoresFormPage() {
   }, [params.id, reset, setValue]);
 
   const onSubmit = async (data) => {
+    console.log(data);
     try {
       const idPersona = data.id_persona || watch("id_persona");
 
@@ -75,6 +75,8 @@ function TutoresFormPage() {
           nombre: data.nombre,
           apellido: data.apellido,
           ci: data.ci,
+          fecha_nacimiento: data.fecha_nacimiento,
+          sexo: data.sexo,
         });
 
         await actualizarTutor(params.id, {
@@ -98,6 +100,8 @@ function TutoresFormPage() {
         nombre: data.nombre,
         apellido: data.apellido,
         ci: data.ci,
+        fecha_nacimiento: data.fecha_nacimiento,
+        sexo: data.sexo,
       });
 
       await crearTutor({
@@ -122,7 +126,9 @@ function TutoresFormPage() {
   const habilitarEdicion = () => setEditable(true);
 
   const descartarTutor = async () => {
-    const confirmar = window.confirm("¿Estás seguro que quieres eliminar este tutor?");
+    const confirmar = window.confirm(
+      "¿Estás seguro que quieres eliminar este tutor?"
+    );
     if (confirmar) {
       await eliminarTutor(params.id);
       navigate(pagina);
@@ -141,54 +147,107 @@ function TutoresFormPage() {
               <input type="checkbox" {...register("es_docente")} /> Es docente
             </label>
             <label className="formulario-elemento">
-              <input type="checkbox" {...register("es_estudiante")} /> Es estudiante
+              <input type="checkbox" {...register("es_estudiante")} /> Es
+              estudiante
             </label>
             <label className="formulario-elemento">
-              <input type="checkbox" {...register("es_funcionario")} /> Es funcionario
+              <input type="checkbox" {...register("es_funcionario")} /> Es
+              funcionario
             </label>
 
             <h4 className="formulario-elemento">Nombre</h4>
-            <input className="formulario-input" {...register("nombre", { required: true })} />
+            <input
+              className="formulario-input"
+              {...register("nombre", { required: true })}
+            />
             {errors.nombre && <CampoRequerido />}
 
             <h4 className="formulario-elemento">Apellido</h4>
-            <input className="formulario-input" {...register("apellido", { required: true })} />
+            <input
+              className="formulario-input"
+              {...register("apellido", { required: true })}
+            />
             {errors.apellido && <CampoRequerido />}
 
             <h4 className="formulario-elemento">CI</h4>
-            <input className="formulario-input" {...register("ci", { required: true })} />
+            <input
+              className="formulario-input"
+              {...register("ci", { required: true })}
+            />
             {errors.ci && <CampoRequerido />}
 
+            <h4 className="formulario-elemento">Fecha de nacimiento</h4>
+            <input
+              type="date"
+              className="formulario-input"
+              {...register("fecha_nacimiento", { required: true })}
+            />
+            {errors.fecha_nacimiento && <CampoRequerido />}
+
+            <h4 className="formulario-elemento">Sexo</h4>
+            <select
+              className="formulario-input"
+              {...register("sexo", { required: true })}
+            >
+              <option value="M">Masculino</option>
+              <option value="F">Femenino</option>
+            </select>
+            {errors.sexo && <CampoRequerido />}
+
             <h4 className="formulario-elemento">Teléfono casa</h4>
-            <input className="formulario-input" {...register("telefono_casa")} />
+            <input
+              className="formulario-input"
+              {...register("telefono_casa")}
+            />
 
             <h4 className="formulario-elemento">Teléfono particular</h4>
-            <input className="formulario-input" {...register("telefono_particular")} />
+            <input
+              className="formulario-input"
+              {...register("telefono_particular")}
+            />
 
             <h4 className="formulario-elemento">Teléfono trabajo</h4>
-            <input className="formulario-input" {...register("telefono_trabajo")} />
+            <input
+              className="formulario-input"
+              {...register("telefono_trabajo")}
+            />
 
             <h4 className="formulario-elemento">Nombre empresa trabajo</h4>
-            <input className="formulario-input" {...register("nombre_empresa_trabajo")} />
+            <input
+              className="formulario-input"
+              {...register("nombre_empresa_trabajo")}
+            />
 
             <h4 className="formulario-elemento">Dirección trabajo</h4>
-            <input className="formulario-input" {...register("direccion_trabajo")} />
+            <input
+              className="formulario-input"
+              {...register("direccion_trabajo")}
+            />
 
             <h4 className="formulario-elemento">Observaciones</h4>
-            <textarea className="formulario-input" {...register("observaciones")} />
+            <textarea
+              className="formulario-input"
+              {...register("observaciones")}
+            />
           </fieldset>
         </form>
 
         <div className="botones-grupo">
           {puedeEscribir && !editable && (
-            <button onClick={habilitarEdicion} className="boton-editar">Editar</button>
+            <button onClick={habilitarEdicion} className="boton-editar">
+              Editar
+            </button>
           )}
           {puedeEscribir && editable && (
-            <button type="submit" form="editar-tutor" className="boton-guardar">Guardar</button>
+            <button type="submit" form="editar-tutor" className="boton-guardar">
+              Guardar
+            </button>
           )}
           <br />
           {params.id && puedeEscribir && editable && (
-            <button onClick={descartarTutor} className="boton-eliminar">Eliminar</button>
+            <button onClick={descartarTutor} className="boton-eliminar">
+              Eliminar
+            </button>
           )}
         </div>
       </div>
