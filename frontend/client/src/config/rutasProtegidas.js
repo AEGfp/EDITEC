@@ -9,6 +9,8 @@ import TurnosList from "../pages/TurnosList";
 import TutoresList from "../pages/TutoresList";
 import TutoresFormPage from "../pages/TutoresFormPage";
 import HomePage from "../pages/HomePage";
+import InscripcionesFormPage from "../pages/InscripcionesFormPage";
+import InscripcionesList from "../pages/InscripcionesList";
 
 export default [
   {
@@ -118,6 +120,24 @@ export default [
     componente: TutoresFormPage,
     publico: true,
   },
-  
+  {
+    path: "/inscripciones",
+    componente: InscripcionesList,
+    publico: true,
+    nombre: "Inscripciones",
+    subrutas: [
+      {
+        path: "/inscripciones-crear",
+        componente: InscripcionesFormPage,
+        publico: true,
+        nombre: "Añadir inscripciones",
+      },
+    ],
+  },
+  {
+    path: "/inscripciones/:id",
+    componente: InscripcionesFormPage,
+    publico: true,
+  },
   
 ];

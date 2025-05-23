@@ -1,15 +1,13 @@
 import { useEffect, useState } from "react";
 import DataTable from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
-import { obtenerTutores } from "../api/tutores.api";
-import { obtenerPersonas } from "../api/personas.api";
+import { obtenerTutores, eliminarTutor } from "../api/tutores.api";
 import { estiloTablas } from "../assets/estiloTablas";
 import tienePermiso from "../utils/tienePermiso";
 
-export default function ListaTutoresTable() {
+export default function TutoresList() {
   const navigate = useNavigate();
   const [tutores, setTutores] = useState([]);
-  const [personasMap, setPersonasMap] = useState({});
   const [columnas, setColumnas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busqueda, setBusqueda] = useState("");
@@ -18,32 +16,29 @@ export default function ListaTutoresTable() {
   useEffect(() => {
     async function loadTutores() {
       try {
-        const [resTutores, resPersonas] = await Promise.all([
-          obtenerTutores(),
-          obtenerPersonas(),
-        ]);
-
-        const map = {};
-        resPersonas.data.forEach((p) => {
-          map[p.id] = `${p.nombre} ${p.apellido}`;
-        });
-
-        setPersonasMap(map);
+        const resTutores = await obtenerTutores();
         setTutores(resTutores.data);
 
         const arrayColumnas = [
           {
             name: "Nombre",
-            selector: (fila) => map[fila.id_persona] || "Desconocido",
+            selector: (fila) =>
+              fila.id_persona?.nombre && fila.id_persona?.apellido
+                ? `${fila.id_persona.nombre} ${fila.id_persona.apellido}`
+                : "Desconocido",
             sortable: true,
-            cell: (fila) => map[fila.id_persona] || "Desconocido",
+            cell: (fila) =>
+              fila.id_persona?.nombre && fila.id_persona?.apellido
+                ? `${fila.id_persona.nombre} ${fila.id_persona.apellido}`
+                : "Desconocido",
+            wrap: true,
           },
         ];
 
         agregarBotonDetalles(arrayColumnas);
         setColumnas(arrayColumnas);
       } catch (error) {
-        console.error("Error al cargar tutores o personas:", error);
+        console.error("Error al cargar tutores:", error);
       } finally {
         setLoading(false);
       }
@@ -58,18 +53,28 @@ export default function ListaTutoresTable() {
       selector: (fila) => fila,
       right: true,
       cell: (fila) => (
-        <button
-          className="boton-detalles"
-          onClick={(e) => {
-            e.stopPropagation();
-            navigate(`/tutores/${fila.id}`);
-          }}
-        >
-          Detalles
-        </button>
+        <div className="flex gap-2">
+          <button
+            className="boton-detalles"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/tutores/${fila.id}`);
+            }}
+          >
+            Detalles
+          </button>
+        </div>
       ),
     });
   }
+
+  const handleDelete = async (id) => {
+    if (confirm("¿Estás seguro que deseas eliminar este tutor?")) {
+      await eliminarTutor(id);
+      const actualizados = tutores.filter((t) => t.id !== id);
+      setTutores(actualizados);
+    }
+  };
 
   const elementosFiltrados = tutores.filter((tutor) =>
     columnas.some((columna) => {
@@ -87,9 +92,7 @@ export default function ListaTutoresTable() {
 
   return (
     <div>
-      <h1 className="align-baseline text-2xl font-semibold p-2 pl-3">
-        Tutores
-      </h1>
+      <h1 className="align-baseline text-2xl font-semibold p-2 pl-3">Tutores</h1>
       <div className="p-2 flex flex-row justify-between">
         <input
           type="text"
