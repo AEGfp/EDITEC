@@ -1,50 +1,59 @@
 import { useEffect, useState } from "react";
 import DataTable from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
-import { obtenerInfantes, eliminarInfante } from "../api/infantes.api";
+import { obtenerInscripciones, eliminarInscripcion } from "../api/inscripciones.api";
 import { estiloTablas } from "../assets/estiloTablas";
 import tienePermiso from "../utils/tienePermiso";
 
-export default function InfantesList() {
+export default function InscripcionesList() {
   const navigate = useNavigate();
-  const [infantes, setInfantes] = useState([]);
+  const [inscripciones, setInscripciones] = useState([]);
   const [columnas, setColumnas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busqueda, setBusqueda] = useState("");
-  const puedeEscribir = tienePermiso("infantes", "escritura");
+  const puedeEscribir = tienePermiso("inscripciones", "escritura");
 
   useEffect(() => {
-    async function loadInfantes() {
+    async function loadInscripciones() {
       try {
-        const resInfantes = await obtenerInfantes();
-        setInfantes(resInfantes.data);
+        const res = await obtenerInscripciones();
+        setInscripciones(res.data);
 
-        const arrayColumnas = [
+        const columnasBase = [
           {
-            name: "Nombre",
+            name: "Infante",
             selector: (fila) =>
-              fila.id_persona?.nombre && fila.id_persona?.apellido
-                ? `${fila.id_persona.nombre} ${fila.id_persona.apellido}`
+              fila.id_infante?.id_persona
+                ? `${fila.id_infante.id_persona.nombre} ${fila.id_infante.id_persona.apellido}`
                 : "Desconocido",
             sortable: true,
-            cell: (fila) =>
-              fila.id_persona?.nombre && fila.id_persona?.apellido
-                ? `${fila.id_persona.nombre} ${fila.id_persona.apellido}`
+            wrap: true,
+          },
+          {
+            name: "Tutor",
+            selector: (fila) =>
+              fila.id_tutor?.id_persona
+                ? `${fila.id_tutor.id_persona.nombre} ${fila.id_tutor.id_persona.apellido}`
                 : "Desconocido",
+            wrap: true,
+          },
+          {
+            name: "Estado",
+            selector: (fila) => fila.estado || "Pendiente",
             wrap: true,
           },
         ];
 
-        agregarBotonDetalles(arrayColumnas);
-        setColumnas(arrayColumnas);
+        agregarBotonDetalles(columnasBase);
+        setColumnas(columnasBase);
       } catch (error) {
-        console.error("Error al cargar infantes:", error);
+        console.error("Error al cargar inscripciones:", error);
       } finally {
         setLoading(false);
       }
     }
 
-    loadInfantes();
+    loadInscripciones();
   }, []);
 
   function agregarBotonDetalles(arrayColumnas) {
@@ -58,7 +67,7 @@ export default function InfantesList() {
             className="boton-detalles"
             onClick={(e) => {
               e.stopPropagation();
-              navigate(`/infantes/${fila.id}`);
+              navigate(`/inscripciones/${fila.id}`);
             }}
           >
             Detalles
@@ -68,17 +77,9 @@ export default function InfantesList() {
     });
   }
 
-  const handleDelete = async (id) => {
-    if (confirm("¿Estás seguro que deseas eliminar este infante?")) {
-      await eliminarInfante(id);
-      const actualizados = infantes.filter((i) => i.id !== id);
-      setInfantes(actualizados);
-    }
-  };
-
-  const elementosFiltrados = infantes.filter((infante) =>
+  const elementosFiltrados = inscripciones.filter((inscripcion) =>
     columnas.some((columna) => {
-      const valor = columna.selector(infante);
+      const valor = columna.selector(inscripcion);
       return valor?.toString().toLowerCase().includes(busqueda.toLowerCase());
     })
   );
@@ -92,7 +93,7 @@ export default function InfantesList() {
 
   return (
     <div>
-      <h1 className="align-baseline text-2xl font-semibold p-2 pl-3">Infantes</h1>
+      <h1 className="align-baseline text-2xl font-semibold p-2 pl-3">Inscripciones</h1>
       <div className="p-2 flex flex-row justify-between">
         <input
           type="text"
@@ -104,9 +105,9 @@ export default function InfantesList() {
         {puedeEscribir && (
           <button
             className="boton-guardar items-end"
-            onClick={() => navigate("/infantes-crear")}
+            onClick={() => navigate("/inscripciones-crear")}
           >
-            Agregar...
+            Añadir...
           </button>
         )}
       </div>
