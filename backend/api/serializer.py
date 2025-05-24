@@ -39,21 +39,14 @@ class UserSerializer(serializers.ModelSerializer):
         groups_data = validated_data.pop("groups", [])
         password = validated_data.pop("password")
 
-        # Validar los datos de persona explícitamente
-        persona_serializer = PersonaSerializer(data=persona_data)
-        persona_serializer.is_valid(raise_exception=True)
-
         user = User(**validated_data)
         user.set_password(password)
         user.save()
 
-        # Asignar grupos si hay
         user.groups.set(groups_data)
 
-        # Crear persona asociada al usuario
-        persona_serializer.save(user=user)
+        Persona.objects.create(**persona_data, user=user)
 
-        persona = Persona.objects.create(user=user, **persona_data)
         return user
 
 

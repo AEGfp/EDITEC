@@ -8,7 +8,12 @@ class InscripcionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Inscripcion
         fields = "__all__"
-        read_only_fields = ["id_tutor", "fecha_inscripcion"]
+        read_only_fields = [
+            "id_tutor",
+            "fecha_inscripcion",
+            "revisado_por",
+            "fecha_revision",
+        ]
 
     def create(self, validated_data):
         request = self.context.get("request")
@@ -16,7 +21,9 @@ class InscripcionSerializer(serializers.ModelSerializer):
         try:
             persona = request.user.persona
         except Persona.DoesNotExist:
-            raise serializers.ValidationError("El usuario no tiene una persona asociada")
+            raise serializers.ValidationError(
+                "El usuario no tiene una persona asociada"
+            )
 
         try:
             tutor = persona.tutor
