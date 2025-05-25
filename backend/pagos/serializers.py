@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Proveedor, TipoComprobante, Condicion, ComprobanteProveedor, SaldoProveedores
 import re
+from locales.models import Local
 
 # Serializer para Proveedores
 class ProveedorSerializer(serializers.ModelSerializer):
@@ -32,29 +33,32 @@ class ComprobanteProveedorSerializer(serializers.ModelSerializer):
     id_condicion = serializers.SlugRelatedField(
         slug_field = 'descripcion',
         queryset = Condicion.objects.filter(estado=True))
+    
+    id_local = serializers.SlugRelatedField(
+        slug_field = 'descripcion',
+        queryset = Local.objects.filter(estado=True))
 
     class Meta:
         model = ComprobanteProveedor
         fields = ['id', 'id_local', 'id_proveedor',
                   'id_tipo_comprobante', 'id_condicion',
                   'numero_comprobante', 'concepto', 'fecha_comprobante',
-                  'cantidad_cuotas', 'total_comprobante', 'id_usuario_aud']
+                  'total_comprobante', 'id_usuario_aud']
 
     # Validación de campos
     def validate(self, data):
         # Se obtienen campos a validar
-        cuotas = data.get('cantidad_cuotas',0)
         numero = data.get('numero_comprobante','')
         proveedor = data.get('id_proveedor')
         tipo = data.get('id_tipo_comprobante')
-
-        # Se valida el campo de número de cuotas
-        if cuotas <= 0:
-            raise serializers.ValidationError("La cantidad de cuotas no puede ser negativo ni cero")
+        total_comp = data.get('total_comprobante')
               
         # Se valida duplicación de comprobantes por proveedor, tipo y número
         if ComprobanteProveedor.objects.filter(id_proveedor = proveedor, numero_comprobante = numero, id_tipo_comprobante = tipo).exists():
             raise serializers.ValidationError({"numero_comprobante":"El número de comprobante ingresado ya existe para este proveedor"})
+
+        if total_comp <= 0:
+            raise serializers.ValidationError("El total del comprobante debe ser mayor a 0.")
 
         return data
 
@@ -65,10 +69,12 @@ class ComprobanteProveedorSerializer(serializers.ModelSerializer):
         # Se crea el comprobante primero
         comprobante = ComprobanteProveedor.objects.create(**validated_data)
 
+        # Se recuperan campos para calcular los saldos
         condicion = validated_data['id_condicion']
+        cuotas =  condicion.cantidad_cuotas
         total = validated_data['total_comprobante']
 
-        if condicion.descripcion == 'CONTADO':
+        if cuotas == 1:
             # Se inserta un único saldo
             SaldoProveedores.objects.create(
                 monto_cuota = total,
@@ -78,7 +84,6 @@ class ComprobanteProveedorSerializer(serializers.ModelSerializer):
                 )
         else: 
             # Si no es contado, se toman las cuotas puestas para crédito
-            cuotas = validated_data['cantidad_cuotas']
             monto_por_cuota = total // cuotas # Se hace una división entera
             restante = total % cuotas  # Si la división no es exacta 
 
@@ -97,4 +102,4 @@ class SaldoProveedoresSerializer(serializers.ModelSerializer):
     class Meta:
         model = SaldoProveedores
         fields = '__all__'
-#        fields = '__all__'
+
