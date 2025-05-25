@@ -30,12 +30,8 @@ from rest_framework import generics
 from .models import Empresa
 from .serializers import EmpresaSerializer
 
+# View para empresas
 @permission_classes([AllowAny])
-class ListarEmpresas(generics.ListCreateAPIView):
-    queryset = Empresa.objects.all()
-    serializer_class = EmpresaSerializer
-
-@permission_classes([AllowAny])
-class DetallesEmpresas(generics.RetrieveUpdateDestroyAPIView):
+class EmpresasView(viewsets.ModelViewSet):
     queryset = Empresa.objects.all()
     serializer_class = EmpresaSerializer

@@ -26,16 +26,16 @@ from Roles.roles import (
     ControlarRoles,
 )
 
-from rest_framework import generics
+
+from django.shortcuts import render
+from rest_framework import viewsets
 from .models import Local
-from .serializers import LocalSerializer
+from .serializers import (
+    LocalesSerializer)
 
-@permission_classes([AllowAny])
-class ListarLocales(generics.ListCreateAPIView):
+# View para locales o sucursales
+class LocalesView(viewsets.ModelViewSet):
     queryset = Local.objects.all()
-    serializer_class = LocalSerializer
+    serializer_class = LocalesSerializer
+    permission_classes = [AllowAny]
 
-@permission_classes([AllowAny])
-class DetallesLocales(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Local.objects.all()
-    serializer_class = LocalSerializer
