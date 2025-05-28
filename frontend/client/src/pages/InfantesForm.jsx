@@ -35,6 +35,8 @@ function InfantesFormPage() {
       try {
         if (params.id) {
           const { data } = await obtenerInfante(params.id);
+          console.log("🧾 Datos recibidos del backend:", data); 
+          console.log("🧾 Persona recibida:", data.id_persona);
           const persona = data.id_persona || {};
           const personaId = typeof persona === "object" ? persona.id : persona;
 
@@ -98,7 +100,12 @@ function InfantesFormPage() {
         apellido: data.apellido,
         ci: data.ci,
       });
+      
+      console.log("👤 Persona creada:", resPersona.data); 
 
+    if (!resPersona.data.id) {
+      throw new Error("❌ La respuesta no contiene un ID");
+    }
       await crearInfante({
         id_persona: resPersona.data.id,
         ind_alergia: data.ind_alergia,

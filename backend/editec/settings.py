@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     "empresas",
     "locales",
     "archivos",
-    "inscripciones",
+    "pagos",
 ]
 
 MIDDLEWARE = [

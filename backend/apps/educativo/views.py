@@ -6,16 +6,26 @@ from .serializers import (
     TurnoSerializer,
     SalaSerializer,
     AnhoLectivoSerializer,
-   # InscripcionSerializer,
+    
+    InfanteCreateUpdateSerializer,
+    TutorCreateUpdateSerializer,
 )
 
 class InfanteView(viewsets.ModelViewSet):
     queryset = Infante.objects.all()
-    serializer_class = InfanteSerializer
+
+    def get_serializer_class(self):
+        if self.action in ['create', 'update', 'partial_update']:
+            return InfanteCreateUpdateSerializer
+        return InfanteSerializer
 
 class TutorView(viewsets.ModelViewSet):
     queryset = Tutor.objects.all()
-    serializer_class = TutorSerializer
+
+    def get_serializer_class(self):
+        if self.action in ['create', 'update', 'partial_update']:
+            return TutorCreateUpdateSerializer
+        return TutorSerializer
 
 class TurnoView(viewsets.ModelViewSet):
     queryset = Turno.objects.all()

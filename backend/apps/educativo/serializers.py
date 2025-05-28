@@ -1,19 +1,38 @@
 from rest_framework import serializers
 from .models import Infante, Tutor, Turno, Sala, AnhoLectivo, Persona, TutorInfante
 
+from api.serializer import PersonaSerializer
+
 
 class InfanteSerializer(serializers.ModelSerializer):
+    id_persona = PersonaSerializer(read_only=True)
+
     class Meta:
         model = Infante
-        fields = "__all__"
+        fields = '__all__'
 
+class InfanteCreateUpdateSerializer(serializers.ModelSerializer):
+    id_persona = serializers.PrimaryKeyRelatedField(queryset=Persona.objects.all())
 
+    class Meta:
+        model = Infante
+        fields = '__all__'
+
+# TUTORES
 class TutorSerializer(serializers.ModelSerializer):
+    id_persona = PersonaSerializer(read_only=True)
+
+    class Meta:
+        model = Tutor
+        fields = '__all__'
+
+class TutorCreateUpdateSerializer(serializers.ModelSerializer):
     id_persona = serializers.PrimaryKeyRelatedField(queryset=Persona.objects.all())
 
     class Meta:
         model = Tutor
-        fields = "__all__"
+        fields = '__all__'
+
 
 
 class TurnoSerializer(serializers.ModelSerializer):

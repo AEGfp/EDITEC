@@ -10,6 +10,7 @@ import TutoresList from "../pages/TutoresList";
 import TutoresFormPage from "../pages/TutoresFormPage";
 import HomePage from "../pages/HomePage";
 
+
 export default [
   {
     path: "/home",
@@ -118,6 +119,6 @@ export default [
     componente: TutoresFormPage,
     publico: true,
   },
-  
+
   
 ];

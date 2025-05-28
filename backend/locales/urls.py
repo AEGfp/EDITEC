@@ -1,7 +1,21 @@
-from django.urls import path
-from . import views
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import (LocalesView)
+from api import views
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
+
+
+router = DefaultRouter()
+router.register(r'locales', LocalesView)
 
 urlpatterns = [
-    path('', views.ListarLocales.as_view(), name='listar-locales'),
-    path('<int:pk>/', views.DetallesLocales.as_view(), name='detalles-locales'),
+    path('', include(router.urls)),
+    path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("login/", views.LoginView.as_view(), name="login"),
+    path("register/", views.register, name="register"),
+    path("logout/", views.logout, name="logout"),
 ]
+
+

@@ -54,11 +54,15 @@ function TutoresFormPage() {
 
           setEditable(false);
         } else {
-          reset();
+          reset({
+            es_docente: false,
+            es_estudiante: false,
+            es_funcionario: false,
+          });
           setEditable(true);
         }
       } catch (error) {
-        console.error("Error al cargar el tutor", error);
+        console.error("❌ Error al cargar el tutor:", error);
       }
     }
 
@@ -103,6 +107,11 @@ function TutoresFormPage() {
         fecha_nacimiento: data.fecha_nacimiento,
         sexo: data.sexo,
       });
+      console.log("👤 Persona creada:", resPersona.data);
+
+      if (!resPersona.data.id) {
+        throw new Error("❌ La respuesta no contiene un ID");
+      }
 
       await crearTutor({
         id_persona: resPersona.data.id,
@@ -119,7 +128,7 @@ function TutoresFormPage() {
 
       navigate(pagina);
     } catch (error) {
-      console.error("Error al guardar el tutor", error);
+      console.error("❌ Error al guardar el tutor:", error);
     }
   };
 
@@ -143,17 +152,14 @@ function TutoresFormPage() {
           <input type="hidden" {...register("id_persona")} />
 
           <fieldset disabled={!editable}>
-            <label className="formulario-elemento">
-              <input type="checkbox" {...register("es_docente")} /> Es docente
-            </label>
-            <label className="formulario-elemento">
-              <input type="checkbox" {...register("es_estudiante")} /> Es
-              estudiante
-            </label>
-            <label className="formulario-elemento">
-              <input type="checkbox" {...register("es_funcionario")} /> Es
-              funcionario
-            </label>
+            <h4 className="formulario-elemento">Es docente</h4>
+            <input type="checkbox" {...register("es_docente")} />
+
+            <h4 className="formulario-elemento">Es estudiante</h4>
+            <input type="checkbox" {...register("es_estudiante")} />
+
+            <h4 className="formulario-elemento">Es funcionario</h4>
+            <input type="checkbox" {...register("es_funcionario")} />
 
             <h4 className="formulario-elemento">Nombre</h4>
             <input

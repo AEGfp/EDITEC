@@ -2,14 +2,12 @@ import { useEffect, useState } from "react";
 import DataTable from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
 import { obtenerInfantes, eliminarInfante } from "../api/infantes.api";
-import { obtenerPersonas } from "../api/personas.api";
 import { estiloTablas } from "../assets/estiloTablas";
 import tienePermiso from "../utils/tienePermiso";
 
 export default function InfantesList() {
   const navigate = useNavigate();
   const [infantes, setInfantes] = useState([]);
-  const [personasMap, setPersonasMap] = useState({});
   const [columnas, setColumnas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busqueda, setBusqueda] = useState("");
@@ -18,34 +16,29 @@ export default function InfantesList() {
   useEffect(() => {
     async function loadInfantes() {
       try {
-        const [resInfantes, resPersonas] = await Promise.all([
-          obtenerInfantes(),
-          obtenerPersonas(),
-        ]);
-
-        const map = {};
-        resPersonas.data.forEach((p) => {
-          map[p.id] = `${p.nombre} ${p.apellido}`;
-        });
-
-        setPersonasMap(map);
+        const resInfantes = await obtenerInfantes();
         setInfantes(resInfantes.data);
 
         const arrayColumnas = [
           {
             name: "Nombre",
-            selector: (fila) => map[fila.id_persona] || "Desconocido",
+            selector: (fila) =>
+              fila.id_persona?.nombre && fila.id_persona?.apellido
+                ? `${fila.id_persona.nombre} ${fila.id_persona.apellido}`
+                : "Desconocido",
             sortable: true,
-            cell: (fila) => map[fila.id_persona] || "Desconocido",
+            cell: (fila) =>
+              fila.id_persona?.nombre && fila.id_persona?.apellido
+                ? `${fila.id_persona.nombre} ${fila.id_persona.apellido}`
+                : "Desconocido",
             wrap: true,
           },
-
         ];
 
         agregarBotonDetalles(arrayColumnas);
         setColumnas(arrayColumnas);
       } catch (error) {
-        console.error("Error al cargar infantes o personas:", error);
+        console.error("Error al cargar infantes:", error);
       } finally {
         setLoading(false);
       }
@@ -70,7 +63,6 @@ export default function InfantesList() {
           >
             Detalles
           </button>
-         
         </div>
       ),
     });
@@ -100,9 +92,7 @@ export default function InfantesList() {
 
   return (
     <div>
-      <h1 className="align-baseline text-2xl font-semibold p-2 pl-3">
-        Infantes
-      </h1>
+      <h1 className="align-baseline text-2xl font-semibold p-2 pl-3">Infantes</h1>
       <div className="p-2 flex flex-row justify-between">
         <input
           type="text"
