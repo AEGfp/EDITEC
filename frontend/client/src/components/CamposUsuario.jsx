@@ -59,7 +59,7 @@ export default function CamposUsuario({ register, errors }) {
   };
 */
   return (
-    <div className="formulario-dentro">
+    <>
       <h2 className="formulario-titulo">Sign Up</h2>
 
       <div className="formulario-elemento">
@@ -182,6 +182,6 @@ export default function CamposUsuario({ register, errors }) {
       </button>
 
       {errors && <p className="text-red-600 font-bold text-sm">{errors}</p>}*/}
-    </div>
+    </>
   );
 }

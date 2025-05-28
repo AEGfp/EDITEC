@@ -1,6 +1,6 @@
 export default function CamposTutor({ register, errors }) {
   return (
-    <div className="formulario-dentro">
+    <>
       <h2 className="formulario-titulo">Datos del Tutor</h2>
 
       <label className="formulario-elemento">
@@ -56,6 +56,6 @@ export default function CamposTutor({ register, errors }) {
 
       <h4 className="formulario-elemento">Observaciones</h4>
       <textarea className="formulario-input" {...register("observaciones")} />
-    </div>
+    </>
   );
 }

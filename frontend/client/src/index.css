@@ -34,7 +34,7 @@ h4 {
   }
 
   .formulario {
-    @apply flex items-center justify-center h-screen text-xl;
+    @apply flex flex-col items-center justify-center h-screen text-xl;
   }
 
   .formulario-dentro {
