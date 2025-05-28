@@ -25,11 +25,11 @@ class InscripcionSerializer(serializers.ModelSerializer):
                 "El usuario no tiene una persona asociada"
             )
 
-        try:
-            tutor = persona.tutor
-        except Tutor.DoesNotExist:
+        tutores = persona.tutor.all()
+        if not tutores.exists():
             raise serializers.ValidationError("El usuario no tiene un tutor asociado")
-
+        tutor = tutores.first()
+        
         infante = validated_data["id_infante"]
 
         if Inscripcion.objects.filter(

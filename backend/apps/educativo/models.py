@@ -2,7 +2,7 @@ from django.db import models
 from api.models import Persona
 
 class Infante(models.Model):
-    id_persona = models.ForeignKey(Persona, on_delete=models.CASCADE)
+    id_persona = models.OneToOneField(Persona, on_delete=models.CASCADE, related_name="infante")
     ind_alergia = models.CharField(max_length= 200)
     ind_intolerancia_lactosa = models.CharField(max_length= 200)
     ind_celiaquismo = models.CharField(max_length= 200)
@@ -16,7 +16,7 @@ class Tutor(models.Model):
     es_docente = models.BooleanField(default=False)
     es_estudiante = models.BooleanField(default=False)
     es_funcionario = models.BooleanField(default=False)
-    id_persona = models.ForeignKey(Persona, on_delete=models.CASCADE)
+    id_persona = models.ForeignKey(Persona, on_delete=models.CASCADE, related_name="tutor")
     telefono_casa = models.CharField(max_length=50)
     telefono_particular = models.CharField(max_length=50)
     telefono_trabajo = models.CharField(max_length=50)
@@ -45,6 +45,16 @@ class AnhoLectivo(models.Model):
     def __str__(self):
         return str(self.anho)
 
+class TutorInfante(models.Model):
+    tutor = models.ForeignKey(Tutor, on_delete=models.CASCADE, related_name="tutores_infantes")
+    infante = models.ForeignKey(Infante, on_delete=models.CASCADE, related_name="infantes_tutores")
+    relacion = models.CharField(max_length=100, null=True, blank=True)
+
+    class Meta:
+        unique_together = ("tutor", "infante")
+
+    def __str__(self):
+        return f"{self.tutor} - {self.infante}"
 """
 class Inscripcion(models.Model):
     id_infante = models.ForeignKey(Infante, on_delete=models.CASCADE)
