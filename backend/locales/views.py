@@ -15,9 +15,9 @@ from api.serializer import (
     PermisoSerializer,
     UserSerializer,
     PersonaSerializer,
-    PerfilUsuarioSerializer,
+    
 )
-from api.models import Permiso, Persona, PerfilUsuario
+from api.models import Permiso, Persona
 from Roles.roles import (
     EsDirector,
     EsProfesor,

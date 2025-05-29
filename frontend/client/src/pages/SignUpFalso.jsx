@@ -114,6 +114,46 @@ export default function SignUpFalso() {
           />
 
           <div className="formulario-elemento">
+            <h3>Fecha de nacimiento: </h3>
+          </div>
+          <input
+            type="date"
+            name="fecha_nacimiento"
+            value={persona.fecha_nacimiento || ""}
+            onChange={handlePersona}
+            className="formulario-input"
+            required
+          />
+
+          <div className="formulario-elemento">
+            <h3>Sexo: </h3>
+            <div className="formulario-lista">
+              <label>
+                <input
+                  type="radio"
+                  name="sexo"
+                  value="M"
+                  checked={persona.sexo === "M"}
+                  onChange={handlePersona}
+                  required
+                />
+                <span className="ml-1">Masculino</span>
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="sexo"
+                  value="F"
+                  checked={persona.sexo === "F"}
+                  onChange={handlePersona}
+                  required
+                />
+                <span className="ml-1">Femenino</span>
+              </label>
+            </div>
+          </div>
+
+          <div className="formulario-elemento">
             <h3>Roles: </h3>
           </div>
 

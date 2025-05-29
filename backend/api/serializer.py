@@ -39,13 +39,13 @@ class UserSerializer(serializers.ModelSerializer):
         groups_data = validated_data.pop("groups", [])
         password = validated_data.pop("password")
 
-        user = User(**validated_data)
-        user.set_password(password)
-        user.save()
+        with transaction.atomic():
+            user = User(**validated_data)
+            user.set_password(password)
+            user.save()
 
-        user.groups.set(groups_data)
-
-        Persona.objects.create(**persona_data, user=user)
+            user.groups.set(groups_data)
+            Persona.objects.create(**persona_data, user=user)
 
         return user
 
