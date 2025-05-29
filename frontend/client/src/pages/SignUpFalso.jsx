@@ -6,6 +6,7 @@ export default function SignUpFalso() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [groups, setGroups] = useState([]);
+  const [email, setEmail] = useState("");
   const [persona, setpersona] = useState({});
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -16,11 +17,13 @@ export default function SignUpFalso() {
       username,
       password,
       groups,
+      email,
       persona,
     });
     try {
       const response = await signUpApi({
         username,
+        email,
         password,
         groups,
         persona,
@@ -68,13 +71,24 @@ export default function SignUpFalso() {
           <div className="formulario-elemento">
             <h3>Password: </h3>
           </div>
-
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
             className="formulario-input"
+          />
+          <div className="formulario-elemento">
+            <h3>Email: </h3>
+          </div>
+          <input
+            type="email"
+            name="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Correo electrónico"
+            className="formulario-input"
+            required
           />
           <div className="formulario-elemento">
             <h3>Nombre: </h3>

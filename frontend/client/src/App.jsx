@@ -33,7 +33,7 @@ export function App() {
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup-falso" element={<SignUpFalso />} />
-        <Route path="/signup" element={<InscripcionPage />} />
+        <Route path="/realizar-inscripcion" element={<InscripcionPage />} />
         <Route path="/acceso-denegado" element={<AccesoDenegado />} />
         {rutasProtegidas.flatMap((ruta) => {
           const subrutas = ruta.subrutas || [];

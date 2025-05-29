@@ -6,7 +6,6 @@ import CamposInfante from "../components/CamposInfante";
 import { signUpApi } from "../api/signup.api";
 import { loginUsuario } from "../utils/loginUsuario";
 import { crearTutor } from "../api/tutores.api";
-import { useEffect } from "react";
 import { crearInfante } from "../api/infantes.api";
 import { crearPersona } from "../api/personas.api";
 import { useNavigate } from "react-router-dom";
@@ -17,6 +16,7 @@ export default function InscripcionPage() {
     register,
     handleSubmit,
     formState: { errors },
+    watch,
   } = useForm();
 
   const [pestanha, setPestanha] = useState(1);
@@ -33,7 +33,7 @@ export default function InscripcionPage() {
   const previo = () => setPestanha(pestanha - 1);
 
   const pasos = {
-    1: <CamposUsuario register={register} errors={errors} />,
+    1: <CamposUsuario register={register} errors={errors} watch={watch} />,
     2: <CamposTutor register={register} errors={errors} />,
     3: <CamposInfante register={register} errors={errors} />,
     // 4: <ArchivosForm register={register} errors={errors} />,
@@ -53,26 +53,32 @@ export default function InscripcionPage() {
 
   const realizarInscripcion = async (data) => {
     setError("");
+
+    if (data.password !== data.contrasenhaConfirmada) {
+      setError("La contraseñas no coinciden");
+      setPestanha(1);
+      return;
+    }
     try {
-      const idPers = await completarUsuario(data);
-      setIdPersona(idPers);
+      const persona = await completarUsuario(data);
+      setIdPersona(persona);
 
-      const idTut = await completarTutor(data, idPers);
-      setIdTutor(idTut);
+      const tutor = await completarTutor(data, persona);
+      setIdTutor(tutor);
 
-      const idPersInf = await completarPersonaInfante(data);
-      setIdPersonaInfante(idPersInf);
+      const personaInfante = await completarPersonaInfante(data);
+      setIdPersonaInfante(personaInfante);
 
-      const idInf = await completarInfante(data, idPersInf);
-      setIdInfante(idInf);
+      const infante = await completarInfante(data, personaInfante);
+      setIdInfante(infante);
 
       await crearInscripcion({
-        id_tutor: idTut,
-        id_infante: idInf,
+        id_tutor: tutor,
+        id_infante: infante,
         observaciones: data.observaciones,
       });
 
-      alert("¡Inscripción completada!");
+      alert("Se ha enviado la solicitud de inscripción");
       navigate("/home");
     } catch (err) {
       console.error(err);
@@ -85,8 +91,10 @@ export default function InscripcionPage() {
   };
 
   const completarUsuario = async (data) => {
+    const { contrasenhaConfirmada, ...datos } = data;
     const campos = {
       username: data.username,
+      email: data.email,
       password: data.password,
       groups: ["tutor"],
       persona: {
@@ -105,7 +113,10 @@ export default function InscripcionPage() {
     await loginUsuario({
       username: data.username,
       password: data.password,
-      setError: (msg) => console.error("Login error:", msg), // o manejarlo como gustes
+      setError: (msg) => {
+        setError("Error al tratar de iniciar sesión de forma automática");
+        throw new Error(msg);
+      },
     });
 
     return res.data.user.persona.id;
