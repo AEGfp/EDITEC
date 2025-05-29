@@ -29,10 +29,22 @@ class UserSerializer(serializers.ModelSerializer):
         #! Revisar
         required=False,
     )
+    email=serializers.EmailField(required=True)
 
     class Meta:
         model = User
         fields = ["id", "username", "email", "groups", "password", "persona"]
+
+
+    def validate_email(self,value):
+        if not value:
+            raise serializers.ValidationError("El correo electrónico es obligatorio")
+        
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("El correo electrónico es utilizado por otro usuario")
+
+        return value
+
 
     def create(self, validated_data):
         persona_data = validated_data.pop("persona")
@@ -48,8 +60,6 @@ class UserSerializer(serializers.ModelSerializer):
             Persona.objects.create(**persona_data, user=user)
 
         return user
-
-
 class PermisoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Permiso
