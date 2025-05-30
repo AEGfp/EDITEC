@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 
 # Create your models here.
 class Persona(models.Model):
@@ -22,6 +23,11 @@ class Persona(models.Model):
     def __str__(self):
         return self.nombre + " " + self.apellido + " " + self.segundo_apellido
 
+
+@receiver(pre_delete, sender=Persona)
+def borrar_usuario(sender, instance, **kwargs):
+    if instance.user:
+        instance.user.delete()
 
 """
 class PerfilUsuario(models.Model):
