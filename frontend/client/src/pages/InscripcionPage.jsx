@@ -5,11 +5,14 @@ import CamposTutor from "../components/CamposTutor";
 import CamposInfante from "../components/CamposInfante";
 import { signUpApi } from "../api/signup.api";
 import { loginUsuario } from "../utils/loginUsuario";
-import { crearTutor } from "../api/tutores.api";
-import { crearInfante } from "../api/infantes.api";
-import { crearPersona } from "../api/personas.api";
+import { crearTutor, eliminarTutor } from "../api/tutores.api";
+import { crearInfante, eliminarInfante } from "../api/infantes.api";
+import { crearPersona, eliminarPersona } from "../api/personas.api";
 import { useNavigate } from "react-router-dom";
-import { crearInscripcion } from "../api/inscripciones.api";
+import {
+  crearInscripcion,
+  eliminarInscripcion,
+} from "../api/inscripciones.api";
 
 export default function InscripcionPage() {
   const {
@@ -53,45 +56,59 @@ export default function InscripcionPage() {
 
   const realizarInscripcion = async (data) => {
     setError("");
+    let personaId = null;
+    let tutorId = null;
+    let personaInfanteId = null;
+    let infanteId = null;
+    let inscripcionId = null;
 
-    if (data.password !== data.contrasenhaConfirmada) {
-      setError("La contraseñas no coinciden");
-      setPestanha(1);
-      return;
-    }
     try {
-      const persona = await completarUsuario(data);
-      setIdPersona(persona);
+      personaId = await completarUsuario(data);
+      setIdPersona(personaId);
 
-      const tutor = await completarTutor(data, persona);
-      setIdTutor(tutor);
+      tutorId = await completarTutor(data, personaId);
+      setIdTutor(tutorId);
 
-      const personaInfante = await completarPersonaInfante(data);
-      setIdPersonaInfante(personaInfante);
+      personaInfanteId = await completarPersonaInfante(data);
+      setIdPersonaInfante(personaInfanteId);
 
-      const infante = await completarInfante(data, personaInfante);
-      setIdInfante(infante);
+      infanteId = await completarInfante(data, personaInfanteId);
+      setIdInfante(infanteId);
 
-      await crearInscripcion({
-        id_tutor: tutor,
-        id_infante: infante,
-        observaciones: data.observaciones,
+      inscripcionId = await crearInscripcion({
+        id_tutor: tutorId,
+        id_infante: infanteId,
       });
 
-      alert("Se ha enviado la solicitud de inscripción");
+      alert("¡Inscripción completada!");
       navigate("/home");
     } catch (err) {
       console.error(err);
       setError(
         "Error al completar la inscripción. Por favor revisa los datos."
       );
+      try {
+        if (inscripcionId) {
+          await eliminarInscripcion(inscripcionId);
+          console.log(`Inscripción ${inscripcionId} eliminada.`);
+        }
+        if (personaInfanteId) {
+          await eliminarPersona(personaInfanteId);
+          console.log(`Persona del infante ${personaInfanteId} eliminada.`);
+        }
+        if (personaId) {
+          await eliminarPersona(personaId);
+          console.log(`Persona principal ${personaId} eliminada.`);
+        }
+      } catch (rollbackError) {
+        console.error("Error durante rollback:", rollbackError);
+      }
       setPestanha(1);
       setFormulario({});
     }
   };
 
   const completarUsuario = async (data) => {
-    const { contrasenhaConfirmada, ...datos } = data;
     const campos = {
       username: data.username,
       email: data.email,
@@ -113,10 +130,7 @@ export default function InscripcionPage() {
     await loginUsuario({
       username: data.username,
       password: data.password,
-      setError: (msg) => {
-        setError("Error al tratar de iniciar sesión de forma automática");
-        throw new Error(msg);
-      },
+      setError: (msg) => console.error("Login error:", msg),
     });
 
     return res.data.user.persona.id;
@@ -174,7 +188,7 @@ export default function InscripcionPage() {
 
   return (
     <form onSubmit={handleSubmit(guardarDatos)} className="formulario">
-      <div className="formulario-dentro">
+      <div className="formulario-dentro md:max-w-4xl">
         {pasos[pestanha]}
 
         <div className="botones-grupo mt-4">

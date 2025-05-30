@@ -21,6 +21,7 @@ export async function loginUsuario({
       localStorage.setItem("refreshToken", response.data.refresh);
       localStorage.setItem("usuario", JSON.stringify(response.data.user));
     }
+    return response;
   } catch (err) {
     setError?.("Contraseña o usuario inválidos");
     console.error("Error de login: ", err);
