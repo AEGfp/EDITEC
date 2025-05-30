@@ -21,23 +21,10 @@ export function ListaInscripciones() {
         const res = await obtenerInscripciones();
 
         if (res.data.length > 0) {
-          const keys = Object.keys(res.data[0]);
-
-          //!!! Desactivar si se quiere mostrar el id
-          const columnasFiltradas = keys.filter((key) => key !== "id");
-
-          //Esta lógica puede variar un poco según las columnas que tengan
-          // que mostrar
-          const arrayColumnas = columnasFiltradas.map((columna) => ({
-            name: columna.charAt(0).toUpperCase() + columna.slice(1),
-            selector: (fila) => fila[columna],
-            sortable: true,
-            cell: (fila) => fila[columna],
-          }));
+          const arrayColumnas = definirColumnas();
 
           agregarBotonDetalles(arrayColumnas);
           setColumnas(arrayColumnas);
-          //Cambiar el nombre de la función
           setInscripciones(res.data);
           setLoading(false);
         }
@@ -52,6 +39,28 @@ export function ListaInscripciones() {
 
   function handleRowClick(fila) {
     navigate(`/inscripciones/${fila.id}`);
+  }
+
+  function definirColumnas() {
+    const columnas = [
+      {
+        name: "Realizada por:",
+        selector: (row) => row.nombre_tutor,
+        sortable: true,
+      },
+      {
+        name: "Estado",
+        selector: (row) => row.estado,
+        sortable: true,
+      },
+      {
+        name: "Fecha de inscripción",
+        selector: (row) => row.fecha_inscripcion,
+        sortable: true,
+      },
+    ];
+
+    return columnas;
   }
 
   function agregarBotonDetalles(arrayColumnas) {

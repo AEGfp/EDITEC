@@ -5,6 +5,8 @@ from apps.educativo.models import Tutor
 
 
 class InscripcionSerializer(serializers.ModelSerializer):
+    nombre_tutor=serializers.SerializerMethodField()
+    nombre_infante = serializers.SerializerMethodField()    
     class Meta:
         model = Inscripcion
         fields = "__all__"
@@ -13,7 +15,17 @@ class InscripcionSerializer(serializers.ModelSerializer):
             "usuario_auditoria",
             "fecha_revision",
             "id_tutor",
+            "nombre_tutor",
+            "nombre_infante",
         ]
+
+    def get_nombre_tutor(self,obj):
+        persona=obj.id_tutor.id_persona
+        return f"{persona.nombre} {persona.apellido}"
+
+    def get_nombre_infante(self,obj):
+        persona=obj.id_infante.id_persona
+        return f"{persona.nombre} {persona.apellido}"
 
     def create(self, validated_data):
         request = self.context.get("request")
