@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "locales",
     "archivos",
     "pagos",
+    "inscripciones",
 ]
 
 MIDDLEWARE = [
