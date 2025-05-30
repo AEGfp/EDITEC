@@ -9,10 +9,10 @@ class InscripcionSerializer(serializers.ModelSerializer):
         model = Inscripcion
         fields = "__all__"
         read_only_fields = [
-            "id_tutor",
             "fecha_inscripcion",
-            "revisado_por",
+            "usuario_auditoria",
             "fecha_revision",
+            "id_tutor",
         ]
 
     def create(self, validated_data):
@@ -25,13 +25,12 @@ class InscripcionSerializer(serializers.ModelSerializer):
                 "El usuario no tiene una persona asociada"
             )
 
-        tutores = persona.tutor.all()
-        if not tutores.exists():
+        tutor = persona.tutor.first() 
+        if not tutor:
             raise serializers.ValidationError("El usuario no tiene un tutor asociado")
-        tutor = tutores.first()
-        
-        infante = validated_data["id_infante"]
 
+        infante = validated_data["id_infante"]
+        print(type(tutor))
         if Inscripcion.objects.filter(
             id_tutor=tutor, id_infante=infante, estado="pendiente"
         ).exists():
