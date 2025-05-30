@@ -4,7 +4,7 @@ export default function CamposUsuario({ register, errors, watch }) {
   return (
     <>
       <h2 className="formulario-titulo">Datos del Tutor</h2>
-      <div className="flex flex-col md:flex-row gap-8">
+      <div className="flex flex-col md:flex-row gap-8 ">
         <div className="flex-1">
           <div className="formulario-elemento">
             <h3>Nombre de Usuario: </h3>

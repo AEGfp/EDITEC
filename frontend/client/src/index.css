@@ -34,11 +34,11 @@ h4 {
   }
 
   .formulario {
-    @apply flex flex-col items-center justify-center h-screen text-xl;
+    @apply flex flex-col items-center justify-center min-h-screen text-xl overflow-y-auto;
   }
 
   .formulario-dentro {
-    @apply p-4 bg-slate-50 rounded shadow-md w-full max-w-lg border border-gray-300;
+    @apply p-6 bg-slate-50 rounded shadow-md w-full max-w-lg border border-gray-300;
   }
 
   .formulario-titulo {
