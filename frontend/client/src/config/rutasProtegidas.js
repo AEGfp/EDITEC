@@ -11,6 +11,8 @@ import TutoresFormPage from "../pages/TutoresFormPage";
 import HomePage from "../pages/HomePage";
 import InscripcionesFormPage from "../pages/InscripcionesFormPage";
 import GestionInscripcionesPage from "../pages/GestionInscripcionesPage";
+import NotificacionesFormPage from "../pages/NotificacionesFormPage";
+import NotificacionesList from "../pages/NotificacionesList";
 
 export default [
   {
@@ -121,6 +123,7 @@ export default [
     publico: true,
   },
   {
+
     path: "/inscripciones",
     componente: GestionInscripcionesPage,
     entidad: "inscripciones",
@@ -133,4 +136,27 @@ export default [
     entidad: "permisos",
     permiso: "lectura",
   },
+
+    path: "/notificaciones",
+    componente: NotificacionesList,
+    nombre: "Notificaciones",
+    entidad: "notificaciones",
+    permiso: "lectura",
+    subrutas: [
+      {
+        path: "/notificaciones-crear",
+        componente: NotificacionesFormPage,
+        entidad: "notificaciones",
+        permiso: "escritura",
+        nombre: "Crear notificación",
+      },
+    ],
+  
+  {
+    path: "/notificaciones/:id",
+    componente: NotificacionesFormPage,
+    entidad: "notificaciones",
+    permiso: "lectura",
+  },
+  
 ];

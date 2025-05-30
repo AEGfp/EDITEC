@@ -41,6 +41,7 @@ function TutoresFormPage() {
           setValue("ci", persona.ci || "");
           setValue("fecha_nacimiento", persona.fecha_nacimiento || "");
           setValue("sexo", persona.sexo || "");
+          setValue("email", data.email || "");
 
           setValue("es_docente", data.es_docente);
           setValue("es_estudiante", data.es_estudiante);
@@ -70,7 +71,6 @@ function TutoresFormPage() {
   }, [params.id, reset, setValue]);
 
   const onSubmit = async (data) => {
-    console.log(data);
     try {
       const idPersona = data.id_persona || watch("id_persona");
 
@@ -94,6 +94,7 @@ function TutoresFormPage() {
           nombre_empresa_trabajo: data.nombre_empresa_trabajo,
           direccion_trabajo: data.direccion_trabajo,
           observaciones: data.observaciones,
+          email: data.email, // ✅ Agregado
         });
 
         navigate(pagina);
@@ -107,7 +108,6 @@ function TutoresFormPage() {
         fecha_nacimiento: data.fecha_nacimiento,
         sexo: data.sexo,
       });
-      console.log("👤 Persona creada:", resPersona.data);
 
       if (!resPersona.data.id) {
         throw new Error("❌ La respuesta no contiene un ID");
@@ -124,6 +124,7 @@ function TutoresFormPage() {
         nombre_empresa_trabajo: data.nombre_empresa_trabajo,
         direccion_trabajo: data.direccion_trabajo,
         observaciones: data.observaciones,
+        email: data.email, // ✅ Agregado
       });
 
       navigate(pagina);
@@ -135,9 +136,7 @@ function TutoresFormPage() {
   const habilitarEdicion = () => setEditable(true);
 
   const descartarTutor = async () => {
-    const confirmar = window.confirm(
-      "¿Estás seguro que quieres eliminar este tutor?"
-    );
+    const confirmar = window.confirm("¿Estás seguro que quieres eliminar este tutor?");
     if (confirmar) {
       await eliminarTutor(params.id);
       navigate(pagina);
@@ -195,28 +194,28 @@ function TutoresFormPage() {
               className="formulario-input"
               {...register("sexo", { required: true })}
             >
+              <option value="">Seleccione</option>
               <option value="M">Masculino</option>
               <option value="F">Femenino</option>
             </select>
             {errors.sexo && <CampoRequerido />}
 
             <h4 className="formulario-elemento">Teléfono casa</h4>
+            <input className="formulario-input" {...register("telefono_casa")} />
+
+            <h4 className="formulario-elemento">Email</h4>
             <input
               className="formulario-input"
-              {...register("telefono_casa")}
+              type="email"
+              {...register("email", { required: true })}
             />
+            {errors.email && <CampoRequerido />}
 
             <h4 className="formulario-elemento">Teléfono particular</h4>
-            <input
-              className="formulario-input"
-              {...register("telefono_particular")}
-            />
+            <input className="formulario-input" {...register("telefono_particular")} />
 
             <h4 className="formulario-elemento">Teléfono trabajo</h4>
-            <input
-              className="formulario-input"
-              {...register("telefono_trabajo")}
-            />
+            <input className="formulario-input" {...register("telefono_trabajo")} />
 
             <h4 className="formulario-elemento">Nombre empresa trabajo</h4>
             <input
@@ -231,10 +230,7 @@ function TutoresFormPage() {
             />
 
             <h4 className="formulario-elemento">Observaciones</h4>
-            <textarea
-              className="formulario-input"
-              {...register("observaciones")}
-            />
+            <textarea className="formulario-input" {...register("observaciones")} />
           </fieldset>
         </form>
 
