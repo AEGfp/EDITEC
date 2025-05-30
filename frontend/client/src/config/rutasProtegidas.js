@@ -9,7 +9,8 @@ import TurnosList from "../pages/TurnosList";
 import TutoresList from "../pages/TutoresList";
 import TutoresFormPage from "../pages/TutoresFormPage";
 import HomePage from "../pages/HomePage";
-
+import InscripcionesFormPage from "../pages/InscripcionesFormPage";
+import GestionInscripcionesPage from "../pages/GestionInscripcionesPage";
 
 export default [
   {
@@ -79,7 +80,7 @@ export default [
     componente: SalasFormPage,
     publico: true,
   },
-  
+
   {
     path: "/turnos",
     componente: TurnosList,
@@ -99,7 +100,7 @@ export default [
     componente: TurnosFormPage,
     publico: true,
   },
-  
+
   {
     path: "/tutores",
     componente: TutoresList,
@@ -119,6 +120,17 @@ export default [
     componente: TutoresFormPage,
     publico: true,
   },
-
-  
+  {
+    path: "/inscripciones",
+    componente: GestionInscripcionesPage,
+    entidad: "inscripciones",
+    permiso: "lectura",
+    nombre: "Inscripciones",
+  },
+  {
+    path: "/inscripciones/:id",
+    componente: InscripcionesFormPage,
+    entidad: "permisos",
+    permiso: "lectura",
+  },
 ];
