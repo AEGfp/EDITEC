@@ -50,6 +50,8 @@ INSTALLED_APPS = [
     "archivos",
     "pagos",
     "inscripciones",
+    "apps.notificaciones", 
+
 ]
 
 MIDDLEWARE = [
@@ -164,3 +166,12 @@ SIMPLE_JWT = {
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 MEDIA_URL = "/media/"
+
+# Email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # O el servidor SMTP que uses
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'noreply.editec@gmail.com'  #nuestro correo de envios
+EMAIL_HOST_PASSWORD = 'jkpp vzmh nnjt pshp' 
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

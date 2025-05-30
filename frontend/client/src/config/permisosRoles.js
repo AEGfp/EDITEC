@@ -25,6 +25,12 @@ const permisosRoles = {
     lectura: ["director", "administrador"],
     escritura: ["director", "administrador"],
   },
+
+  notificaciones: {
+    lectura: ["director", "profesor"],   
+    escritura: ["director", "administrador"],             
+  },
 };
+
 
 export default permisosRoles;

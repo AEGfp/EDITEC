@@ -1,8 +1,9 @@
 from django.db import models
 from api.models import Persona
 
+#Tabla Infante
 class Infante(models.Model):
-    id_persona = models.OneToOneField(Persona, on_delete=models.CASCADE, related_name="infante")
+    id_persona = models.ForeignKey(Persona, on_delete=models.CASCADE)
     ind_alergia = models.CharField(max_length= 200)
     ind_intolerancia_lactosa = models.CharField(max_length= 200)
     ind_celiaquismo = models.CharField(max_length= 200)
@@ -11,12 +12,14 @@ class Infante(models.Model):
 
     def __str__(self):
         return str(self.id_persona)
-
+#Tabla Tutor
 class Tutor(models.Model):
     es_docente = models.BooleanField(default=False)
     es_estudiante = models.BooleanField(default=False)
     es_funcionario = models.BooleanField(default=False)
-    id_persona = models.ForeignKey(Persona, on_delete=models.CASCADE, related_name="tutor")
+    id_persona = models.ForeignKey(Persona, on_delete=models.CASCADE)
+    # Agregamos el campo email para notificciones
+    email = models.EmailField(max_length=255, null=True, blank=True)
     telefono_casa = models.CharField(max_length=50)
     telefono_particular = models.CharField(max_length=50)
     telefono_trabajo = models.CharField(max_length=50)
@@ -45,17 +48,6 @@ class AnhoLectivo(models.Model):
     def __str__(self):
         return str(self.anho)
 
-class TutorInfante(models.Model):
-    tutor = models.ForeignKey(Tutor, on_delete=models.CASCADE, related_name="tutores_infantes")
-    infante = models.ForeignKey(Infante, on_delete=models.CASCADE, related_name="infantes_tutores")
-    relacion = models.CharField(max_length=100, null=True, blank=True)
-
-    class Meta:
-        unique_together = ("tutor", "infante")
-
-    def __str__(self):
-        return f"{self.tutor} - {self.infante}"
-"""
 class Inscripcion(models.Model):
     id_infante = models.ForeignKey(Infante, on_delete=models.CASCADE)
     id_sala = models.ForeignKey(Sala, on_delete=models.CASCADE)
@@ -66,4 +58,4 @@ class Inscripcion(models.Model):
 
     def __str__(self):
         return f"Insc. {self.id_infante} - {self.id_anho_lectivo}"
-        """
+
