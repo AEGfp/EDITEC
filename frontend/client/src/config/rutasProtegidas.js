@@ -123,7 +123,6 @@ export default [
     publico: true,
   },
   {
-
     path: "/inscripciones",
     componente: GestionInscripcionesPage,
     entidad: "inscripciones",
@@ -136,7 +135,7 @@ export default [
     entidad: "permisos",
     permiso: "lectura",
   },
-
+  {
     path: "/notificaciones",
     componente: NotificacionesList,
     nombre: "Notificaciones",
@@ -151,12 +150,11 @@ export default [
         nombre: "Crear notificación",
       },
     ],
-  
+  },
   {
     path: "/notificaciones/:id",
     componente: NotificacionesFormPage,
     entidad: "notificaciones",
     permiso: "lectura",
   },
-  
 ];
