@@ -37,7 +37,7 @@ class InscripcionSerializer(serializers.ModelSerializer):
                 "El usuario no tiene una persona asociada"
             )
 
-        tutor = persona.tutor.first() 
+        tutor = persona.tutor_set.first() 
         if not tutor:
             raise serializers.ValidationError("El usuario no tiene un tutor asociado")
 

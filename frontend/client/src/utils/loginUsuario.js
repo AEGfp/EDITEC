@@ -25,6 +25,9 @@ export async function loginUsuario({
   } catch (err) {
     setError?.("Contraseña o usuario inválidos");
     console.error("Error de login: ", err);
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("usuario");
   } finally {
     setLoading?.(false);
   }
