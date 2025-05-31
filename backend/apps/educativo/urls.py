@@ -15,7 +15,6 @@ router.register(r"tutores", TutorView)
 router.register(r"turnos", TurnoView)
 router.register(r"salas", SalaView)
 router.register(r"anhos", AnhoLectivoView)
-#router.register(r"inscripciones", InscripcionView)
 
 urlpatterns = [
     path("", include(router.urls)),
