@@ -48,14 +48,3 @@ class AnhoLectivo(models.Model):
     def __str__(self):
         return str(self.anho)
 
-class Inscripcion(models.Model):
-    id_infante = models.ForeignKey(Infante, on_delete=models.CASCADE)
-    id_sala = models.ForeignKey(Sala, on_delete=models.CASCADE)
-    id_turno = models.ForeignKey(Turno, on_delete=models.CASCADE)
-    id_anho_lectivo = models.ForeignKey(AnhoLectivo, on_delete=models.CASCADE)
-    fecha_inscripcion = models.DateField()
-   
-
-    def __str__(self):
-        return f"Insc. {self.id_infante} - {self.id_anho_lectivo}"
-

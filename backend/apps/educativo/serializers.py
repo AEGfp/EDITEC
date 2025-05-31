@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Infante, Tutor, Turno, Sala, AnhoLectivo, Persona, Inscripcion
+from .models import Infante, Tutor, Turno, Sala, AnhoLectivo, Persona
 
 from api.serializer import PersonaSerializer
 
@@ -51,10 +51,4 @@ class AnhoLectivoSerializer(serializers.ModelSerializer):
     class Meta:
         model = AnhoLectivo
         fields = "__all__"
-
-
-class InscripcionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Inscripcion
-        fields = '__all__'
 

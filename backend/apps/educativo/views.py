@@ -1,5 +1,5 @@
 from rest_framework import viewsets
-from .models import Infante, Tutor, Turno, Sala, AnhoLectivo# Inscripcion
+from .models import Infante, Tutor, Turno, Sala, AnhoLectivo
 from .serializers import (
     InfanteSerializer,
     TutorSerializer,
@@ -38,8 +38,3 @@ class SalaView(viewsets.ModelViewSet):
 class AnhoLectivoView(viewsets.ModelViewSet):
     queryset = AnhoLectivo.objects.all()
     serializer_class = AnhoLectivoSerializer
-"""
-class InscripcionView(viewsets.ModelViewSet):
-    queryset = Inscripcion.objects.all()
-    serializer_class = InscripcionSerializer
-"""
