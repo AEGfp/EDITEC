@@ -10,9 +10,7 @@ class Local(models.Model):
     estado = models.BooleanField(default=True)
     direccion = models.CharField(max_length=200)
     empresa = models.ForeignKey(Empresa, on_delete=models.PROTECT)
-    id_usuario_aud = models.OneToOneField(
-        User, on_delete=models.CASCADE, null=True, blank=True
-    )
+    id_usuario_aud = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.descripcion
