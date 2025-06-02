@@ -33,5 +33,5 @@ from .serializers import EmpresaSerializer
 # View para empresas
 @permission_classes([AllowAny])
 class EmpresasView(viewsets.ModelViewSet):
-    queryset = Empresa.objects.all()
     serializer_class = EmpresaSerializer
+    queryset = Empresa.objects.all()

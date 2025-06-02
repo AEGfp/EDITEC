@@ -1,22 +1,16 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import(
-    ProveedorView,
-    TipoComprobanteView,
-    CondicionView,
-    ComprobanteProveedorView,
-    SaldoProveedoresView)
+from .views import TipoInformeView, IndicadorView, InformeView, InformeIndicadorView
 from api import views
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 
 
 router = DefaultRouter()
-router.register(r'proveedores', ProveedorView)
-router.register(r'tipo-comprobantes', TipoComprobanteView)
-router.register(r'condiciones', CondicionView)
-router.register(r'comprobantes', ComprobanteProveedorView)
-router.register(r'saldos', SaldoProveedoresView)
+router.register(r'tipo-informe', TipoInformeView)
+router.register(r'indicadores', IndicadorView)
+router.register(r'informes', InformeView)
+router.register(r'informe-indicadores', InformeIndicadorView)
 
 urlpatterns = [
     path('', include(router.urls)),
