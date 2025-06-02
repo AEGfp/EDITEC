@@ -6,6 +6,7 @@ from .serializers import InscripcionSerializer
 from .models import Inscripcion
 from Roles.roles import ControlarRoles
 from rest_framework.exceptions import PermissionDenied
+from django.utils import timezone
 
 # Create your views here.
 #!!! Cambiar permisos
@@ -44,5 +45,5 @@ class InscripcionView(viewsets.ModelViewSet):
 
             instance.usuario_auditoria = user
             instance.fecha_revision = timezone.now()
-
+            instance.save()
         return super().update(request, *args, **kwargs)

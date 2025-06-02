@@ -11,3 +11,7 @@ export const obtenerInscripcion = (id) => Api.get(`${DIRECCION}${id}/`);
 export const actualizarInscripcion = (id, datos) =>
   Api.put(`${DIRECCION}${id}/`, datos);
 export const eliminarInscripcion = (id) => Api.delete(`${DIRECCION}${id}/`);
+export const aceptarInscripcion = (id) =>
+  Api.patch(`${DIRECCION}${id}/`, { estado: "aprobada" });
+export const rechazarInscripcion = (id) =>
+  Api.patch(`${DIRECCION}${id}/`, { estado: "rechazada" });

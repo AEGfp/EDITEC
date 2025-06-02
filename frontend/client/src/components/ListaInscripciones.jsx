@@ -52,10 +52,21 @@ export function ListaInscripciones() {
         name: "Estado",
         selector: (row) => row.estado,
         sortable: true,
+        cell: (row) => agregarMayuscula(row.estado),
       },
       {
         name: "Fecha de inscripción",
         selector: (row) => row.fecha_inscripcion,
+        sortable: true,
+      },
+      {
+        name: "Fecha de aprobación",
+        selector: (row) => row.fecha_revision,
+        sortable: true,
+      },
+      {
+        name: "Revisada por:",
+        selector: (row) => row.nombre_usuario,
         sortable: true,
       },
     ];
@@ -95,6 +106,10 @@ export function ListaInscripciones() {
     selectAllRowsItem: true,
     selectAllRowsItemText: "Todos",
   };
+
+  function agregarMayuscula(palabra) {
+    return palabra.charAt(0).toUpperCase() + palabra.slice(1);
+  }
 
   return (
     <div>
