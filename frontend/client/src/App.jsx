@@ -5,6 +5,8 @@ import AccesoDenegado from "./pages/AccesoDenegado";
 import rutasProtegidas from "./config/rutasProtegidas";
 import PrivateRoute from "./components/PrivateRoute";
 import InscripcionPage from "./pages/InscripcionPage";
+import { EmpresasPage } from "./pages/EmpresasPage";
+import { EmpresasFormPage } from "./pages/EmpresasFormPage";
 
 export function App() {
   const obtenerRutas = (ruta) => {
