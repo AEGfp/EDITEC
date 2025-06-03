@@ -55,8 +55,19 @@ h4 {
 
   .formulario-lista {
     @apply flex flex-col gap-1 p-1;
+    label {
+      @apply flex items-center gap-x-3;
+    }
   }
 
+  @layer components {
+    input:disabled,
+    select:disabled,
+    textarea:disabled,
+    button:disabled {
+      @apply bg-gray-200 text-gray-500 cursor-not-allowed;
+    }
+  }
   .mensaje-error {
     @apply text-red-500 text-sm;
   }

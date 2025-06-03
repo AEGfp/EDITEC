@@ -13,6 +13,8 @@ import InscripcionesFormPage from "../pages/InscripcionesFormPage";
 import GestionInscripcionesPage from "../pages/GestionInscripcionesPage";
 import NotificacionesFormPage from "../pages/NotificacionesFormPage";
 import NotificacionesList from "../pages/NotificacionesList";
+import FuncionariosPage from "../pages/FuncionariosPage";
+import FuncionariosFormPage from "../pages/FuncionariosFormPage";
 
 export default [
   {
@@ -155,6 +157,28 @@ export default [
     path: "/notificaciones/:id",
     componente: NotificacionesFormPage,
     entidad: "notificaciones",
+    permiso: "lectura",
+  },
+  {
+    path: "/funcionarios",
+    componente: FuncionariosPage,
+    nombre: "Funcionarios",
+    entidad: "funcionarios",
+    permiso: "lectura",
+    subrutas: [
+      {
+        path: "/funcionarios-crear",
+        componente: FuncionariosFormPage,
+        entidad: "funcionarios",
+        permiso: "escritura",
+        nombre: "Añadir funcionario",
+      },
+    ],
+  },
+  {
+    path: "/funcionarios/:id",
+    componente: FuncionariosFormPage,
+    entidad: "funcionarios",
     permiso: "lectura",
   },
 ];

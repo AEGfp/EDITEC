@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group,User 
 from rest_framework import viewsets, status
+from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.views import APIView
 from rest_framework.decorators import (
     api_view,
@@ -101,6 +102,17 @@ def logout(request):
         status=status.HTTP_400_BAD_REQUEST,
     )
 
+@authentication_classes([JWTAuthentication])
+@permission_classes([ControlarRoles])
+class FuncionariosView(APIView):
+    roles_permitidos = ["director","administrador"]
+
+    def get(self,request):
+        roles_funcionarios = ["profesor", "administrador"]
+        usuarios = User.objects.filter(groups__name__in=roles_funcionarios).distinct()
+        serializer = UserSerializer(usuarios, many=True)
+
+        return Response(serializer.data)
 
 @permission_classes([AllowAny])
 class PersonaView(viewsets.ModelViewSet):
@@ -123,3 +135,22 @@ class PermisoView(viewsets.ModelViewSet):
 
     serializer_class = PermisoSerializer
     queryset = Permiso.objects.all()
+
+@authentication_classes([JWTAuthentication])
+@permission_classes([ControlarRoles])
+class UsuarioDetailView(RetrieveUpdateDestroyAPIView):
+    roles_permitidos = ["director", "administrador"]
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    def update(self, request, *args, **kwargs):
+        partial = request.method == "PATCH"  # Determina si es PATCH
+        instance = self.get_object()
+
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        if not serializer.is_valid():
+            print("Error de validación al actualizar usuario:", serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        self.perform_update(serializer)
+        return Response(serializer.data)
