@@ -5,6 +5,11 @@ const permisosRoles = {
     lectura: ["director", "profesor"],
     escritura: ["director"],
   },
+  empresas: {
+    //permisos
+    lectura: ["director", "profesor"],
+    escritura: ["director"],
+  },
   infantes: {
     lectura: ["director", "profesor"],
     escritura: ["director"],

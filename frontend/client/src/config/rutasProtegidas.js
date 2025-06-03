@@ -13,6 +13,8 @@ import InscripcionesFormPage from "../pages/InscripcionesFormPage";
 import GestionInscripcionesPage from "../pages/GestionInscripcionesPage";
 import NotificacionesFormPage from "../pages/NotificacionesFormPage";
 import NotificacionesList from "../pages/NotificacionesList";
+import { EmpresasPage } from "../pages/EmpresasPage";
+import { EmpresasFormPage } from "../pages/EmpresasFormPage";
 import FuncionariosPage from "../pages/FuncionariosPage";
 import FuncionariosFormPage from "../pages/FuncionariosFormPage";
 
@@ -22,6 +24,28 @@ export default [
     componente: HomePage,
     publico: true, //necesita permiso para acceder?
     nombre: "Inicio",
+  },
+  {
+    path: "/empresas", //url
+    componente: EmpresasPage, //.jsx
+    entidad: "empresas", //tabla con la que interactúa
+    permiso: "lectura", //permisos minimos
+    nombre: "Empresas", //Nombre del elemento en el Sidebar
+    subrutas: [
+      {
+        path: "/crear-empresa",
+        componente: EmpresasFormPage,
+        entidad: "empresas",
+        permiso: "escritura",
+        nombre: "Crear Empresa",
+      },
+    ],
+  },
+  {
+    path: "/empresas/:id",
+    componente: EmpresasFormPage,
+    entidad: "empresas",
+    permiso: "lectura",
   },
   {
     path: "/permisos", //url
