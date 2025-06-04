@@ -7,4 +7,7 @@ router.register(r"inscripciones", views.InscripcionView, "inscripciones")
 
 urlpatterns = [
     path("", include(router.urls)),
+    path("inscripciones-crear/", views.crear_inscripcion, name="crear_inscripcion"),
+    path("inscripciones-crear-existente/", views.crear_inscripcion_existente, name="crear_inscripcion_existente"),
+
 ]

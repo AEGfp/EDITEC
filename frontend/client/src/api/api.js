@@ -45,7 +45,7 @@ Api.interceptors.response.use(
       } catch (err) {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
-        //!! Agregar mensaje de advertencia
+        alert("No se pudo ingresar al sistema. Intenta otra vez");
         window.location.href = "/login";
       }
     }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import logo from "../components/images/5235784.png";
 import { loginUsuario } from "../utils/loginUsuario";
 
@@ -10,10 +10,24 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const location = useLocation();
+  const desdeInscripcion = location.state?.desdeInscripcion || false;
+
   const login = async (event) => {
     event.preventDefault();
-    await loginUsuario({ username, password, setError, setLoading });
-    navigate("/home");
+    const res = await loginUsuario({
+      username,
+      password,
+      setError,
+      setLoading,
+    });
+    if (res) {
+      if (desdeInscripcion) {
+        navigate("/realizar-inscripcion", { state: { omitirUsuario: true } });
+      } else {
+        navigate("/home");
+      }
+    }
   };
 
   return (

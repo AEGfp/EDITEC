@@ -1,3 +1,5 @@
+import CampoRequerido from "./CampoRequerido";
+
 export default function CamposTutor({ register, errors }) {
   return (
     <>

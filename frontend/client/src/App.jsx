@@ -4,9 +4,11 @@ import SignUpFalso from "./pages/SignUpFalso";
 import AccesoDenegado from "./pages/AccesoDenegado";
 import rutasProtegidas from "./config/rutasProtegidas";
 import PrivateRoute from "./components/PrivateRoute";
-import InscripcionPage from "./pages/InscripcionPage";
+import RealizarInscripcionPage from "./pages/RealizarInscripcionPage";
+("./pages/RealizarInscripcionPage");
 import { EmpresasPage } from "./pages/EmpresasPage";
 import { EmpresasFormPage } from "./pages/EmpresasFormPage";
+import InicioInscripcionPage from "./pages/InicioInscripcionPage";
 
 export function App() {
   const obtenerRutas = (ruta) => {
@@ -33,9 +35,16 @@ export function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Navigate to="/login" />} />
+        <Route
+          path="/iniciar-inscripcion"
+          element={<InicioInscripcionPage />}
+        />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup-falso" element={<SignUpFalso />} />
-        <Route path="/realizar-inscripcion" element={<InscripcionPage />} />
+        <Route
+          path="/realizar-inscripcion"
+          element={<RealizarInscripcionPage />}
+        />
         <Route path="/acceso-denegado" element={<AccesoDenegado />} />
         {rutasProtegidas.flatMap((ruta) => {
           const subrutas = ruta.subrutas || [];
