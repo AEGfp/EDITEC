@@ -3,8 +3,7 @@ import { crearArchivo } from "../api/archivos.api";
 import { useForm } from "react-hook-form";
 import CampoRequerido from "./CampoRequerido";
 
-// TODO: limitar cantidad de archivos y formatos
-export default function SubirArchivos() {
+export default function SubirArchivos({ idPersona, cambiarNombre }) {
   const {
     register,
     handleSubmit,
@@ -21,11 +20,16 @@ export default function SubirArchivos() {
   );
 
   const guardarArchivo = async (data) => {
+    if (!idPersona) {
+      const usuario = JSON.parse(localStorage.getItem("usuario"));
+      idPersona = usuario?.persona?.id;
+    }
     const formData = new FormData();
     const archivo = data.archivo[0];
     formData.append("archivo", archivo);
-    formData.append("descripcion", archivo.name);
-
+    formData.append("descripcion", data.descripcion);
+    formData.append("persona", idPersona);
+    console.log(formData);
     try {
       setCargando(true);
       setProgreso(0);
@@ -39,9 +43,11 @@ export default function SubirArchivos() {
       setMensaje("Archivo subido correctamente.");
       reset();
       setNombreArchivo("No se ha seleccionado ningún archivo.");
+      setTimeout(() => setMensaje(""), 3000);
     } catch (error) {
       console.error(error);
       setMensaje("Ha ocurrido un error al subir el archivo.");
+      setTimeout(() => setMensaje(""), 3000);
     } finally {
       setCargando(false);
       setTimeout(() => setProgreso(0), 1000);
@@ -62,29 +68,68 @@ export default function SubirArchivos() {
           <input
             id="archivo"
             type="file"
+            accept=".pdf,.jpg,.jpeg,.png"
             {...register("archivo", {
               required: "El archivo es obligatorio",
+              validate: {
+                tipoValido: (value) =>
+                  ["application/pdf", "image/jpeg", "image/png"].includes(
+                    value?.[0]?.type
+                  ) || "Formato no permitido",
+                tamanoValido: (value) =>
+                  value?.[0]?.size < 5 * 1024 * 1024 ||
+                  "El archivo debe ser menor a 5MB",
+              },
               onChange: (e) => {
-                setNombreArchivo(
-                  e.target.files[0]?.name || "Ningún archivo seleccionado"
-                );
+                const archivo = e.target.files[0];
+                const nombre = archivo?.name || "Ningún archivo seleccionado";
+                setNombreArchivo(nombre);
+                if (!cambiarNombre) {
+                  setValue("descripcion", nombre);
+                }
               },
             })}
             className="hidden"
           />
-          {errors.archivo && <CampoRequerido />}
+          {errors.archivo && (
+            <p className="mensaje-error">{errors.archivo.message}</p>
+          )}
+
+          {cambiarNombre && (
+            <>
+              <input
+                type="text"
+                placeholder="Nombre para guardar el archivo"
+                className="formulario-input"
+                {...register("descripcion", {
+                  required: "Debe ingresar un nombre para el archivo",
+                })}
+              />
+              {errors.descripcion && <CampoRequerido />}
+            </>
+          )}
 
           {cargando && (
             <div className="w-full bg-gray-200 rounded h-6 mt-4 overflow-hidden relative">
-              {/* Barra de progreso */}
               <div
                 className="bg-green-500 h-full transition-all duration-300 ease-in-out"
                 style={{ width: `${progreso}%` }}
               />
-              {/* Porcentaje centrado */}
               <div className="absolute inset-0 flex items-center justify-center text-sm font-medium text-black">
                 {progreso}%
               </div>
+            </div>
+          )}
+
+          {mensaje && (
+            <div
+              className={`mt-4 text-sm font-semibold text-center ${
+                mensaje.includes("error") || mensaje.includes("Error")
+                  ? "mensaje-error"
+                  : "mensjae-error text-green-600"
+              }`}
+            >
+              {mensaje}
             </div>
           )}
 

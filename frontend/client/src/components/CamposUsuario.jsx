@@ -113,7 +113,7 @@ export default function CamposUsuario({ register, errors, watch }) {
           />
           {errors.fecha_nacimiento && <CampoRequerido />}
           <div className="formulario-elemento">
-            <fieldset className="formulario-lista">
+            <fieldset>
               <legend>
                 <h3>Sexo: </h3>
               </legend>
