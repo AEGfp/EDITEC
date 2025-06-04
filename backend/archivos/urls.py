@@ -13,5 +13,9 @@ urlpatterns = [
         "archivos/descargar/<int:arch_id>/",
         views.descargar_archivo,
         name="descargar-archivos",
+    ),path(
+        "archivos/descargables/<str:filename>/",
+        views.descargar_permisos,
+        name="descargar-permisos",
     ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
