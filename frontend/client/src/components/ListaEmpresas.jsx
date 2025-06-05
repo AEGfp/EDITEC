@@ -1,23 +1,3 @@
-/*import { useEffect, useState} from "react"
-import { obtenerTodasEmpresas } from "../api/empresas.api";
-import { EmpresasCard } from "./EmpresasCard";
-
-export function ListaEmpresas(){
-    const [empresas, actualizarEmpresas] = useState([]);
-useEffect(() => {
-
-    async function cargarEmpresas(){
-        const respuesta = await obtenerTodasEmpresas();
-        actualizarEmpresas(respuesta.data);
-    }
-    cargarEmpresas();
-}, [])   
-    return <div>
-            {empresas.map(empresa => (
-               <EmpresasCard key= {empresa.id} empresa={empresa} />
-            ))}
-        </div>;
-}*/
 import { useEffect, useState } from "react";
 import { obtenerTodasEmpresas } from "../api/empresas.api";
 import ListaElementos from "./ListaElementos";

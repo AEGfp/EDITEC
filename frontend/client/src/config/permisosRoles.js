@@ -8,6 +8,11 @@ const permisosRoles = {
   empresas: {
     //permisos
     lectura: ["director", "profesor"],
+    escritura: ["director","administrador"],
+  },
+  locales: {
+    //permisos
+    lectura: ["director", "profesor"],
     escritura: ["director"],
   },
   infantes: {
@@ -38,6 +43,36 @@ const permisosRoles = {
   funcionarios: {
     lectura: ["director", "administrador"],
     escritura: ["director", "administrador"],
+  },
+  proveedores: {
+    //permisos
+    lectura: ["director", "profesor"],
+    escritura: ["director"],
+  },
+  comprobantes: {
+    //permisos
+    lectura: ["director", "profesor"],
+    escritura: ["director"],
+  },
+  saldos: {
+    //permisos
+    lectura: ["director", "profesor"],
+    escritura: ["director"],
+  },
+  proveedores: {
+    //permisos
+    lectura: ["director", "profesor"],
+    escritura: ["director"],
+  },
+  comprobantes: {
+    //permisos
+    lectura: ["director", "profesor"],
+    escritura: ["director"],
+  },
+  saldos: {
+    //permisos
+    lectura: ["director", "profesor"],
+    escritura: ["director"],
   },
 };
 

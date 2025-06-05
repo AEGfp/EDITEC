@@ -38,6 +38,12 @@ from .serializers import (
     #! Solo para ver
     SaldoProveedoresSerializer)
 
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from xhtml2pdf import pisa
+import io
+from .models import ComprobanteProveedor
+
 @permission_classes([AllowAny])
 # View para proveedores
 class ProveedorView(viewsets.ModelViewSet):
@@ -68,3 +74,15 @@ class ComprobanteProveedorView(viewsets.ModelViewSet):
 class SaldoProveedoresView(viewsets.ModelViewSet):
     queryset = SaldoProveedores.objects.all()
     serializer_class = SaldoProveedoresSerializer
+
+@permission_classes([AllowAny])
+def generar_reporte_pdf(request):
+    comprobantes = ComprobanteProveedor.objects.prefetch_related('saldos', 'id_proveedor').all()
+    html = render_to_string('pagos/reporte_comprobantes.html', {'comprobantes': comprobantes})
+    
+    result = io.BytesIO()
+    pdf = pisa.pisaDocument(io.BytesIO(html.encode("UTF-8")), result)
+    
+    if not pdf.err:
+        return HttpResponse(result.getvalue(), content_type='application/pdf')
+    return HttpResponse("Error al generar PDF", status=500)
