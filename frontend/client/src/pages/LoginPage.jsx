@@ -136,6 +136,23 @@ export function LoginPage() {
           Sign Up
         </button>
 
+        <br />
+        <br />
+        <button
+          style={{
+            width: "100%",
+            padding: "0.75rem",
+            backgroundColor: "orange",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+          }}
+          onClick={() => navigate("/iniciar-inscripcion")}
+        >
+          Inscribir
+        </button>
+
         {error && (
           <p
             style={{
