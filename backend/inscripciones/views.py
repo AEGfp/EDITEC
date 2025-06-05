@@ -16,6 +16,11 @@ from .models import Inscripcion
 from Roles.roles import ControlarRoles
 from rest_framework.exceptions import PermissionDenied
 from django.utils import timezone
+from django.template.loader import render_to_string
+from xhtml2pdf import pisa
+import io
+from django.db.models import Count
+from django.http import HttpResponse
 
 
 def desanidar_data(data):
@@ -107,3 +112,51 @@ def crear_inscripcion_existente(request):
         return Response(
             {"errores": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
         )
+
+
+@permission_classes([AllowAny])
+def generar_reporte_inscripciones(request):
+    estado_filtro = request.GET.get("estado")
+    fecha_desde = request.GET.get("fecha_desde")
+    fecha_hasta = request.GET.get("fecha_hasta")
+    id_tutor = request.GET.get("id_tutor")
+    id_infante = request.GET.get("id_infante")
+
+    inscripciones = Inscripcion.objects.all()
+
+    if estado_filtro:
+        inscripciones = inscripciones.filter(estado=estado_filtro)
+    if fecha_desde:
+        inscripciones = inscripciones.filter(fecha_inscripcion__gte=fecha_desde)
+    if fecha_hasta:
+        inscripciones = inscripciones.filter(fecha_inscripcion__lte=fecha_hasta)
+    if id_tutor:
+        inscripciones = inscripciones.filter(id_tutor=id_tutor)
+    if id_infante:
+        inscripciones = inscripciones.filter(id_infante=id_infante)
+
+    resumen_estados = (
+        inscripciones.values("estado").annotate(cantidad=Count("id")).order_by("estado")
+    )
+
+    total = sum(item["cantidad"] for item in resumen_estados)
+    serializer = InscripcionSerializer(inscripciones, many=True)
+
+    context = {
+        "resumen_estados": resumen_estados,
+        "total": total,
+        "estado_filtro": estado_filtro,
+        "detalles": serializer.data,
+        "fecha_desde": fecha_desde,
+        "fecha_hasta": fecha_hasta,
+        "id_tutor": id_tutor,
+        "id_infante": id_infante,
+    }
+    html = render_to_string("inscripciones/reporte_inscripciones.html", context)
+
+    result = io.BytesIO()
+    pdf = pisa.pisaDocument(io.BytesIO(html.encode("UTF-8")), result)
+
+    if not pdf.err:
+        return HttpResponse(result.getvalue(), content_type="application/pdf")
+    return HttpResponse("Error al generar PDF", status=500)
