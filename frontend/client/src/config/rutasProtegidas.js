@@ -17,6 +17,13 @@ import { EmpresasPage } from "../pages/EmpresasPage";
 import { EmpresasFormPage } from "../pages/EmpresasFormPage";
 import FuncionariosPage from "../pages/FuncionariosPage";
 import FuncionariosFormPage from "../pages/FuncionariosFormPage";
+import { LocalesPage } from "../pages/LocalesPage";
+import { LocalesFormPage } from "../pages/LocalesFormPage";
+import { ProveedoresPage } from "../pages/ProveedoresPage";
+import { ProveedoresFormPage } from "../pages/ProveedoresFormPage";
+import { ComprobantesFormPage } from "../pages/ComprobantesFormPage";
+import { ComprobantesPage } from "../pages/ComprobantesPage";
+import { SaldosProveedoresPage } from "../pages/SaldosProveedoresPage";
 
 export default [
   {
@@ -45,6 +52,28 @@ export default [
     path: "/empresas/:id",
     componente: EmpresasFormPage,
     entidad: "empresas",
+    permiso: "lectura",
+  },
+  {
+    path: "/locales", //url
+    componente: LocalesPage, //.jsx
+    entidad: "locales", //tabla con la que interactúa
+    permiso: "lectura", //permisos minimos
+    nombre: "Sucursales", //Nombre del elemento en el Sidebar
+    subrutas: [
+      {
+        path: "/crear-sucursal",
+        componente: LocalesFormPage,
+        entidad: "locales",
+        permiso: "escritura",
+        nombre: "Crear Sucursal",
+      },
+    ],
+  },
+  {
+    path: "/locales/:id",
+    componente: LocalesFormPage,
+    entidad: "locales",
     permiso: "lectura",
   },
   {
@@ -203,6 +232,70 @@ export default [
     path: "/funcionarios/:id",
     componente: FuncionariosFormPage,
     entidad: "funcionarios",
+    permiso: "lectura",
+  },
+  {
+    path: "/proveedores", //url
+    componente: ProveedoresPage, //.jsx
+    entidad: "proveedores", //tabla con la que interactúa
+    permiso: "lectura", //permisos minimos
+    nombre: "Proveedores", //Nombre del elemento en el Sidebar
+    subrutas: [
+      {
+        path: "/crear-proveedor",
+        componente: ProveedoresFormPage,
+        entidad: "proveedores",
+        permiso: "escritura",
+        nombre: "Crear Proveedor",
+      },
+    ],
+  },
+  {
+    path: "/proveedores/:id",
+    componente: ProveedoresFormPage,
+    entidad: "proveedores",
+    permiso: "lectura",
+  },
+  {
+    path: "/comprobantes", //url
+    componente: ComprobantesPage, //.jsx
+    entidad: "comprobantes", //tabla con la que interactúa
+    permiso: "lectura", //permisos minimos
+    nombre: "Comprobantes de Gasto", //Nombre del elemento en el Sidebar
+    subrutas: [
+      {
+        path: "/crear-comprobante",
+        componente: ComprobantesFormPage,
+        entidad: "comprobantes",
+        permiso: "escritura",
+        nombre: "Crear Comprobante",
+      },
+    ],
+  },
+  {
+    path: "/comprobantes/:id",
+    componente: ComprobantesFormPage,
+    entidad: "comprobantes",
+    permiso: "lectura",
+  },
+  {
+    path: "/saldos", //url
+    componente: SaldosProveedoresPage, //.jsx
+    entidad: "saldos", //tabla con la que interactúa
+    permiso: "lectura", //permisos minimos
+    nombre: "Saldos de Proveedores", //Nombre del elemento en el Sidebar
+    subrutas: [
+      /*{
+        path: "/ver-saldo",
+        componente: SaldosProveedoresPage,
+        entidad: "saldos",
+        permiso: "lectura",
+        //nombre: "Crear Comprobante",
+      },*/],
+  },{
+    path: "/saldos/:id",
+    componente: SaldosProveedoresPage,
+    entidad: "saldos",
     permiso: "lectura",
   },
 ];

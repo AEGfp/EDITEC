@@ -1,24 +1,24 @@
 import { Api } from "./api";
 
 //Cambiar según la url del backend
-const DIRECCION = "empresas/";
+const DIRECCION = "locales/";
 
-export const obtenerTodasEmpresas = () => {
+export const obtenerTodasSucursales = () => {
   return Api.get(DIRECCION);
 };
 
-export const crearEmpresa = (empresa) => {
+export const crearSucursal = (empresa) => {
   return Api.post(DIRECCION, empresa);
 };
 
-export const obtenerEmpresa = (id) => {
+export const obtenerSucursal = (id) => {
   return Api.get(`${DIRECCION}${id}/`);
 };
 
-export const eliminarEmpresa = (id) => {
+export const eliminarSucursal = (id) => {
   return Api.delete(`${DIRECCION}${id}/`);
 };
 
-export const actualizarEmpresa = (id, datos) => {
+export const actualizarSucursal = (id, datos) => {
   return Api.put(`${DIRECCION}${id}/`, datos);
 };

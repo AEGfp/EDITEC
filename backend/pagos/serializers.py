@@ -26,7 +26,7 @@ class CondicionSerializer(serializers.ModelSerializer):
 
 # Serializer para los comprobantes de proveedores
 class ComprobanteProveedorSerializer(serializers.ModelSerializer):
-    id_tipo_comprobante = serializers.SlugRelatedField(
+    '''id_tipo_comprobante = serializers.SlugRelatedField(
         slug_field = 'descripcion',
         queryset = TipoComprobante.objects.filter(estado=True))
 
@@ -40,10 +40,30 @@ class ComprobanteProveedorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ComprobanteProveedor
-        fields = ['id', 'id_local', 'id_proveedor',
-                  'id_tipo_comprobante', 'id_condicion',
-                  'numero_comprobante', 'concepto', 'fecha_comprobante',
-                  'total_comprobante', 'id_usuario_aud']
+        fields = ['__all__'] '''
+    
+    proveedor_nombre = serializers.CharField(source='id_proveedor.descripcion', read_only=True)
+    tipo_comprobante_nombre = serializers.CharField(source='id_tipo_comprobante.descripcion', read_only=True)
+    condicion_nombre = serializers.CharField(source='id_condicion.descripcion', read_only=True)
+    local_nombre = serializers.CharField(source='id_local.descripcion', read_only=True)
+
+    class Meta:
+        model = ComprobanteProveedor
+        fields = [
+        'id',
+        'fecha_comprobante',
+        'numero_comprobante',
+        'total_comprobante',
+        'id_proveedor',
+        'id_tipo_comprobante',
+        'id_condicion',
+        'id_local',
+        # Campos legibles agregados:
+        'proveedor_nombre',
+        'tipo_comprobante_nombre',
+        'condicion_nombre',
+        'local_nombre',
+    ]
 
     # Validación de campos
     def validate(self, data):
@@ -99,7 +119,14 @@ class ComprobanteProveedorSerializer(serializers.ModelSerializer):
 
 #! Solo para comprobar los saldos
 class SaldoProveedoresSerializer(serializers.ModelSerializer):
+    numero_comprobante_as = serializers.CharField(source='id_comprobante.numero_comprobante', read_only=True)
+    proveedor_nombre = serializers.CharField(source='id_comprobante.id_proveedor.nombre_fantasia', read_only=True)
+    tipo_comprobante_nombre = serializers.CharField(source='id_comprobante.id_tipo_comprobante.descripcion', read_only=True)
+    condicion_nombre = serializers.CharField(source='id_comprobante.id_condicion.descripcion', read_only=True)
+    sucursal_nombre = serializers.CharField(source='id_comprobante.id_local.descripcion', read_only=True)
     class Meta:
         model = SaldoProveedores
-        fields = '__all__'
+        fields = ['id','monto_cuota','saldo_cuota', 'numero_cuota', 'fecha_pago','id_comprobante',
+                  'numero_comprobante_as', 'proveedor_nombre','tipo_comprobante_nombre','condicion_nombre',
+                  'sucursal_nombre']
 

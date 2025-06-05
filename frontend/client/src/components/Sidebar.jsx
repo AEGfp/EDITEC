@@ -42,15 +42,15 @@ export default function Sidebar({ abierto }) {
         ☰
       </button>*/}
       <aside
-        className={`h-full bg-white border-r shadow-md border-gray-200 transition-all duration-300 ease-in-out ${
+          className={`h-full bg-white border-r shadow-md border-gray-200 transition-all duration-300 ease-in-out ${
           abierto ? "w-56" : "w-0"
-        } overflow-hidden`}
+          } overflow-hidden`}
       >
-        <nav
-          className={`h-full flex flex-col transition-opacity duration-100 relative ${
-            abierto ? "opacity-100 delay-150" : "opacity-0"
+      <nav
+          className={`h-full flex flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 transition-opacity duration-100 relative ${
+          abierto ? "opacity-100 delay-150" : "opacity-0"
           }`}
-        >
+      >
           <div className="p-4 flex justify-end">
             {/*  <button
               onClick={activarSidebar}
