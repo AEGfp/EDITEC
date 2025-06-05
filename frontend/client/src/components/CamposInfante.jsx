@@ -1,6 +1,10 @@
 import CampoRequerido from "./CampoRequerido";
+import CamposArchivo from "./CamposArchivo";
 
-export default function CamposInfante({ register, errors }) {
+export default function CamposInfante({ register, errors, watch, setValue }) {
+  const permisoFotos = watch("permiso_fotos");
+  const permisoPanhal = watch("permiso_cambio_panhal");
+
   return (
     <>
       <h2 className="formulario-titulo">Datos del Infante</h2>
@@ -88,11 +92,28 @@ export default function CamposInfante({ register, errors }) {
             <option value="S">Sí</option>
           </select>
 
+          {permisoPanhal === "S" && (
+            <CamposArchivo
+              register={register}
+              setValue={setValue}
+              watch={watch}
+              nombreCampo="archivo_permiso_panhal"
+            />
+          )}
           <h4 className="formulario-elemento">¿Permiso para fotos?</h4>
           <select className="formulario-input" {...register("permiso_fotos")}>
             <option value="N">No</option>
             <option value="S">Sí</option>
           </select>
+
+          {permisoFotos === "S" && (
+            <CamposArchivo
+              register={register}
+              setValue={setValue}
+              watch={watch}
+              nombreCampo="archivo_permiso_fotos"
+            />
+          )}
         </div>
       </div>
     </>

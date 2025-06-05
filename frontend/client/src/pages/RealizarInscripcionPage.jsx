@@ -16,6 +16,7 @@ export default function RealizarInscripcionPage() {
     formState: { errors },
     watch,
     reset,
+    setValue,
   } = useForm();
 
   const location = useLocation();
@@ -32,12 +33,20 @@ export default function RealizarInscripcionPage() {
   const previo = () => setPestanha((prev) => prev - 1);
 
   const pasos = [];
-  if (!omitirUsuario)
+  if (!omitirUsuario) {
     pasos.push(
       <CamposUsuario register={register} errors={errors} watch={watch} />
     );
+  }
   pasos.push(<CamposTutor register={register} errors={errors} />);
-  pasos.push(<CamposInfante register={register} errors={errors} />);
+  pasos.push(
+    <CamposInfante
+      register={register}
+      errors={errors}
+      watch={watch}
+      setValue={setValue}
+    />
+  );
   // 4: <ArchivosForm register={register} errors={errors} />,
   // 5: <ConfirmarInscripcion idTutor={idTutor} idInfante={idInfante} />,
 
@@ -55,8 +64,29 @@ export default function RealizarInscripcionPage() {
   const realizarInscripcion = async (datos) => {
     setError("");
     setLoading(true);
-    let res;
     try {
+      const formData = new FormData();
+
+      const agregarCamposFormulario = (objeto, prefix = "") => {
+        Object.entries(objeto).forEach(([key, value]) => {
+          if (
+            value !== null &&
+            typeof value === "object" &&
+            !(value instanceof File)
+          ) {
+            agregarCamposFormulario(value, prefix + key + ".");
+          } else if (value !== undefined && value !== null) {
+            formData.append(prefix + key, value);
+          }
+        });
+      };
+
+      if (datos.archivo_permiso_fotos) {
+        formData.append("archivo_permiso_fotos", datos.archivo_permiso_fotos);
+      }
+      if (datos.archivo_permiso_panhal) {
+        formData.append("archivo_permiso_panhal", datos.archivo_permiso_panhal);
+      }
       const inscripcion = {
         tutor_data: {
           es_docente: datos.es_docente,
@@ -102,17 +132,20 @@ export default function RealizarInscripcionPage() {
             domicilio: datos.domicilio,
           },
         };
-
-        console.log(JSON.stringify(inscripcion, null, 2));
-        res = await crearInscripcion(inscripcion);
       } else {
         const usuario = JSON.parse(localStorage.getItem("usuario"));
-        const idUsuario = usuario?.id;
-        inscripcion.user_id = idUsuario;
-
-        console.log(JSON.stringify(inscripcion, null, 2));
-        res = await crearInscripcionExistente(inscripcion);
+        inscripcion.user_id = usuario?.id;
       }
+
+      agregarCamposFormulario(inscripcion);
+
+      console.log(formData);
+      for (let pair of formData.entries()) {
+  console.log(pair[0], pair[1]);
+}
+      const res = omitirUsuario
+        ? await crearInscripcionExistente(formData)
+        : await crearInscripcion(formData);
 
       if (res.status == 201) {
         alert("¡Inscripción completada con éxito!");
@@ -122,9 +155,12 @@ export default function RealizarInscripcionPage() {
       }
     } catch (err) {
       console.error(err);
-      setError("Ha ocurrido un error al completar la inscripción");
+      setError(
+        err.response?.data?.detail ||
+          "Ha ocurrido un error al completar la inscripción"
+      );
       setPestanha(0);
-      setFormulario({});
+      //setFormulario({});
     } finally {
       setLoading(false);
     }

@@ -3,7 +3,12 @@ import { crearArchivo } from "../api/archivos.api";
 import { useForm } from "react-hook-form";
 import CampoRequerido from "./CampoRequerido";
 
-export default function SubirArchivos({ idPersona, cambiarNombre }) {
+export default function SubirArchivos({
+  idPersona,
+  cambiarNombre,
+  tamanho = "",
+  nombre = "archivo",
+}) {
   const {
     register,
     handleSubmit,
@@ -53,10 +58,9 @@ export default function SubirArchivos({ idPersona, cambiarNombre }) {
       setTimeout(() => setProgreso(0), 1000);
     }
   };
-
   return (
-    <div className="">
-      <div className="formulario-dentro">
+    <div className={"formulario" + "-" + tamanho}>
+      <div className={"formulario-dentro" + "-" + tamanho}>
         <form onSubmit={handleSubmit(guardarArchivo)}>
           <div className="flex flex-col sm:flex-row items-center gap-2 mb-2">
             <label htmlFor="archivo" className="boton-detalles ">
@@ -66,8 +70,9 @@ export default function SubirArchivos({ idPersona, cambiarNombre }) {
           </div>
 
           <input
-            id="archivo"
             type="file"
+            id={nombre}
+            name={nombre}
             accept=".pdf,.jpg,.jpeg,.png"
             {...register("archivo", {
               required: "El archivo es obligatorio",

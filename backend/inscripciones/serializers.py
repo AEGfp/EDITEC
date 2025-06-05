@@ -2,23 +2,33 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from .models import Inscripcion
 from api.models import Persona, User
-from apps.educativo.models import Tutor,Infante
-from api.serializer import UserSerializer,PersonaSerializer
-from apps.educativo.serializers import TutorSerializer,InfanteSerializer
+from apps.educativo.models import Tutor, Infante
+from api.serializer import UserSerializer, PersonaSerializer
+from apps.educativo.serializers import TutorSerializer, InfanteSerializer
 from django.db import transaction
 from django.contrib.auth.models import Group
+from archivos.serializers import ArchivosSerializer
+from archivos.models import Archivos
+
 
 def validar_inscripcion_pendiente(tutor, infante):
-    if Inscripcion.objects.filter(id_tutor=tutor, id_infante=infante).exclude(estado="rechazado").exists(): 
-        raise ValidationError("Ya existe una inscripción pendiente entre ese tutor y ese infante.")  
+    if (
+        Inscripcion.objects.filter(id_tutor=tutor, id_infante=infante)
+        .exclude(estado="rechazado")
+        .exists()
+    ):
+        raise ValidationError(
+            "Ya existe una inscripción pendiente entre ese tutor y ese infante."
+        )
 
 
 class InscripcionSerializer(serializers.ModelSerializer):
-    nombre_tutor=serializers.SerializerMethodField()
-    nombre_infante = serializers.SerializerMethodField()    
-    nombre_usuario=serializers.SerializerMethodField()    
+    nombre_tutor = serializers.SerializerMethodField()
+    nombre_infante = serializers.SerializerMethodField()
+    nombre_usuario = serializers.SerializerMethodField()
     fecha_inscripcion = serializers.DateField(format="%d/%m/%Y", read_only=True)
     fecha_revision = serializers.DateTimeField(format="%d/%m/%Y", read_only=True)
+
     class Meta:
         model = Inscripcion
         fields = "__all__"
@@ -32,17 +42,19 @@ class InscripcionSerializer(serializers.ModelSerializer):
             "nombre_usuario",
         ]
 
-    def get_nombre_tutor(self,obj):
-        persona=obj.id_tutor.id_persona
+    def get_nombre_tutor(self, obj):
+        persona = obj.id_tutor.id_persona
         return f"{persona.nombre} {persona.apellido}"
 
-    def get_nombre_infante(self,obj):
-        persona=obj.id_infante.id_persona
+    def get_nombre_infante(self, obj):
+        persona = obj.id_infante.id_persona
         return f"{persona.nombre} {persona.apellido}"
 
-    def get_nombre_usuario(self,obj):
+    def get_nombre_usuario(self, obj):
         if obj.usuario_auditoria:
-            return obj.usuario_auditoria.get_full_name() or obj.usuario_auditoria.username
+            return (
+                obj.usuario_auditoria.get_full_name() or obj.usuario_auditoria.username
+            )
         return None
 
     def create(self, validated_data):
@@ -55,7 +67,7 @@ class InscripcionSerializer(serializers.ModelSerializer):
                 "El usuario no tiene una persona asociada"
             )
 
-        tutor = persona.tutor_set.first() 
+        tutor = persona.tutor_set.first()
         if not tutor:
             raise serializers.ValidationError("El usuario no tiene un tutor asociado")
 
@@ -70,6 +82,7 @@ class InscripcionSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
+#! Arreglar tutores con varios hijos
 class InscripcionCompletaSerializer(serializers.Serializer):
     user_data_tutor = UserSerializer()
     tutor_data = TutorSerializer()
@@ -80,6 +93,16 @@ class InscripcionCompletaSerializer(serializers.Serializer):
         return data
 
     def create(self, validated_data):
+        request = self.context.get("request")
+        print("FILES:", request.FILES)
+        archivos_files = []
+        archivo_fotos = request.FILES.get("archivo_permiso_fotos")
+        if archivo_fotos:
+            archivos_files.append(archivo_fotos)
+        archivo_panhal = request.FILES.get("archivo_permiso_panhal")
+        if archivo_panhal:
+            archivos_files.append(archivo_panhal)
+
         user_data_tutor = validated_data["user_data_tutor"]
         tutor_data = validated_data["tutor_data"]
         persona_data_infante = validated_data["persona_data_infante"]
@@ -92,73 +115,76 @@ class InscripcionCompletaSerializer(serializers.Serializer):
             tutor_group = Group.objects.get(name="tutor")
             user_tutor.groups.add(tutor_group)
 
-            tutor = Tutor.objects.create(
-                id_persona=user_tutor.persona,
-                **tutor_data
-            )
+            tutor = Tutor.objects.create(id_persona=user_tutor.persona, **tutor_data)
 
             persona_infante_serializer = PersonaSerializer(data=persona_data_infante)
             persona_infante_serializer.is_valid(raise_exception=True)
             persona_infante = persona_infante_serializer.save()
 
-            infante = Infante.objects.create(
-                id_persona=persona_infante,
-                **infante_data
-            )
+            infante = Infante.objects.create(id_persona=persona_infante, **infante_data)
 
-            validar_inscripcion_pendiente(tutor,infante)
+            if archivo_fotos:
+                Archivos.objects.create(
+                    persona=persona_infante,
+                    archivo=archivo_fotos,
+                    descripcion=f"permiso_fotos_{persona_infante.ci}",
+                )
+
+            if archivo_panhal:
+                Archivos.objects.create(
+                    persona=persona_infante,
+                    archivo=archivo_panhal,
+                    descripcion=f"permiso_panhal{persona_infante.ci}",
+                )
+            print("archivo_fotos:", archivo_fotos)
+            print("archivo_panhal:", archivo_panhal)
+            validar_inscripcion_pendiente(tutor, infante)
 
             inscripcion = Inscripcion.objects.create(
-                id_tutor=tutor,
-                id_infante=infante,
-                estado="pendiente"
+                id_tutor=tutor, id_infante=infante, estado="pendiente"
             )
 
         return inscripcion
 
+
 class InscripcionExistenteSerializer(serializers.Serializer):
-    user_id = serializers.IntegerField()
-    tutor_data = serializers.DictField(required=False)  
+    user_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    tutor_data = TutorSerializer(required=False)  # antes era DictField
     persona_data_infante = PersonaSerializer()
     infante_data = InfanteSerializer()
-
-    def validate_user_id(self, value):
-        try:
-            return User.objects.get(pk=value)
-        except User.DoesNotExist:
-            raise serializers.ValidationError("Usuario no encontrado")
 
     def validate(self, data):
         user = data["user_id"]
 
-        if not hasattr(user, "persona"):
-            raise serializers.ValidationError("El usuario no tiene una persona asociada")
-
-        tutor_group = Group.objects.get(name="tutor")
-
-        if not user.groups.filter(name="tutor").exists():
-            user.groups.add(tutor_group)
-            print(f"Usuario {user.username} agregado al grupo 'tutor' automáticamente")
-        else:
+        if user.groups.filter(name="tutor").exists():
             if "tutor_data" in data:
-                print(f"Ignorando tutor_data para usuario {user.username} porque ya es tutor")
                 data.pop("tutor_data", None)
-
         return data
 
     def create(self, validated_data):
+        request = self.context.get("request")
+        print("FILES:", request.FILES)
+        archivos_files = []
+        archivo_fotos = request.FILES.get("archivo_permiso_fotos")
+        if archivo_fotos:
+            archivos_files.append(archivo_fotos)
+        archivo_panhal = request.FILES.get("archivo_permiso_panhal")
+        if archivo_panhal:
+            archivos_files.append(archivo_panhal)
         user = validated_data["user_id"]
+        tutor_data = validated_data.get("tutor_data")
         persona = user.persona
-
         tutor = getattr(persona, "tutor", None)
 
         with transaction.atomic():
             if not tutor:
-                tutor_data = validated_data.get("tutor_data")
                 if not tutor_data:
-                    raise serializers.ValidationError("Datos del tutor requeridos para crear uno nuevo")
-                tutor = Tutor.objects.create(id_persona=persona, **tutor_data)
-
+                    raise serializers.ValidationError(
+                        "Datos del tutor requeridos para crear uno nuevo"
+                    )
+                tutor_serializer = TutorSerializer(data=tutor_data)
+                tutor_serializer.is_valid(raise_exception=True)
+                tutor = tutor_serializer.save(id_persona=persona)
             persona_data_infante = validated_data["persona_data_infante"]
             infante_data = validated_data["infante_data"]
 
@@ -166,17 +192,28 @@ class InscripcionExistenteSerializer(serializers.Serializer):
             persona_infante_serializer.is_valid(raise_exception=True)
             persona_infante = persona_infante_serializer.save()
 
-            infante = Infante.objects.create(
-                id_persona=persona_infante,
-                **infante_data
-            )
+            infante = Infante.objects.create(id_persona=persona_infante, **infante_data)
 
             validar_inscripcion_pendiente(tutor, infante)
 
+            if archivo_fotos:
+                Archivos.objects.create(
+                    persona=persona_infante,
+                    archivo=archivo_fotos,
+                    descripcion=f"permiso_fotos_{persona_infante.ci}",
+                )
+
+            if archivo_panhal:
+                Archivos.objects.create(
+                    persona=persona_infante,
+                    archivo=archivo_panhal,
+                    descripcion=f"permiso_panhal_{persona_infante.ci}",
+                )
+            # print("archivo_fotos:", archivo_fotos)
+            # print("archivo_panhal:", archivo_panhal)
+
             inscripcion = Inscripcion.objects.create(
-                id_tutor=tutor,
-                id_infante=infante,
-                estado="pendiente"
+                id_tutor=tutor, id_infante=infante, estado="pendiente"
             )
 
         return inscripcion

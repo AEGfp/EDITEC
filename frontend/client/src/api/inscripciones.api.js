@@ -5,10 +5,12 @@ import { Api } from "./api";
 const DIRECCION = "inscripciones/";
 
 export const obtenerInscripciones = () => Api.get(DIRECCION);
-export const crearInscripcion = (inscripcion) =>
-  Api.post("inscripciones-crear/", inscripcion);
-export const crearInscripcionExistente = (inscripcion) =>
-  Api.post("inscripciones-crear-existente/", inscripcion);
+
+export const crearInscripcion = (inscripcion, config = {}) =>
+  Api.post("inscripciones-crear/", inscripcion, config);
+export const crearInscripcionExistente = (inscripcion, config = {}) =>
+  Api.post("inscripciones-crear-existente/", inscripcion, config);
+
 export const obtenerInscripcion = (id) => Api.get(`${DIRECCION}${id}/`);
 export const actualizarInscripcion = (id, datos) =>
   Api.put(`${DIRECCION}${id}/`, datos);

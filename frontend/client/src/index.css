@@ -37,6 +37,14 @@ h4 {
     @apply flex flex-col items-center justify-start mt-0.5 text-xl overflow-y-auto;
   }
 
+  .formulario-chico {
+    @apply flex flex-col items-center justify-start mt-0.5 text-sm overflow-y-auto;
+  }
+
+  .formulario-dentro-chico {
+    @apply p-2 bg-slate-50 rounded shadow-md   border border-gray-300;
+  }
+
   .formulario-dentro {
     @apply p-6 bg-slate-50 rounded shadow-md w-full max-w-lg border border-gray-300;
   }

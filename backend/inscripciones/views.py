@@ -1,13 +1,35 @@
-from rest_framework import viewsets,status
+from rest_framework import viewsets, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework.decorators import authentication_classes, permission_classes,api_view
+from rest_framework.decorators import (
+    authentication_classes,
+    permission_classes,
+    api_view,
+)
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from .serializers import InscripcionSerializer,InscripcionCompletaSerializer, InscripcionExistenteSerializer
+from .serializers import (
+    InscripcionSerializer,
+    InscripcionCompletaSerializer,
+    InscripcionExistenteSerializer,
+)
 from .models import Inscripcion
 from Roles.roles import ControlarRoles
 from rest_framework.exceptions import PermissionDenied
 from django.utils import timezone
+
+
+def desanidar_data(data):
+    result = {}
+    for key, value in data.items():
+        if "." in key:
+            top_key, sub_key = key.split(".", 1)
+            if top_key not in result:
+                result[top_key] = {}
+            result[top_key][sub_key] = value
+        else:
+            result[key] = value
+    return result
+
 
 # Create your views here.
 #!!! Cambiar permisos
@@ -50,19 +72,21 @@ class InscripcionView(viewsets.ModelViewSet):
         return super().update(request, *args, **kwargs)
 
 
-
 @api_view(["POST"])
-@authentication_classes([]) 
+@authentication_classes([])
 @permission_classes([AllowAny])
 def crear_inscripcion(request):
-    serializer = InscripcionCompletaSerializer(data=request.data)
+    serializer = InscripcionCompletaSerializer(
+        data=request.data, context={"request": request}
+    )
     if serializer.is_valid():
         inscripcion = serializer.save()
-        return Response({
-            "id": inscripcion.id,
-            "mensaje": "Inscripción creada exitosamente"
-        }, status=status.HTTP_201_CREATED)
+        return Response(
+            {"id": inscripcion.id, "mensaje": "Inscripción creada exitosamente"},
+            status=status.HTTP_201_CREATED,
+        )
     else:
+        print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -70,13 +94,16 @@ def crear_inscripcion(request):
 @authentication_classes([JWTAuthentication])
 @permission_classes([AllowAny])
 def crear_inscripcion_existente(request):
-    serializer = InscripcionExistenteSerializer(data=request.data)
+    data = desanidar_data(request.data)
+    serializer = InscripcionExistenteSerializer(data=data, context={"request": request})
     if serializer.is_valid():
         inscripcion = serializer.save()
-        return Response({
-            "id": inscripcion.id,
-            "mensaje": "Inscripción creada exitosamente"
-        }, status=status.HTTP_201_CREATED)
+        return Response(
+            {"id": inscripcion.id, "mensaje": "Inscripción creada exitosamente"},
+            status=status.HTTP_201_CREATED,
+        )
     else:
         print(serializer.errors)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"errores": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
+        )
