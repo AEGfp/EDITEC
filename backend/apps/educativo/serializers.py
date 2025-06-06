@@ -42,9 +42,26 @@ class TurnoSerializer(serializers.ModelSerializer):
 
 
 class SalaSerializer(serializers.ModelSerializer):
+    nombre_tutor=serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Sala
         fields = "__all__"
+        read_only_fields=["nombre_tutor"]
+        
+    
+    def get_nombre_tutor(self, obj):
+        persona = obj.profesor_encargado
+        if persona is None:
+            return ""  # o algún texto por defecto si es null
+        return f"{persona.nombre} {persona.apellido}"
+
+    def validate_profesor_encargado(self, persona):
+        user = getattr(persona, "user", None)
+        if not user:
+            raise serializers.ValidationError("El profesor encargado no tiene un usuario asociado.")
+        if not user.groups.filter(name="profesor").exists():
+            raise serializers.ValidationError("El usuario no pertenece al grupo 'profesor'.")
+        return persona
 
 
 class AnhoLectivoSerializer(serializers.ModelSerializer):

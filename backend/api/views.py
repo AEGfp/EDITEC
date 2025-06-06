@@ -107,11 +107,16 @@ def logout(request):
 class FuncionariosView(APIView):
     roles_permitidos = ["director","administrador"]
 
-    def get(self,request):
-        roles_funcionarios = ["profesor", "administrador"]
-        usuarios = User.objects.filter(groups__name__in=roles_funcionarios).distinct()
-        serializer = UserSerializer(usuarios, many=True)
+    def get(self, request):
+        grupo_param = request.query_params.get("grupo")
 
+        if grupo_param:
+            usuarios = User.objects.filter(groups__name=grupo_param).distinct()
+        else:
+            roles_funcionarios = ["profesor", "administrador"]
+            usuarios = User.objects.filter(groups__name__in=roles_funcionarios).distinct()
+
+        serializer = UserSerializer(usuarios, many=True)
         return Response(serializer.data)
 
 @permission_classes([AllowAny])
@@ -119,7 +124,15 @@ class PersonaView(viewsets.ModelViewSet):
     serializer_class = PersonaSerializer
     queryset = Persona.objects.all()
 
-
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        grupo = self.request.query_params.get('grupo')
+        if grupo == 'profesor':
+            queryset = queryset.filter(
+                user__isnull=False,
+                user__groups__name='profesor'
+            )
+        return queryset
 """
 @permission_classes([AllowAny])
 class PerfilUsuarioView(viewsets.ModelViewSet):

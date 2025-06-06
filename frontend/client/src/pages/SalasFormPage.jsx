@@ -5,6 +5,7 @@ import {
   actualizarSala,
   obtenerSala,
 } from "../api/salas.api";
+import { obtenerFuncionarios } from "../api/funcionarios.api";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import tienePermiso from "../utils/tienePermiso";
@@ -20,18 +21,35 @@ function SalasFormPage() {
   } = useForm();
 
   const [editable, setEditable] = useState(false);
+  const [profesores, setProfesores] = useState([]);
   const navigate = useNavigate();
   const params = useParams();
   const pagina = "/salas";
 
   useEffect(() => {
+    async function cargarProfesores() {
+      try {
+        const { data } = await obtenerFuncionarios({ grupo: "profesor" });
+        console.log(data);
+        setProfesores(data);
+      } catch (error) {
+        console.error("Error al cargar los profesores", error);
+      }
+    }
+
+    cargarProfesores();
+  }, []);
+
+  useEffect(() => {
     async function cargarSala() {
       try {
-        if (params.id) {
+        if (params.id && profesores.length > 0) {
           const { data } = await obtenerSala(params.id);
+          console.log(data);
           setValue("descripcion", data.descripcion);
+          setValue("profesor_encargado", data.profesor_encargado);
           setEditable(false);
-        } else {
+        } else if (!params.id) {
           reset();
           setEditable(true);
         }
@@ -39,8 +57,9 @@ function SalasFormPage() {
         console.error("Error al cargar la sala", error);
       }
     }
+
     cargarSala();
-  }, [params.id, reset, setValue]);
+  }, [params.id, profesores, reset, setValue]);
 
   const onSubmit = async (data) => {
     try {
@@ -58,7 +77,9 @@ function SalasFormPage() {
   const habilitarEdicion = () => setEditable(true);
 
   const descartarSala = async () => {
-    const confirmar = window.confirm("¿Estás seguro que quieres eliminar esta sala?");
+    const confirmar = window.confirm(
+      "¿Estás seguro que quieres eliminar esta sala?"
+    );
     if (confirmar) {
       await eliminarSala(params.id);
       navigate(pagina);
@@ -81,6 +102,20 @@ function SalasFormPage() {
               {...register("descripcion", { required: true })}
             />
             {errors.descripcion && <CampoRequerido />}
+            <h4 className="formulario-elemento">Profesor encargado</h4>
+            <select
+              {...register("profesor_encargado", { required: true })}
+              className="formulario-input"
+            >
+              <option value="">Seleccione un profesor</option>
+              {profesores.map((prof) => (
+                <option key={prof.id} value={prof.id}>
+                  {prof.persona?.nombre} {prof.persona?.apellido}(
+                  {prof.groups?.join(", ")})
+                </option>
+              ))}
+            </select>
+            {errors.profesor_encargado && <CampoRequerido />}
           </fieldset>
         </form>
 
