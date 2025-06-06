@@ -15,6 +15,14 @@ class ArchivosViewSet(viewsets.ModelViewSet):
     queryset = Archivos.objects.all()
     serializer_class = ArchivosSerializer
 
+    def get_queryset(self):
+        queryset = Archivos.objects.all()
+        persona_id = self.request.query_params.get("persona")
+
+        if persona_id is not None:
+            queryset = queryset.filter(persona_id=persona_id)
+
+        return queryset
 
 @api_view(["GET"])
 @authentication_classes([JWTAuthentication])

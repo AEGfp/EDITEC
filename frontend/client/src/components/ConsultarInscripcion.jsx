@@ -7,6 +7,7 @@ import {
   aceptarInscripcion,
   rechazarInscripcion,
 } from "../api/inscripciones.api";
+import ConsultarArchivos from "./ConsultarArchivos";
 
 export default function ConsultarInscripcion() {
   const { id } = useParams();
@@ -94,6 +95,12 @@ export default function ConsultarInscripcion() {
 
         <div className="max-w-lg w-full">
           <ConsultarTutores idTutor={inscripcion.id_tutor}></ConsultarTutores>
+        </div>
+
+        <div className="max-w-lg w-full">
+          <ConsultarArchivos
+            id_persona_infante={inscripcion.id_persona_infante}
+          ></ConsultarArchivos>
         </div>
       </div>
       {inscripcion.estado === "pendiente" && (

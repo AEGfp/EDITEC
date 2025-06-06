@@ -20,7 +20,7 @@ export function ListaInscripciones() {
       try {
         //Cambiar la API para las demás páginas
         const res = await obtenerInscripciones();
-
+        console.log(res.data);
         if (res.data.length > 0) {
           const arrayColumnas = definirColumnas();
 

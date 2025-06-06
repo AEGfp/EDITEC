@@ -28,7 +28,7 @@ class InscripcionSerializer(serializers.ModelSerializer):
     nombre_usuario = serializers.SerializerMethodField()
     fecha_inscripcion = serializers.DateField(format="%d/%m/%Y", read_only=True)
     fecha_revision = serializers.DateTimeField(format="%d/%m/%Y", read_only=True)
-
+    id_persona_infante = serializers.SerializerMethodField()
     class Meta:
         model = Inscripcion
         fields = "__all__"
@@ -40,6 +40,7 @@ class InscripcionSerializer(serializers.ModelSerializer):
             "nombre_tutor",
             "nombre_infante",
             "nombre_usuario",
+            "id_persona_infante"
         ]
 
     def get_nombre_tutor(self, obj):
@@ -49,6 +50,9 @@ class InscripcionSerializer(serializers.ModelSerializer):
     def get_nombre_infante(self, obj):
         persona = obj.id_infante.id_persona
         return f"{persona.nombre} {persona.apellido}"
+
+    def get_id_persona_infante(self,obj):
+        return obj.id_infante.id_persona.id
 
     def get_nombre_usuario(self, obj):
         if obj.usuario_auditoria:
