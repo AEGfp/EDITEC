@@ -27,7 +27,6 @@ export function ListaSaldosProveedoresTable() {
         const nombresColumnas = {
           monto_cuota: "Total Cuota",
           saldo_cuota: "Saldo Cuota",
-          fecha_pago: "Fecha de Pago",
           numero_cuota: "N° Cuota",
           numero_comprobante_as: "Comprobante",
           proveedor_nombre: "Proveedor",
@@ -35,7 +34,7 @@ export function ListaSaldosProveedoresTable() {
         };
 
         // Lista de claves que querés mostrar
-        const camposVisibles = ["monto_cuota", "saldo_cuota", "fecha_pago", "numero_cuota","numero_comprobante_as",
+        const camposVisibles = ["monto_cuota", "saldo_cuota", "numero_cuota","numero_comprobante_as",
           "proveedor_nombre","condicion_nombre"
         ];
 

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Proveedor, TipoComprobante, Condicion, ComprobanteProveedor, SaldoProveedores
+from .models import Proveedor, TipoComprobante, Condicion, ComprobanteProveedor, SaldoProveedores, CajaPagos
 import re
 from locales.models import Local
 
@@ -126,7 +126,48 @@ class SaldoProveedoresSerializer(serializers.ModelSerializer):
     sucursal_nombre = serializers.CharField(source='id_comprobante.id_local.descripcion', read_only=True)
     class Meta:
         model = SaldoProveedores
-        fields = ['id','monto_cuota','saldo_cuota', 'numero_cuota', 'fecha_pago','id_comprobante',
+        fields = ['id','monto_cuota','saldo_cuota', 'numero_cuota','id_comprobante',
                   'numero_comprobante_as', 'proveedor_nombre','tipo_comprobante_nombre','condicion_nombre',
                   'sucursal_nombre']
+        
 
+# Serializer de las cajas pagos
+class CajaPagosSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CajaPagos
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Filtrar comprobantes con al menos una cuota pendiente
+        comprobantes_con_saldo = ComprobanteProveedor.objects.filter(
+            saldos__saldo_cuota__gt=0
+        ).distinct()
+        self.fields['id_comprobante'].queryset = comprobantes_con_saldo
+
+    def validate(self, data):
+        id_comprobante = data.get('id_comprobante')
+        nro_cuota = data.get('nro_cuota')
+        total_pago = data.get('total_pago')
+
+        try:
+            saldo = SaldoProveedores.objects.get(
+                id_comprobante=id_comprobante,
+                numero_cuota=nro_cuota
+            )
+        except SaldoProveedores.DoesNotExist:
+            raise serializers.ValidationError("La cuota no existe o no pertenece al comprobante.")
+
+        # Si estamos actualizando, sumamos el valor anterior antes de validar
+        if self.instance:
+            total_pago_original = self.instance.total_pago
+            saldo_restante = saldo.saldo_cuota + total_pago_original
+        else:
+            saldo_restante = saldo.saldo_cuota
+
+        if total_pago > saldo_restante:
+            raise serializers.ValidationError(f"El pago ({total_pago}) excede el saldo disponible de la cuota ({saldo_restante}).")
+
+        return data
+    
