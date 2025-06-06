@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import CamposUsuario from "../components/CamposUsuario";
 import CamposTutor from "../components/CamposTutor";
 import CamposInfante from "../components/CamposInfante";
+import SeleccionSala from "../components/SeleccionSala";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   crearInscripcion,
@@ -47,6 +48,10 @@ export default function RealizarInscripcionPage() {
       setValue={setValue}
     />
   );
+  pasos.push(
+    <SeleccionSala register={register} watch={watch} setValue={setValue} />
+  );
+
   // 4: <ArchivosForm register={register} errors={errors} />,
   // 5: <ConfirmarInscripcion idTutor={idTutor} idInfante={idInfante} />,
 
@@ -114,6 +119,7 @@ export default function RealizarInscripcionPage() {
           ind_celiaquismo: datos.ind_celiaquismo,
           permiso_cambio_panhal: datos.permiso_cambio_panhal,
           permiso_fotos: datos.permiso_fotos,
+          id_sala: datos.id_sala,
         },
       };
 
@@ -141,8 +147,8 @@ export default function RealizarInscripcionPage() {
 
       console.log(formData);
       for (let pair of formData.entries()) {
-  console.log(pair[0], pair[1]);
-}
+        console.log(pair[0], pair[1]);
+      }
       const res = omitirUsuario
         ? await crearInscripcionExistente(formData)
         : await crearInscripcion(formData);

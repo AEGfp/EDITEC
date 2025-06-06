@@ -42,14 +42,14 @@ class TurnoSerializer(serializers.ModelSerializer):
 
 
 class SalaSerializer(serializers.ModelSerializer):
-    nombre_tutor=serializers.SerializerMethodField(read_only=True)
+    nombre_profesor=serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Sala
         fields = "__all__"
-        read_only_fields=["nombre_tutor"]
+        read_only_fields=["nombre_profesor"]
         
     
-    def get_nombre_tutor(self, obj):
+    def get_nombre_profesor(self, obj):
         persona = obj.profesor_encargado
         if persona is None:
             return ""  # o algún texto por defecto si es null
