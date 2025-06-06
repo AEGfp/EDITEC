@@ -19,3 +19,20 @@ export const aceptarInscripcion = (id) =>
   Api.patch(`${DIRECCION}${id}/`, { estado: "aprobada" });
 export const rechazarInscripcion = (id) =>
   Api.patch(`${DIRECCION}${id}/`, { estado: "rechazada" });
+export const crearReporteInscripcion = ({
+  estado_filtro,
+  fecha_desde,
+  fecha_hasta,
+  id_tutor,
+  id_infante,
+} = {}) =>
+  Api.get("reporte-inscripciones/", {
+    params: {
+      estado_filtro,
+      fecha_desde,
+      fecha_hasta,
+      id_tutor,
+      id_infante,
+    },
+    responseType: "blob",
+  });
