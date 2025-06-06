@@ -29,14 +29,15 @@ from Roles.roles import (
 
 from django.shortcuts import render
 from rest_framework import viewsets
-from .models import Proveedor, TipoComprobante, Condicion, ComprobanteProveedor, SaldoProveedores
+from .models import Proveedor, TipoComprobante, Condicion, ComprobanteProveedor, SaldoProveedores, CajaPagos
 from .serializers import (
     ProveedorSerializer,
     TipoComprobanteSerializer,
     CondicionSerializer,
     ComprobanteProveedorSerializer,
     #! Solo para ver
-    SaldoProveedoresSerializer)
+    SaldoProveedoresSerializer,
+    CajaPagosSerializer)
 
 from django.http import HttpResponse
 from django.template.loader import render_to_string
@@ -74,6 +75,55 @@ class ComprobanteProveedorView(viewsets.ModelViewSet):
 class SaldoProveedoresView(viewsets.ModelViewSet):
     queryset = SaldoProveedores.objects.all()
     serializer_class = SaldoProveedoresSerializer
+
+class ComprobantesConSaldoAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        comprobantes = ComprobanteProveedor.objects.filter(
+            saldos__saldo_cuota__gt=0
+        ).distinct()
+
+        data = [
+            {
+                "id": c.id,
+                "descripcion": str(c),  #!Modificar para front
+            }
+            for c in comprobantes
+        ]
+        return Response(data)
+    
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def cuotas_disponibles(request):
+    id_comprobante = request.query_params.get("id_comprobante")
+
+    if not id_comprobante:
+        return Response(
+            {"error": "Falta el parámetro 'id_comprobante'."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    cuotas = SaldoProveedores.objects.filter(
+        id_comprobante=id_comprobante,
+        saldo_cuota__gt=0
+    ).order_by('numero_cuota')
+
+    data = [
+        {
+            "numero_cuota": c.numero_cuota,
+            "saldo_cuota": c.saldo_cuota,
+            "monto_cuota": c.monto_cuota,
+        }
+        for c in cuotas
+    ]
+    return Response(data)
+
+@permission_classes([AllowAny])
+class CajaPagosView(viewsets.ModelViewSet):
+    queryset = CajaPagos.objects.all()
+    serializer_class = CajaPagosSerializer
 
 @permission_classes([AllowAny])
 def generar_reporte_pdf(request):
