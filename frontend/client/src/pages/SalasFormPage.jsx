@@ -63,10 +63,11 @@ function SalasFormPage() {
 
   const onSubmit = async (data) => {
     try {
+      console.log(data)
       if (params.id) {
         await actualizarSala(params.id, data);
       } else {
-        await crearSala(data); // el backend debería setear id_usuario_aud automáticamente
+        await crearSala(data); 
       }
       navigate(pagina);
     } catch (error) {
@@ -109,8 +110,8 @@ function SalasFormPage() {
             >
               <option value="">Seleccione un profesor</option>
               {profesores.map((prof) => (
-                <option key={prof.id} value={prof.id}>
-                  {prof.persona?.nombre} {prof.persona?.apellido}(
+                <option key={prof.persona?.id} value={prof.persona?.id}>
+                  {prof.persona?.nombre} {prof.persona?.apellido} (
                   {prof.groups?.join(", ")})
                 </option>
               ))}
