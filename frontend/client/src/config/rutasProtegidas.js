@@ -24,6 +24,7 @@ import { ProveedoresFormPage } from "../pages/ProveedoresFormPage";
 import { ComprobantesFormPage } from "../pages/ComprobantesFormPage";
 import { ComprobantesPage } from "../pages/ComprobantesPage";
 import { SaldosProveedoresPage } from "../pages/SaldosProveedoresPage";
+import AsistenciasPage from "../pages/AsistenciasPage";
 
 export default [
   {
@@ -31,6 +32,22 @@ export default [
     componente: HomePage,
     publico: true, //necesita permiso para acceder?
     nombre: "Inicio",
+  },
+  {
+    path: "/asistencias", //url
+    componente: AsistenciasPage, //.jsx
+    entidad: "asistencias", //tabla con la que interactúa
+    permiso: "lectura", //permisos minimos
+    nombre: "Asistencias", //Nombre del elemento en el Sidebar
+    /*    subrutas: [
+      {
+        path: "/crear-comprobante",
+        componente: ComprobantesFormPage,
+        entidad: "comprobantes",
+        permiso: "escritura",
+        nombre: "Crear Comprobante",
+      },
+    ],*/
   },
   {
     path: "/empresas", //url
@@ -101,14 +118,16 @@ export default [
   {
     path: "/infantes",
     componente: InfantesList,
-    publico: true,
+    entidad: "infantes",
+    permiso: "lectura",
     nombre: "Infantes",
     subrutas: [
       {
         path: "/infantes-crear",
         componente: InfanteForm,
-        publico: true,
-        nombre: "Añadir infantes",
+        entidad: "infantes",
+        permiso: "escritura",
+        nombre: "Añadir infante",
       },
     ],
   },
@@ -116,18 +135,21 @@ export default [
   {
     path: "/infantes/:id",
     componente: InfanteForm,
-    publico: true,
+    entidad: "infantes",
+    permiso: "lectura",
   },
   {
     path: "/salas",
     componente: SalasList,
-    publico: true,
+    entidad: "salas",
+    permiso: "lectura",
     nombre: "Salas",
     subrutas: [
       {
         path: "/salas-crear",
         componente: SalasFormPage,
-        publico: true,
+        entidad: "salas",
+        permiso: "escritura",
         nombre: "Crear salas",
       },
     ],
@@ -135,19 +157,22 @@ export default [
   {
     path: "/salas/:id", // <-- ESTA LÍNEA AGREGA LA EDICIÓN
     componente: SalasFormPage,
-    publico: true,
+    entidad: "salas",
+    permiso: "lectura",
   },
 
   {
     path: "/turnos",
     componente: TurnosList,
-    publico: true,
+    entidad: "turnos",
+    permiso: "lectura",
     nombre: "Turnos",
     subrutas: [
       {
         path: "/turnos-crear",
         componente: TurnosFormPage,
-        publico: true,
+        entidad: "escritura",
+        permiso: "escritura",
         nombre: "Crear turnos",
       },
     ],
@@ -155,19 +180,22 @@ export default [
   {
     path: "/turnos/:id",
     componente: TurnosFormPage,
-    publico: true,
+    entidad: "turnos",
+    permiso: "lectura",
   },
 
   {
     path: "/tutores",
     componente: TutoresList,
-    publico: true,
+    entidad: "tutores",
+    permiso: "lectura",
     nombre: "Tutores",
     subrutas: [
       {
         path: "/tutores-crear",
         componente: TutoresFormPage,
-        publico: true,
+        entidad: "tutores",
+        permiso: "escritura",
         nombre: "Añadir turores",
       },
     ],
@@ -175,7 +203,8 @@ export default [
   {
     path: "/tutores/:id",
     componente: TutoresFormPage,
-    publico: true,
+    entidad: "tutores",
+    permiso: "lectura",
   },
   {
     path: "/inscripciones",
@@ -291,8 +320,10 @@ export default [
         entidad: "saldos",
         permiso: "lectura",
         //nombre: "Crear Comprobante",
-      },*/],
-  },{
+      },*/
+    ],
+  },
+  {
     path: "/saldos/:id",
     componente: SaldosProveedoresPage,
     entidad: "saldos",

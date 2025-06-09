@@ -6,7 +6,8 @@ from .views import (
     TurnoView,
     SalaView,
     AnhoLectivoView,
-  salas_publicas 
+    salas_publicas,
+    infantes_asignados,
 )
 
 router = DefaultRouter()
@@ -18,6 +19,6 @@ router.register(r"anhos", AnhoLectivoView)
 
 urlpatterns = [
     path("", include(router.urls)),
-    path('salas-publicas/', salas_publicas),
-
+    path("salas-publicas/", salas_publicas),
+  #  path("infantes-asignados/", infantes_asignados),
 ]

@@ -11,3 +11,4 @@ export const obtenerSala = (id) => Api.get(`${DIRECCION}${id}/`);
 export const actualizarSala = (id, datos) =>
   Api.put(`${DIRECCION}${id}/`, datos);
 export const eliminarSala = (id) => Api.delete(`${DIRECCION}${id}/`);
+export const obtenerInfantesAsignados = () => Api.get("infantes-asignados");

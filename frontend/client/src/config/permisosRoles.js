@@ -7,12 +7,16 @@ const permisosRoles = {
   },
   empresas: {
     //permisos
+    lectura: ["director", "administrador"],
+    escritura: ["director", "administrador"],
+  },
+  asistencias: {
     lectura: ["director", "profesor"],
-    escritura: ["director","administrador"],
+    escritura: ["director", "profesor"],
   },
   locales: {
     //permisos
-    lectura: ["director", "profesor"],
+    lectura: ["director", "administrador"],
     escritura: ["director"],
   },
   infantes: {
@@ -20,11 +24,11 @@ const permisosRoles = {
     escritura: ["director"],
   },
   salas: {
-    lectura: ["director", "profesor"],
+    lectura: ["director", "administrador"],
     escritura: ["director"],
   },
   turnos: {
-    lectura: ["director", "profesor"],
+    lectura: ["director", "administrador"],
     escritura: ["director"],
   },
   tutores: {
@@ -37,7 +41,7 @@ const permisosRoles = {
   },
 
   notificaciones: {
-    lectura: ["director", "profesor"],
+    lectura: ["director", "administrador"],
     escritura: ["director", "administrador"],
   },
   funcionarios: {
