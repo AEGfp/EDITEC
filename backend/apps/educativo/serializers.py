@@ -6,10 +6,18 @@ from api.serializer import PersonaSerializer
 
 class InfanteSerializer(serializers.ModelSerializer):
     id_persona = PersonaSerializer(read_only=True)
-
+    nombre_sala=serializers.SerializerMethodField(read_only=True)
+    
     class Meta:
         model = Infante
         fields = '__all__'
+        read_only_fields=["sala"]
+
+    def get_nombre_sala(self, obj):
+        sala = obj.id_sala 
+        if sala is None:
+            return ""
+        return sala.descripcion
 
 class InfanteCreateUpdateSerializer(serializers.ModelSerializer):
     id_persona = serializers.PrimaryKeyRelatedField(queryset=Persona.objects.all())
@@ -52,7 +60,7 @@ class SalaSerializer(serializers.ModelSerializer):
     def get_nombre_profesor(self, obj):
         persona = obj.profesor_encargado
         if persona is None:
-            return ""  # o algún texto por defecto si es null
+            return ""  
         return f"{persona.nombre} {persona.apellido}"
 
     def validate_profesor_encargado(self, persona):
