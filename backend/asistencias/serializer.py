@@ -12,7 +12,7 @@ class AsistenciaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Asistencia
         fields = "__all__"
-        read_only_fields = ["fecha", "hora_entrada", "hora_salida", "usuario_auditoria"]
+        read_only_fields = ["fecha", "hora_entrada", "usuario_auditoria"]
 
     def get_nombre_infante(self, obj):
         return obj.id_infante.id_persona.nombre if obj.id_infante and obj.id_infante.id_persona else ""

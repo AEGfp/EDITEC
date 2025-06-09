@@ -32,3 +32,9 @@ export const marcarAusente = (id_infante) => {
     estado: "ausente",
   });
 };
+
+export const marcarSalida = (id) => {
+  return Api.post(`${DIRECCION}${id}/marcar-salida/`);
+};
+
+export const obtenerInfantesAsignados = () => Api.get("infantes-asignados");
