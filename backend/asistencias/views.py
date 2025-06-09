@@ -9,6 +9,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from apps.educativo.models import Infante, Sala
 from django.utils.timezone import now,localtime
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from django.db.models import Count
+import io
+from xhtml2pdf import pisa
 # Create your views here.
 #! Cambiar permisos
 #@authentication_classes([JWTAuthentication])
@@ -49,6 +54,55 @@ class InfantesAsignadosConAsistenciaView(APIView):
         return Response(serializer.data)
 
 
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def generar_reporte_asistencias(request):
+    fecha_desde = request.GET.get("fecha_desde")
+    fecha_hasta = request.GET.get("fecha_hasta")
+    id_infante = request.GET.get("id_infante")
+    estado = request.GET.get("estado")
+
+    asistencias = Asistencia.objects.all()
+
+    if fecha_desde:
+        asistencias = asistencias.filter(fecha__gte=fecha_desde)
+    if fecha_hasta:
+        asistencias = asistencias.filter(fecha__lte=fecha_hasta)
+    if id_infante:
+        asistencias = asistencias.filter(id_infante=id_infante)
+    if estado:
+        asistencias = asistencias.filter(estado=estado)
+
+    resumen_estados = (
+        asistencias.values("estado")
+        .annotate(cantidad=Count("id"))
+        .order_by("estado")
+    )
+    total = sum(item["cantidad"] for item in resumen_estados)
+
+    serializer = AsistenciaSerializer(asistencias, many=True)
+
+    context = {
+        "resumen_estados": resumen_estados,
+        "total": total,
+        "detalles": serializer.data,
+        "fecha_desde": fecha_desde,
+        "fecha_hasta": fecha_hasta,
+        "id_infante": id_infante,
+        "estado": estado,
+    }
+
+    html = render_to_string("reporte_asistencias.html", context)
+
+    result = io.BytesIO()
+    pdf = pisa.pisaDocument(io.BytesIO(html.encode("UTF-8")), result)
+
+    if not pdf.err:
+        return HttpResponse(result.getvalue(), content_type="application/pdf")
+    return HttpResponse("Error al generar PDF", status=500)
+
+
+'''
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def marcar_salida(request):
@@ -79,3 +133,5 @@ def marcar_salida(request):
         return Response(AsistenciaSerializer(instancia).data, status=200)
 
     return Response(serializer.errors, status=400)
+
+'''
