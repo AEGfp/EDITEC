@@ -50,3 +50,10 @@ class AnhoLectivo(models.Model):
     def __str__(self):
         return str(self.anho)
 
+#Agrego porque (este tutor es responsable de este infante) para el tema de las notificaciones
+class TutorInfante(models.Model):
+    tutor = models.ForeignKey("Tutor", on_delete=models.CASCADE, related_name="tutorados")
+    infante = models.ForeignKey("Infante", on_delete=models.CASCADE, related_name="tutores")
+
+    def __str__(self):
+        return f"{self.tutor} → {self.infante}"
