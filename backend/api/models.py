@@ -51,3 +51,4 @@ class Permiso(models.Model):
 
     def __str__(self):
         return self.descripcion
+

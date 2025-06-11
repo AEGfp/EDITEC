@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from .models import Inscripcion
 from api.models import Persona, User
-from apps.educativo.models import Tutor, Infante
+from apps.educativo.models import Tutor, Infante, TutorInfante
 from api.serializer import UserSerializer, PersonaSerializer
 from apps.educativo.serializers import TutorSerializer, InfanteSerializer
 from django.db import transaction
@@ -84,7 +84,10 @@ class InscripcionSerializer(serializers.ModelSerializer):
 
         validated_data["id_tutor"] = tutor
         return super().create(validated_data)
+ # Relación automática
+        TutorInfante.objects.get_or_create(tutor=tutor, infante=infante)
 
+        return inscripcion
 
 #! Arreglar tutores con varios hijos
 class InscripcionCompletaSerializer(serializers.Serializer):
@@ -147,6 +150,9 @@ class InscripcionCompletaSerializer(serializers.Serializer):
             inscripcion = Inscripcion.objects.create(
                 id_tutor=tutor, id_infante=infante, estado="pendiente"
             )
+
+  # Relación automática
+        TutorInfante.objects.get_or_create(tutor=tutor, infante=infante)
 
         return inscripcion
 
@@ -219,5 +225,8 @@ class InscripcionExistenteSerializer(serializers.Serializer):
             inscripcion = Inscripcion.objects.create(
                 id_tutor=tutor, id_infante=infante, estado="pendiente"
             )
+
+  # Relación automática
+        TutorInfante.objects.get_or_create(tutor=tutor, infante=infante)
 
         return inscripcion
