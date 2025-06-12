@@ -1,24 +1,24 @@
 import { useEffect, useState } from "react";
-import { obtenerTodasSucursales } from "../api/locales.api";
+import { obtenerTodasCajasPagos } from "../api/cajaspagos.api";
 import DataTable from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
 import { estiloTablas } from "../assets/estiloTablas";
 import tienePermiso from "../utils/tienePermiso";
 
-export function ListaLocalesTable() {
+export function ListaCajasPagosTable() {
   const navigate = useNavigate();
-  const [sucursales, setSucursales] = useState([]);
+  const [cajas, setCajas] = useState([]);
   const [columnas, setColumnas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busqueda, setBusqueda] = useState("");
-  const puedeEscribir = tienePermiso("locales", "escritura");
+  const puedeEscribir = tienePermiso("cajasPagos", "escritura");
 
   useEffect(() => {
     //Cambiar el nombre de la función
-    async function loadSucursales() {
+    async function loadCajas() {
       try {
         //Cambiar la API para las demás páginas
-        const res = await obtenerTodasSucursales();
+        const res = await obtenerTodasCajasPagos();
 
  //       setEmpresas(res.data); //!agg
 //        setLoading(false); //!agg
@@ -46,7 +46,7 @@ export function ListaLocalesTable() {
           agregarBotonDetalles(arrayColumnas);
           setColumnas(arrayColumnas);
           //Cambiar el nombre de la función
-          setSucursales(res.data);
+          setCajas(res.data);
           setLoading(false);
         }
       } catch (err) {
@@ -55,15 +55,15 @@ export function ListaLocalesTable() {
       }
     }
     //Cambiar el nombre de la función
-    loadSucursales();
+    loadCajas();
   }, []);
 
   function handleRowClick(fila) {
-    navigate(`/locales/${fila.id}`);
+    navigate(`/caja-pagos/${fila.id}`);
   }
 
   function agregarElemento() {
-    navigate(`/crear-sucursal/`);
+    navigate(`/crear-caja-pago/`);
   }
 
   function agregarBotonDetalles(arrayColumnas) {
@@ -86,9 +86,9 @@ export function ListaLocalesTable() {
   }
 
   //Cambiar el nombre de 'permiso' según la página
-  const elementosFiltrados = sucursales.filter((sucursal) =>
+  const elementosFiltrados = cajas.filter((caja) =>
     columnas.some((columna) => {
-      const elem = columna.selector(sucursal);
+      const elem = columna.selector(caja);
       return elem?.toString().toLowerCase().includes(busqueda.toLowerCase());
     })  
   );
@@ -105,7 +105,7 @@ export function ListaLocalesTable() {
       {/*Cambiar el nombre de la página
       y de data={--nombre---} según la página*/}
       <h1 className="align-baseline text-2xl font-semibold p-2 pl-3">
-        Sucursales
+        Cajas Pagos
       </h1>
       <div className="p-2 flex flex-row justify-between">
         <input
