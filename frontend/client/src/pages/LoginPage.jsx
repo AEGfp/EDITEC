@@ -31,140 +31,72 @@ export function LoginPage() {
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        backgroundColor: "#f5f5f5",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "400px",
-          padding: "2rem",
-          backgroundColor: "white",
-          borderRadius: "8px",
-          boxShadow: "0 0 15px rgba(0,0,0,0.1)",
-        }}
-      >
-        <div style={{ textAlign: "center", marginBottom: "1rem" }}>
-          <img
-            src={logo}
-            alt="Logo"
-            style={{ width: "100px", height: "auto" }}
-          />
-          <h2 style={{ fontSize: "1.5rem", color: "#333", marginTop: "1rem" }}>
-            Iniciar Sesión
-          </h2>
+    <div className="contenedor-centrar">
+      <div className="formulario">
+        <div className="formulario-dentro">
+          <form onSubmit={login}>
+            <h2 className="formulario-titulo">Iniciar Sesión</h2>
+            <div className="flex items-center justify-center">
+              <img
+                src={logo}
+                alt="Logo"
+                style={{ width: "100px", height: "auto" }}
+              />
+            </div>
+            <label className="formulario-elemento">Usuario</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Username"
+              className="formulario-input"
+            />
+
+            <label className="formulario-elemento">Contraseña</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              className="formulario-input"
+            />
+            <div className="formulario-lista pt-8">
+              <button
+                type="submit"
+                disabled={loading}
+                className="boton-guardar"
+              >
+                {loading
+                  ? "Ingresando..."
+                  : desdeInscripcion
+                  ? "Siguiente"
+                  : "Ingresar"}
+              </button>
+              <br />
+              <button
+                className="boton-detalles"
+                onClick={() => navigate("/signup-falso")}
+                type="button"
+                hidden={desdeInscripcion}
+              >
+                Sign Up
+              </button>
+
+              <br />
+              <br />
+              <button
+                className="boton-editar"
+                onClick={() => navigate("/iniciar-inscripcion")}
+                type="button"
+                hidden={desdeInscripcion}
+              >
+                Inscribir
+              </button>
+            </div>
+          </form>
+
+          {error && <p className="mensaje-error">{error}</p>}
         </div>
-
-        <form onSubmit={login}>
-          <label
-            style={{ display: "block", marginBottom: "0.5rem", color: "#555" }}
-          >
-            Usuario
-          </label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Username"
-            style={{
-              width: "100%",
-              padding: "0.5rem",
-              marginBottom: "1rem",
-              borderRadius: "4px",
-              border: "1px solid #ccc",
-            }}
-          />
-
-          <label
-            style={{ display: "block", marginBottom: "0.5rem", color: "#555" }}
-          >
-            Contraseña
-          </label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-            style={{
-              width: "100%",
-              padding: "0.5rem",
-              marginBottom: "1rem",
-              borderRadius: "4px",
-              border: "1px solid #ccc",
-            }}
-          />
-
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: "100%",
-              padding: "0.75rem",
-              backgroundColor: "#007bff",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-            }}
-          >
-            {loading ? "Ingresando..." : "Ingresar"}
-          </button>
-        </form>
-
-        {
-          // !!! Borrar al final
-        }
-        <br />
-        <button
-          style={{
-            width: "100%",
-            padding: "0.75rem",
-            backgroundColor: "green",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-          onClick={() => navigate("/signup-falso")}
-        >
-          Sign Up
-        </button>
-
-        <br />
-        <br />
-        <button
-          style={{
-            width: "100%",
-            padding: "0.75rem",
-            backgroundColor: "orange",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-          onClick={() => navigate("/iniciar-inscripcion")}
-        >
-          Inscribir
-        </button>
-
-        {error && (
-          <p
-            style={{
-              color: "red",
-              marginTop: "1rem",
-              fontWeight: "bold",
-              textAlign: "center",
-            }}
-          >
-            {error}
-          </p>
-        )}
       </div>
     </div>
   );
