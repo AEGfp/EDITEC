@@ -24,6 +24,7 @@ import { ProveedoresFormPage } from "../pages/ProveedoresFormPage";
 import { ComprobantesFormPage } from "../pages/ComprobantesFormPage";
 import { ComprobantesPage } from "../pages/ComprobantesPage";
 import { SaldosProveedoresPage } from "../pages/SaldosProveedoresPage";
+import AsistenciasPage from "../pages/AsistenciasPage";
 import { CajasPagosPage } from "../pages/CajasPagosPage";
 import { CajasPagosFormPage } from "../pages/CajasPagosFormPage";
 
