@@ -1,10 +1,10 @@
 const permisosRoles = {
   //nombre de la entidad
-  permisos: {
+  /*permisos: {
     //permisos
     lectura: ["director", "profesor"],
     escritura: ["director"],
-  },
+  },*/
   empresas: {
     //permisos
     lectura: ["director", "administrador"],
@@ -39,7 +39,6 @@ const permisosRoles = {
     lectura: ["director", "administrador"],
     escritura: ["director", "administrador"],
   },
-
   notificaciones: {
     lectura: ["director", "administrador"],
     escritura: ["director", "administrador"],
@@ -81,6 +80,10 @@ const permisosRoles = {
   cajasPagos: {
     lectura: ["director", "profesor"],
     escritura: ["director"],
+  },
+  informes: {
+    lectura: ["director", "profesor"],
+    escritura: ["director", "profesor"],
   },
 };
 

@@ -27,6 +27,8 @@ import { SaldosProveedoresPage } from "../pages/SaldosProveedoresPage";
 import AsistenciasPage from "../pages/AsistenciasPage";
 import { CajasPagosPage } from "../pages/CajasPagosPage";
 import { CajasPagosFormPage } from "../pages/CajasPagosFormPage";
+import { InformesFormPage } from "../pages/InformesFormPage";
+import { InformesPage } from "../pages/InformesPage";
 
 export default [
   {
@@ -95,7 +97,7 @@ export default [
     entidad: "locales",
     permiso: "lectura",
   },
-  {
+  /* {
     path: "/permisos", //url
     componente: PermisosPage, //.jsx
     entidad: "permisos", //tabla con la que interactúa
@@ -116,7 +118,7 @@ export default [
     componente: PermisosFormPage,
     entidad: "permisos",
     permiso: "lectura",
-  },
+  },*/
   {
     path: "/infantes",
     componente: InfantesList,
@@ -218,7 +220,7 @@ export default [
   {
     path: "/inscripciones/:id",
     componente: InscripcionesFormPage,
-    entidad: "permisos",
+    entidad: "inscripciones",
     permiso: "lectura",
   },
   {
@@ -351,6 +353,28 @@ export default [
     path: "/caja-pagos/:id",
     componente: CajasPagosFormPage,
     entidad: "cajasPagos",
+    permiso: "lectura",
+  },
+  {
+    path: "/informes", //url
+    componente: InformesPage, //.jsx
+    entidad: "informes", //tabla con la que interactúa
+    permiso: "lectura", //permisos minimos
+    nombre: "Informes", //Nombre del elemento en el Sidebar
+    subrutas: [
+      {
+        path: "/crear-informe",
+        componente: InformesFormPage,
+        entidad: "informes",
+        permiso: "escritura",
+        nombre: "Crear informe",
+      },
+    ],
+  },
+  {
+    path: "/informe/:id",
+    componente: InformesFormPage,
+    entidad: "informes",
     permiso: "lectura",
   },
 ];

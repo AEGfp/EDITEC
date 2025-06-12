@@ -1,99 +1,107 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Reporte de Asistencias</title>
-    <style>
-      body {
-        font-family: DejaVu Sans, sans-serif;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 1em;
-        font-size: 1rem;
-      }
-      th,
-      td {
-        padding: 8px;
-        border: 1px solid #000;
-        text-align: left;
-      }
-      th {
-        background-color: #eee;
-      }
-      h2,
-      h3 {
-        margin-bottom: 0.3em;
-      }
-      tbody tr:nth-child(odd) {
-        background-color: #f9f9f9;
-      }
-    </style>
-  </head>
-  <body>
-    <h2>
-      Reporte de Asistencias {% if estado %} - Estado: {{ estado|capfirst }} {%
-      endif %} {% if fecha_desde %} - Desde: {{ fecha_desde }} {% endif %} {% if
-      fecha_hasta %} - Hasta: {{ fecha_hasta }} {% endif %} {% if id_infante %}
-      - Infante ID: {{ id_infante }} {% endif %}
-    </h2>
 
-    <table>
+<head>
+  <meta charset="UTF-8" />
+  <title>Reporte de Asistencias</title>
+  <style>
+    body {
+      font-family: DejaVu Sans, sans-serif;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1em;
+      font-size: 1rem;
+    }
+
+    th,
+    td {
+      padding: 8px;
+      border: 1px solid #000;
+      text-align: left;
+    }
+
+    th {
+      background-color: #eee;
+    }
+
+    h2,
+    h3 {
+      margin-bottom: 0.3em;
+    }
+
+    tbody tr:nth-child(odd) {
+      background-color: #f9f9f9;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>
+    Reporte de Asistencias {% if estado %} - Estado: {{ estado|capfirst }} {%
+    endif %} {% if fecha_desde %} - Desde: {{ fecha_desde }} {% endif %} {% if
+    fecha_hasta %} - Hasta: {{ fecha_hasta }} {% endif %} {% if id_infante %}
+    - Infante ID: {{ id_infante }} {% endif %}
+  </h2>
+
+  <table>
+    <tr>
+      <th>Estado</th>
+      <th>Cantidad</th>
+    </tr>
+    {% for item in resumen_estados %}
+    <tr>
+      <td>{{ item.estado|capfirst }}s</td>
+      <td>{{ item.cantidad }}</td>
+    </tr>
+    {% endfor %}
+    <tr>
+      <td><strong>Total</strong></td>
+      <td><strong>{{ total }}</strong></td>
+    </tr>
+  </table>
+
+  <h3>
+    Detalles de Asistencias {% if estado %} {{ estado|capfirst }} {% endif %}
+  </h3>
+  <table>
+    <thead>
       <tr>
+        <th>Nº</th>
+        <th>Infante</th>
+        <th>Fecha</th>
+        <th>Hora Entrada</th>
+        <th>Hora Salida</th>
         <th>Estado</th>
-        <th>Cantidad</th>
+        <th>Usuario Auditor</th>
       </tr>
-      {% for item in resumen_estados %}
+    </thead>
+    <tbody>
+      {% for asistencia in detalles %}
       <tr>
-        <td>{{ item.estado|capfirst }}s</td>
-        <td>{{ item.cantidad }}</td>
+        <td>{{ forloop.counter }}</td>
+        <td>
+          {{ asistencia.nombre_infante }} {{ asistencia.apellido_infante }}
+        </td>
+        <td>{{ asistencia.fecha_formateada }}</td>
+        <td>{{ asistencia.hora_entrada_formateada }}</td>
+        <td>{{ asistencia.hora_salida_formateada }}</td>
+        <td>{{ asistencia.estado|capfirst }}</td>
+        <td>
+          {{ asistencia.nombre_usuario }} {{ asistencia.apellido_usuario }}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" style="text-align: center">
+          No hay asistencias para mostrar.
+        </td>
       </tr>
       {% endfor %}
-      <tr>
-        <td><strong>Total</strong></td>
-        <td><strong>{{ total }}</strong></td>
-      </tr>
-    </table>
+    </tbody>
+  </table>
+</body>
 
-    <h3>
-      Detalles de Asistencias {% if estado %} {{ estado|capfirst }} {% endif %}
-    </h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Nº</th>
-          <th>Infante</th>
-          <th>Fecha</th>
-          <th>Hora Entrada</th>
-          <th>Hora Salida</th>
-          <th>Estado</th>
-          <th>Usuario Auditor</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for asistencia in detalles %}
-        <tr>
-          <td>{{ forloop.counter }}</td>
-          <td>
-            {{ asistencia.nombre_infante }} {{ asistencia.apellido_infante }}
-          </td>
-          <td>{{ asistencia.fecha_formateada }}</td>
-          <td>{{ asistencia.hora_entrada_formateada }}</td>
-          <td>{{ asistencia.hora_salida_formateada }}</td>
-          <td>{{ asistencia.estado|capfirst }}</td>
-          <td>
-            {{ asistencia.nombre_usuario }} {{ asistencia.apellido_usuario }}
-          </td>
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="7" style="text-align: center">
-            No hay asistencias para mostrar.
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </body>
 </html>
