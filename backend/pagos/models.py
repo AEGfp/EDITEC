@@ -91,6 +91,7 @@ class SaldoProveedores(models.Model):
 
 # Entidad para la caja de pagos
 class CajaPagos(models.Model):
+    id_saldo = models.ForeignKey(SaldoProveedores, on_delete=models.PROTECT, related_name="pagos")
     fecha_pago = models.DateField()
     id_comprobante = models.ForeignKey(ComprobanteProveedor, on_delete= models.PROTECT)
     nro_cuota = models.IntegerField()
