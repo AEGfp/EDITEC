@@ -74,6 +74,10 @@ const permisosRoles = {
     lectura: ["director", "profesor"],
     escritura: ["director"],
   },
+  cajasPagos: {
+    lectura: ["director", "profesor"],
+    escritura: ["director"],
+  },
 };
 
 export default permisosRoles;

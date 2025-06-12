@@ -24,6 +24,8 @@ import { ProveedoresFormPage } from "../pages/ProveedoresFormPage";
 import { ComprobantesFormPage } from "../pages/ComprobantesFormPage";
 import { ComprobantesPage } from "../pages/ComprobantesPage";
 import { SaldosProveedoresPage } from "../pages/SaldosProveedoresPage";
+import { CajasPagosPage } from "../pages/CajasPagosPage";
+import { CajasPagosFormPage } from "../pages/CajasPagosFormPage";
 
 export default [
   {
@@ -296,6 +298,28 @@ export default [
     path: "/saldos/:id",
     componente: SaldosProveedoresPage,
     entidad: "saldos",
+    permiso: "lectura",
+  },
+  {
+    path: "/caja-pagos", //url
+    componente: CajasPagosPage, //.jsx
+    entidad: "cajasPagos", //tabla con la que interactúa
+    permiso: "lectura", //permisos minimos
+    nombre: "Caja Pagos", //Nombre del elemento en el Sidebar
+    subrutas: [
+      {
+        path: "/crear-caja-pago",
+        componente: CajasPagosFormPage,
+        entidad: "cajasPagos",
+        permiso: "escritura",
+        nombre: "Registrar Pago",
+      },
+    ],
+  },
+  {
+    path: "/caja-pagos/:id",
+    componente: CajasPagosFormPage,
+    entidad: "cajasPagos",
     permiso: "lectura",
   },
 ];
