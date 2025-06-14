@@ -25,11 +25,11 @@ const permisosRoles = {
   },
   salas: {
     lectura: ["director", "administrador"],
-    escritura: ["director"],
+    escritura: ["director", "administrador"],
   },
   turnos: {
     lectura: ["director", "administrador"],
-    escritura: ["director"],
+    escritura: ["director", "administrador"],
   },
   tutores: {
     lectura: ["director", "profesor"],

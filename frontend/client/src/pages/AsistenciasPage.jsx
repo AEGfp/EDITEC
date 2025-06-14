@@ -106,7 +106,7 @@ export default function AsistenciasPage() {
       sortable: true,
     },
     {
-      name: "Usuario Auditor",
+      name: "Registrado por",
       selector: (row) =>
         row.asistencia?.nombre_usuario && row.asistencia?.apellido_usuario
           ? `${row.asistencia.nombre_usuario} ${row.asistencia.apellido_usuario}`
@@ -144,7 +144,7 @@ export default function AsistenciasPage() {
           );
         }
 
-        if (!asistencia?.hora_salida) {
+        if (!asistencia?.hora_salida && asistencia?.estado === "presente") {
           return (
             <button
               className="boton-detalles"

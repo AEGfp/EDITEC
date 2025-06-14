@@ -175,7 +175,7 @@ export default [
       {
         path: "/turnos-crear",
         componente: TurnosFormPage,
-        entidad: "escritura",
+        entidad: "turnos",
         permiso: "escritura",
         nombre: "Crear turnos",
       },

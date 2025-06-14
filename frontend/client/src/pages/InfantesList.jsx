@@ -92,7 +92,9 @@ export default function InfantesList() {
 
   return (
     <div>
-      <h1 className="align-baseline text-2xl font-semibold p-2 pl-3">Infantes</h1>
+      <h1 className="align-baseline text-2xl font-semibold p-2 pl-3">
+        Infantes
+      </h1>
       <div className="p-2 flex flex-row justify-between">
         <input
           type="text"

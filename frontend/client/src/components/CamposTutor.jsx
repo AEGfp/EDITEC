@@ -6,6 +6,7 @@ export default function CamposTutor({ register, errors }) {
       <h2 className="formulario-titulo">Datos del Tutor</h2>
       <div className="flex flex-col md:flex-row gap-8 ">
         <div className="flex-1">
+          <h1 className="formulario-elemento">Relación con la institución:</h1>
           <div className="formulario-lista">
             <label className="formulario-elemento">
               <input type="checkbox" {...register("es_docente")} />
@@ -34,30 +35,34 @@ export default function CamposTutor({ register, errors }) {
           <input
             type="text"
             className="formulario-input"
-            {...register("telefono_particular")}
+            {...register("telefono_particular", { required: true })}
           />
+
+          {errors.telefono_particular && <CampoRequerido />}
         </div>
         <div className="flex-1">
           <h4 className="formulario-elemento">Teléfono Trabajo</h4>
           <input
             type="text"
             className="formulario-input"
-            {...register("telefono_trabajo")}
+            {...register("telefono_trabajo", { required: true })}
           />
 
+          {errors.telefono_trabajo && <CampoRequerido />}
           <h4 className="formulario-elemento">Nombre de la Empresa</h4>
           <input
             type="text"
             className="formulario-input"
-            {...register("nombre_empresa_trabajo")}
+            {...register("nombre_empresa_trabajo", { required: true })}
           />
-
+          {errors.nombre_empresa_trabajo && <CampoRequerido />}
           <h4 className="formulario-elemento">Dirección del Trabajo</h4>
           <input
             type="text"
             className="formulario-input"
-            {...register("direccion_trabajo")}
+            {...register("direccion_trabajo", { required: true })}
           />
+          {errors.direccion_trabajo && <CampoRequerido />}
           <h4 className="formulario-elemento">Observaciones</h4>
           <textarea
             className="formulario-input"
