@@ -8,6 +8,7 @@ from .views import (
     AnhoLectivoView,
     salas_publicas,
     infantes_asignados,
+   reporte_documentacion,
 )
 
 router = DefaultRouter()
@@ -21,4 +22,6 @@ urlpatterns = [
     path("", include(router.urls)),
     path("salas-publicas/", salas_publicas),
   #  path("infantes-asignados/", infantes_asignados),
+    path("reporte-documentacion/<int:infante_id>/", reporte_documentacion, name="reporte_documentacion"),
+
 ]
