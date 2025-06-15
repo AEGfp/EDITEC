@@ -372,7 +372,7 @@ export default [
     ],
   },
   {
-    path: "/informe/:id",
+    path: "/informes/:id",
     componente: InformesFormPage,
     entidad: "informes",
     permiso: "lectura",

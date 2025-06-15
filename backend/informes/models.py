@@ -6,7 +6,7 @@ from apps.educativo.models import Infante
 class TipoInforme(models.Model):
     descripcion = models.CharField(max_length=50, blank=False)
     estado = models.BooleanField(default=True)
-    id_usuario_aud = models.ForeignKey(User, on_delete=models.PROTECT)
+    id_usuario_aud = models.ForeignKey(User, blank=True,null=True,on_delete=models.PROTECT)
 
     def __str__(self):
         return self.descripcion
@@ -15,9 +15,13 @@ class TipoInforme(models.Model):
 # Modelo para indicadores
 class Indicador(models.Model):
     id_tipo_informe = models.ForeignKey(TipoInforme, on_delete=models.PROTECT)
+    nombre = models.CharField(max_length=100, blank=False)
     descripcion = models.TextField(max_length=250, blank=False)
     estado = models.BooleanField(default=True)
-    id_usuario_aud = models.ForeignKey(User, on_delete=models.PROTECT)
+    id_usuario_aud = models.ForeignKey(User,null=True,blank=True, on_delete=models.PROTECT)
+
+    class Meta:
+        unique_together = [['nombre', 'id_tipo_informe']]
 
 # Modelo de Informes
 class Informe(models.Model):
@@ -26,7 +30,7 @@ class Informe(models.Model):
     fecha_informe = models.DateField()
     observaciones = models.TextField()
     estado = models.BooleanField(default=False)
-    id_usuario_aud = models.ForeignKey(User, on_delete=models.PROTECT)
+    id_usuario_aud = models.ForeignKey(User,null=True,blank=True, on_delete=models.PROTECT)
 
     def __str__(self):
         return self.id_tipo_informe.descripcion
@@ -37,7 +41,7 @@ class InformeIndicador(models.Model):
     id_informe = models.ForeignKey(Informe, on_delete=models.CASCADE, related_name="indicadores")
     id_indicador = models.ForeignKey(Indicador, on_delete=models.CASCADE)
     ind_logrado = models.BooleanField(default=False)
-    id_usuario_aud = models.ForeignKey(User, on_delete=models.PROTECT)
+    id_usuario_aud = models.ForeignKey(User, null=True,blank=True,on_delete=models.PROTECT)
 
     def __str__(self):
         return f"self.id_indicador.descripcion {self.ind_logrado}"
