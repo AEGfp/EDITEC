@@ -4,6 +4,7 @@ import {
   actualizarInfante,
   eliminarInfante,
   obtenerInfante,
+  crearReporteInfante,
 } from "../api/infantes.api";
 import {
   crearPersona,
@@ -35,8 +36,6 @@ function InfantesFormPage() {
       try {
         if (params.id) {
           const { data } = await obtenerInfante(params.id);
-          console.log("🧾 Datos recibidos del backend:", data); 
-          console.log("🧾 Persona recibida:", data.id_persona);
           const persona = data.id_persona || {};
           const personaId = typeof persona === "object" ? persona.id : persona;
 
@@ -44,6 +43,8 @@ function InfantesFormPage() {
           setValue("nombre", persona.nombre || "");
           setValue("apellido", persona.apellido || "");
           setValue("ci", persona.ci || "");
+          setValue("fecha_nacimiento", persona.fecha_nacimiento || "");
+          setValue("sexo", persona.sexo || "");
 
           setValue("ind_alergia", data.ind_alergia);
           setValue("ind_intolerancia_lactosa", data.ind_intolerancia_lactosa);
@@ -59,6 +60,8 @@ function InfantesFormPage() {
             ind_celiaquismo: "N",
             permiso_cambio_panhal: "N",
             permiso_fotos: "N",
+            sexo: "",
+            fecha_nacimiento: "",
           });
           setEditable(true);
         }
@@ -73,17 +76,18 @@ function InfantesFormPage() {
   const onSubmit = async (data) => {
     try {
       const idPersona = data.id_persona || watch("id_persona");
-      console.log("🧠 ID persona al enviar:", idPersona);
 
       if (params.id) {
         await actualizarPersona(idPersona, {
           nombre: data.nombre,
           apellido: data.apellido,
           ci: data.ci,
+          fecha_nacimiento: data.fecha_nacimiento,
+          sexo: data.sexo,
         });
 
         await actualizarInfante(params.id, {
-          id_persona: idPersona, // 👈 NECESARIO
+          id_persona: idPersona,
           ind_alergia: data.ind_alergia,
           ind_intolerancia_lactosa: data.ind_intolerancia_lactosa,
           ind_celiaquismo: data.ind_celiaquismo,
@@ -99,13 +103,14 @@ function InfantesFormPage() {
         nombre: data.nombre,
         apellido: data.apellido,
         ci: data.ci,
+        fecha_nacimiento: data.fecha_nacimiento,
+        sexo: data.sexo,
       });
-      
-      console.log("👤 Persona creada:", resPersona.data); 
 
-    if (!resPersona.data.id) {
-      throw new Error("❌ La respuesta no contiene un ID");
-    }
+      if (!resPersona.data.id) {
+        throw new Error("❌ La respuesta no contiene un ID");
+      }
+
       await crearInfante({
         id_persona: resPersona.data.id,
         ind_alergia: data.ind_alergia,
@@ -131,6 +136,18 @@ function InfantesFormPage() {
     }
   };
 
+  const generarReporteInfante = async () => {
+    try {
+      const res = await crearReporteInfante(params.id);
+      const archivo = new Blob([res.data], { type: "application/pdf" });
+      const url = URL.createObjectURL(archivo);
+      window.open(url);
+    } catch (error) {
+      console.error("Error al generar el PDF del infante:", error);
+      alert("No se pudo generar el PDF.");
+    }
+  };
+
   return (
     <div className="formulario">
       <div className="formulario-dentro">
@@ -151,46 +168,50 @@ function InfantesFormPage() {
             <input className="formulario-input" {...register("ci", { required: true })} />
             {errors.ci && <CampoRequerido />}
 
-            <h4 className="formulario-elemento">¿Alergia?</h4>
-            <select className="formulario-input" {...register("ind_alergia")}>
-              <option value="N">No</option>
-              <option value="S">Sí</option>
+            <h4 className="formulario-elemento">Fecha de Nacimiento</h4>
+            <input className="formulario-input" type="date" {...register("fecha_nacimiento", { required: true })} />
+            {errors.fecha_nacimiento && <CampoRequerido />}
+
+            <h4 className="formulario-elemento">Sexo</h4>
+            <select className="formulario-input" {...register("sexo", { required: true })}>
+              <option value="">Seleccione</option>
+              <option value="M">Masculino</option>
+              <option value="F">Femenino</option>
+              <option value="O">Otro</option>
             </select>
+            {errors.sexo && <CampoRequerido />}
+
+            <h4 className="formulario-elemento">¿Alergia?</h4>
+            <select className="formulario-input" {...register("ind_alergia")}> <option value="N">No</option> <option value="S">Sí</option> </select>
 
             <h4 className="formulario-elemento">¿Intolerancia a la lactosa?</h4>
-            <select className="formulario-input" {...register("ind_intolerancia_lactosa")}>
-              <option value="N">No</option>
-              <option value="S">Sí</option>
-            </select>
+            <select className="formulario-input" {...register("ind_intolerancia_lactosa")}> <option value="N">No</option> <option value="S">Sí</option> </select>
 
             <h4 className="formulario-elemento">¿Celiaquismo?</h4>
-            <select className="formulario-input" {...register("ind_celiaquismo")}>
-              <option value="N">No</option>
-              <option value="S">Sí</option>
-            </select>
+            <select className="formulario-input" {...register("ind_celiaquismo")}> <option value="N">No</option> <option value="S">Sí</option> </select>
 
             <h4 className="formulario-elemento">¿Permiso para cambiar pañal?</h4>
-            <select className="formulario-input" {...register("permiso_cambio_panhal")}>
-              <option value="N">No</option>
-              <option value="S">Sí</option>
-            </select>
+            <select className="formulario-input" {...register("permiso_cambio_panhal")}> <option value="N">No</option> <option value="S">Sí</option> </select>
 
             <h4 className="formulario-elemento">¿Permiso para fotos?</h4>
-            <select className="formulario-input" {...register("permiso_fotos")}>
-              <option value="N">No</option>
-              <option value="S">Sí</option>
-            </select>
+            <select className="formulario-input" {...register("permiso_fotos")}> <option value="N">No</option> <option value="S">Sí</option> </select>
           </fieldset>
         </form>
 
-        <div className="botones-grupo">
+        <div className="botones-grupo flex gap-2">
           {puedeEscribir && !editable && (
-            <button onClick={habilitarEdicion} className="boton-editar">Editar</button>
+            <>
+              <button onClick={habilitarEdicion} className="boton-editar">Editar</button>
+              <button onClick={generarReporteInfante} className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">
+                Generar Reporte
+              </button>
+            </>
           )}
+
           {puedeEscribir && editable && (
             <button type="submit" form="editar-infante" className="boton-guardar">Guardar</button>
           )}
-          <br />
+
           {params.id && puedeEscribir && editable && (
             <button onClick={descartarInfante} className="boton-eliminar">Eliminar</button>
           )}
