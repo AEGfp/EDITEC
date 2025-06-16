@@ -97,7 +97,7 @@ export default function ConsultarInscripcion() {
           <ConsultarTutores idTutor={inscripcion.id_tutor}></ConsultarTutores>
         </div>
 
-        <div className="max-w-lg w-full">
+        <div className="max-w-lg w-full ">
           <ConsultarArchivos
             id_persona_infante={inscripcion.id_persona_infante}
           ></ConsultarArchivos>

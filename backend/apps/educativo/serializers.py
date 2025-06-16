@@ -29,10 +29,17 @@ class InfanteCreateUpdateSerializer(serializers.ModelSerializer):
 # TUTORES
 class TutorSerializer(serializers.ModelSerializer):
     id_persona = PersonaSerializer(read_only=True)
+    email = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Tutor
         fields = '__all__'
+
+    def get_email(self, obj):
+        try:
+            return obj.id_persona.user.email
+        except AttributeError:
+            return None
 
 class TutorCreateUpdateSerializer(serializers.ModelSerializer):
     id_persona = serializers.PrimaryKeyRelatedField(queryset=Persona.objects.all())
