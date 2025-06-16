@@ -102,6 +102,13 @@ export default function ListaSalasTable() {
         Salas
       </h1>
       <div className="p-2 flex flex-row justify-between">
+      <button
+  className="boton-guardar ml-2"
+  onClick={() => window.open("http://localhost:8000/api/educativo/reporte-asignacion-aulas/", "_blank")}
+>
+  Generar Reporte
+</button>
+
         <input
           type="text"
           placeholder="Buscar..."
