@@ -77,3 +77,28 @@ class AnhoLectivoSerializer(serializers.ModelSerializer):
         model = AnhoLectivo
         fields = "__all__"
 
+
+#Tranferencia de sala
+class TransferenciaSalaSerializer(serializers.Serializer):
+    id_infante = serializers.IntegerField()
+    id_nueva_sala = serializers.IntegerField()
+
+    def validate(self, data):
+        try:
+            data['infante'] = Infante.objects.get(pk=data['id_infante'])
+        except Infante.DoesNotExist:
+            raise serializers.ValidationError("El infante no existe.")
+
+        try:
+            data['nueva_sala'] = Sala.objects.get(pk=data['id_nueva_sala'])
+        except Sala.DoesNotExist:
+            raise serializers.ValidationError("La sala no existe.")
+
+        return data
+
+    def save(self):
+        infante = self.validated_data["infante"]
+        nueva_sala = self.validated_data["nueva_sala"]
+        infante.id_sala = nueva_sala
+        infante.save()
+        return infante

@@ -29,6 +29,8 @@ import { CajasPagosPage } from "../pages/CajasPagosPage";
 import { CajasPagosFormPage } from "../pages/CajasPagosFormPage";
 import { InformesFormPage } from "../pages/InformesFormPage";
 import { InformesPage } from "../pages/InformesPage";
+import TransferenciaInfantePage from "../pages/TransferenciaInfantePage";
+
 
 export default [
   {
@@ -175,7 +177,7 @@ export default [
       {
         path: "/turnos-crear",
         componente: TurnosFormPage,
-        entidad: "turnos",
+        entidad: "escritura",
         permiso: "escritura",
         nombre: "Crear turnos",
       },
@@ -372,9 +374,17 @@ export default [
     ],
   },
   {
-    path: "/informes/:id",
+    path: "/informe/:id",
     componente: InformesFormPage,
     entidad: "informes",
     permiso: "lectura",
   },
+  {
+    path: "/transferencias",
+  componente: TransferenciaInfantePage,
+  publico: true,
+  nombre: "Transferencia",
+  },
+ 
+  
 ];
