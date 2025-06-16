@@ -51,6 +51,14 @@ class TurnoSerializer(serializers.ModelSerializer):
 
 class SalaSerializer(serializers.ModelSerializer):
     nombre_profesor=serializers.SerializerMethodField(read_only=True)
+
+    # Esta línea permite incluir el objeto completo de la persona
+    profesor_encargado_obj = PersonaSerializer(source="profesor_encargado", read_only=True)
+
+    profesor_encargado = serializers.PrimaryKeyRelatedField(
+        queryset=Persona.objects.all(),
+        required=False
+     )
     class Meta:
         model = Sala
         fields = "__all__"
@@ -102,3 +110,31 @@ class TransferenciaSalaSerializer(serializers.Serializer):
         infante.id_sala = nueva_sala
         infante.save()
         return infante
+
+#tranferir profesor
+# En serializers.py
+class TransferenciaProfesorSerializer(serializers.Serializer):
+    id_profesor = serializers.IntegerField()
+    id_sala_destino = serializers.IntegerField()
+
+    def validate(self, data):
+        try:
+            persona = Persona.objects.get(pk=data['id_profesor'])
+        except Persona.DoesNotExist:
+            raise serializers.ValidationError("El profesor no existe.")
+
+        try:
+            data['nueva_sala'] = Sala.objects.get(pk=data['id_sala_destino'])
+        except Sala.DoesNotExist:
+            raise serializers.ValidationError("La sala no existe.")
+
+        data['profesor'] = persona
+        return data
+
+    def save(self):
+        sala = self.validated_data["nueva_sala"]
+        sala.profesor_encargado = self.validated_data["profesor"]
+        sala.save()
+        return sala
+
+

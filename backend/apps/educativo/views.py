@@ -9,6 +9,7 @@ from .serializers import (
     InfanteCreateUpdateSerializer,
     TutorCreateUpdateSerializer,
     TransferenciaSalaSerializer,
+    TransferenciaProfesorSerializer,
 )
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -157,6 +158,41 @@ def calcular_edad(fecha_nac):
     return hoy.year - fecha_nac.year - ((hoy.month, hoy.day) < (fecha_nac.month, fecha_nac.day))
 
 
+#VISTA PARA REPORTE DE ASIGNACION DE AULAS 
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def reporte_asignacion_aulas(request):
+    salas = Sala.objects.select_related("profesor_encargado").prefetch_related("infante_set__id_persona")
+
+    data = []
+
+    for sala in salas:
+        profesor = sala.profesor_encargado
+        infantes = sala.infante_set.all()
+
+        data.append({
+            "sala": sala.descripcion,
+            "profesor": f"{profesor.nombre} {profesor.apellido}" if profesor else "Sin profesor asignado",
+            "infantes": [
+                {
+                    "nombre": f"{i.id_persona.nombre} {i.id_persona.apellido}",
+                    "ci": i.id_persona.ci,
+                    "fecha_nacimiento": i.id_persona.fecha_nacimiento.strftime("%d/%m/%Y"),
+                }
+                for i in infantes
+            ]
+        })
+
+    html = render_to_string("reporte_asignacion_aulas.html", {"salas": data, "fecha": timezone.now().strftime("%d/%m/%Y")})
+    result = io.BytesIO()
+    pdf = pisa.pisaDocument(io.BytesIO(html.encode("utf-8")), result)
+
+    if not pdf.err:
+        return HttpResponse(result.getvalue(), content_type="application/pdf")
+    return HttpResponse("Error al generar PDF", status=500)
+
+
+
 #vista tranferencia de sala
 class TransferenciaSalaView(APIView):
     def post(self, request):
@@ -169,3 +205,13 @@ class TransferenciaSalaView(APIView):
                 "nueva_sala": infante.id_sala.descripcion
             }, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+#tranferencioa de profesor
+class TransferenciaProfesorView(APIView):
+    def post(self, request):
+        serializer = TransferenciaProfesorSerializer(data=request.data)
+        if serializer.is_valid():
+            sala_actualizada = serializer.save()
+            return Response({"mensaje": "Profesor transferido con éxito"})
+        return Response(serializer.errors, status=400)

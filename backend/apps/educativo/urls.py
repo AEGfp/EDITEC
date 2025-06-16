@@ -10,6 +10,8 @@ from .views import (
     salas_publicas,
     infantes_asignados,
    reporte_documentacion,
+   TransferenciaProfesorView,
+   reporte_asignacion_aulas,
 )
 
 router = DefaultRouter()
@@ -25,6 +27,10 @@ urlpatterns = [
   #  path("infantes-asignados/", infantes_asignados),
     path("reporte-documentacion/<int:infante_id>/", reporte_documentacion, name="reporte_documentacion"),
     path("transferir-infante/", TransferenciaSalaView.as_view(), name="transferir-infante"),
+    path("transferir-profesor/", TransferenciaProfesorView.as_view(), name="transferir-profesor"),
+    path("reporte-asignacion-aulas/", reporte_asignacion_aulas, name="reporte_asignacion_aulas"),
+
+
 
 
 ]
