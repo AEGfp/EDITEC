@@ -27,47 +27,49 @@ function SalasFormPage() {
   const pagina = "/salas";
 
   useEffect(() => {
-    async function cargarProfesores() {
+    async function cargarFormulario() {
       try {
-        const { data } = await obtenerFuncionarios({ grupo: "profesor" });
-        console.log(data);
-        setProfesores(data);
-      } catch (error) {
-        console.error("Error al cargar los profesores", error);
-      }
-    }
-
-    cargarProfesores();
-  }, []);
-
-  useEffect(() => {
-    async function cargarSala() {
-      try {
-        if (params.id && profesores.length > 0) {
+        const { data: profesoresData } = await obtenerFuncionarios({ grupo: "profesor" });
+  
+        if (params.id) {
           const { data } = await obtenerSala(params.id);
-          console.log(data);
+  
+          // Agregar el profesor transferido si no está
+          if (
+            data.profesor_encargado &&
+            !profesoresData.some(p => p.persona?.id === (data.profesor_encargado?.id || data.profesor_encargado))
+          ) {
+            profesoresData.push({
+              persona: data.profesor_encargado_obj || data.profesor_encargado,
+              groups: [],
+            });
+          }
+  
+          setProfesores(profesoresData);
           setValue("descripcion", data.descripcion);
-          setValue("profesor_encargado", data.profesor_encargado);
+          setValue("profesor_encargado", data.profesor_encargado?.id || data.profesor_encargado);
           setEditable(false);
-        } else if (!params.id) {
+        } else {
+          setProfesores(profesoresData);
           reset();
           setEditable(true);
         }
       } catch (error) {
-        console.error("Error al cargar la sala", error);
+        console.error("Error al cargar sala o profesores", error);
       }
     }
-
-    cargarSala();
-  }, [params.id, profesores, reset, setValue]);
+  
+    cargarFormulario();
+  }, [params.id, reset, setValue]);
+  
+  
 
   const onSubmit = async (data) => {
     try {
-      console.log(data)
       if (params.id) {
         await actualizarSala(params.id, data);
       } else {
-        await crearSala(data); 
+        await crearSala(data);
       }
       navigate(pagina);
     } catch (error) {
@@ -78,9 +80,7 @@ function SalasFormPage() {
   const habilitarEdicion = () => setEditable(true);
 
   const descartarSala = async () => {
-    const confirmar = window.confirm(
-      "¿Estás seguro que quieres eliminar esta sala?"
-    );
+    const confirmar = window.confirm("¿Estás seguro que quieres eliminar esta sala?");
     if (confirmar) {
       await eliminarSala(params.id);
       navigate(pagina);
@@ -103,6 +103,7 @@ function SalasFormPage() {
               {...register("descripcion", { required: true })}
             />
             {errors.descripcion && <CampoRequerido />}
+
             <h4 className="formulario-elemento">Profesor encargado</h4>
             <select
               {...register("profesor_encargado", { required: true })}
@@ -111,8 +112,7 @@ function SalasFormPage() {
               <option value="">Seleccione un profesor</option>
               {profesores.map((prof) => (
                 <option key={prof.persona?.id} value={prof.persona?.id}>
-                  {prof.persona?.nombre} {prof.persona?.apellido} (
-                  {prof.groups?.join(", ")})
+                {prof.persona?.nombre} {prof.persona?.apellido}
                 </option>
               ))}
             </select>
@@ -131,7 +131,6 @@ function SalasFormPage() {
               Guardar
             </button>
           )}
-          <br />
           {params.id && puedeEscribir && editable && (
             <button onClick={descartarSala} className="boton-eliminar">
               Eliminar
