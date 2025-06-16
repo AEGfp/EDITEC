@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 //import { obtenerSalasPorHorario } from "../api/salas.api";
 import { obtenerSalasPublicas } from "../api/salas.api";
+import { useFormContext } from "react-hook-form";
 
-export default function SeleccionSala({ register, watch, setValue }) {
+export default function SeleccionSala() {
+  const { register, watch, setValue } = useFormContext();
   const [salas, setSalas] = useState([]);
   const [loading, setLoading] = useState(false);
 

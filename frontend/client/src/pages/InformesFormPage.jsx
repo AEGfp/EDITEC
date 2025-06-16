@@ -105,7 +105,7 @@ export function InformesFormPage() {
   return (
     <div className="formulario">
       <div className="formulario-dentro">
-        <h1 className="formulario-titulo">Crear Informe</h1>
+        <h1 className="formulario-titulo">Informe</h1>
 
         <form onSubmit={onSubmit}>
           <fieldset disabled={!editable}>
