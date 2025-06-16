@@ -22,8 +22,8 @@ export const crearArchivo = (archivo, config = {}) => {
   });
 };
 
-export const obtenerArchivo = (id) => {
-  return Api.get(`${DIRECCION}${id}/`);
+export const obtenerArchivo = (params = {}) => {
+  return Api.get(DIRECCION, { params });
 };
 
 export const eliminarArchivo = (id) => {

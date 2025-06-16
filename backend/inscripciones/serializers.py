@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from .models import Inscripcion
 from api.models import Persona, User
-from apps.educativo.models import Tutor, Infante
+from apps.educativo.models import Tutor, Infante, TutorInfante
 from api.serializer import UserSerializer, PersonaSerializer
 from apps.educativo.serializers import TutorSerializer, InfanteSerializer
 from django.db import transaction
@@ -28,7 +28,7 @@ class InscripcionSerializer(serializers.ModelSerializer):
     nombre_usuario = serializers.SerializerMethodField()
     fecha_inscripcion = serializers.DateField(format="%d/%m/%Y", read_only=True)
     fecha_revision = serializers.DateTimeField(format="%d/%m/%Y", read_only=True)
-
+    id_persona_infante = serializers.SerializerMethodField()
     class Meta:
         model = Inscripcion
         fields = "__all__"
@@ -40,6 +40,7 @@ class InscripcionSerializer(serializers.ModelSerializer):
             "nombre_tutor",
             "nombre_infante",
             "nombre_usuario",
+            "id_persona_infante"
         ]
 
     def get_nombre_tutor(self, obj):
@@ -49,6 +50,9 @@ class InscripcionSerializer(serializers.ModelSerializer):
     def get_nombre_infante(self, obj):
         persona = obj.id_infante.id_persona
         return f"{persona.nombre} {persona.apellido}"
+
+    def get_id_persona_infante(self,obj):
+        return obj.id_infante.id_persona.id
 
     def get_nombre_usuario(self, obj):
         if obj.usuario_auditoria:
@@ -80,7 +84,10 @@ class InscripcionSerializer(serializers.ModelSerializer):
 
         validated_data["id_tutor"] = tutor
         return super().create(validated_data)
+ # Relación automática
+        TutorInfante.objects.get_or_create(tutor=tutor, infante=infante)
 
+        return inscripcion
 
 #! Arreglar tutores con varios hijos
 class InscripcionCompletaSerializer(serializers.Serializer):
@@ -143,6 +150,9 @@ class InscripcionCompletaSerializer(serializers.Serializer):
             inscripcion = Inscripcion.objects.create(
                 id_tutor=tutor, id_infante=infante, estado="pendiente"
             )
+
+  # Relación automática
+        TutorInfante.objects.get_or_create(tutor=tutor, infante=infante)
 
         return inscripcion
 
@@ -215,5 +225,8 @@ class InscripcionExistenteSerializer(serializers.Serializer):
             inscripcion = Inscripcion.objects.create(
                 id_tutor=tutor, id_infante=infante, estado="pendiente"
             )
+
+  # Relación automática
+        TutorInfante.objects.get_or_create(tutor=tutor, infante=infante)
 
         return inscripcion

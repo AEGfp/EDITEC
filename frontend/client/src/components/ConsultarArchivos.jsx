@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
-import { descargarArchivo, obtenerTodosArchivos } from "../api/archivos.api";
+import {
+  descargarArchivo,
+  obtenerTodosArchivos,
+  obtenerArchivo,
+} from "../api/archivos.api";
 import DataTable from "react-data-table-component";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { estiloTablas } from "../assets/estiloTablas";
 
-export default function ConsultarArchivos() {
+export default function ConsultarArchivos({ id_persona_infante }) {
   const navigate = useNavigate();
   const [archivos, setArchivos] = useState([]);
   const [columnas, setColumnas] = useState([]);
@@ -16,7 +20,10 @@ export default function ConsultarArchivos() {
     async function loadArchivos() {
       try {
         //Cambiar la API para las demás páginas
-        const res = await obtenerTodosArchivos();
+        const res = id_persona_infante
+          ? await obtenerArchivo({ persona: id_persona_infante })
+          : await obtenerTodosArchivos();
+
         if (res.data.length > 0) {
           const keys = Object.keys(res.data[0]);
 
@@ -62,7 +69,7 @@ export default function ConsultarArchivos() {
     }
     //Cambiar el nombre de la función
     loadArchivos();
-  }, []);
+  }, [id_persona_infante]);
 
   //Cambiar el nombre de 'Archivo' según la página
   const elementosFiltrados = archivos.filter((archivo) =>

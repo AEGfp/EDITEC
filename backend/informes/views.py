@@ -2,41 +2,25 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import Group
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
-from rest_framework.decorators import (
-    api_view,
-    authentication_classes,
-    permission_classes,
-)
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from api.serializer import (
-    PermisoSerializer,
-    UserSerializer,
-    PersonaSerializer,
-   
-)
-from api.models import Permiso, Persona
-from Roles.roles import (
-    EsDirector,
-    EsProfesor,
-    EsAdministrador,
-    EsTutor,
-    ControlarRoles,
-)
-
-from rest_framework import generics
-
-from rest_framework import viewsets, filters
 from django_filters.rest_framework import DjangoFilterBackend
+from Roles.roles import ControlarRoles
 from .models import TipoInforme, Indicador, Informe, InformeIndicador
-from .serializers import ( TipoInformeSerializer,
-                           IndicadorSerializer,
-                           InformeSerializer,
-                           InformeIndicadorSerializer)
-
-
+from .serializers import (
+    TipoInformeSerializer,
+    IndicadorSerializer,
+    InformeSerializer,
+    InformeIndicadorSerializer,
+)
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from django.db.models import Count
+import io
+from xhtml2pdf import pisa
 # View para tipos de informe
 @permission_classes([AllowAny])
 class TipoInformeView(viewsets.ModelViewSet):
@@ -64,3 +48,26 @@ class InformeView(viewsets.ModelViewSet):
 class InformeIndicadorView(viewsets.ModelViewSet):
     serializer_class = InformeIndicadorSerializer
     queryset = InformeIndicador.objects.all()
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def generar_reporte_informe(request):
+    id_reporte = request.GET.get("id")
+    try:
+        informe = Informe.objects.select_related("id_usuario_aud", "id_infante__id_persona", "id_tipo_informe").get(id=id_reporte)
+    except Informe.DoesNotExist:
+        return HttpResponse("Informe no encontrado", status=404)
+
+    serializer = InformeSerializer(informe)
+    contexto = {
+        "informe": serializer.data
+    }
+    print(contexto)
+    html = render_to_string("reporte_informe.html", contexto)
+    result = io.BytesIO()
+    pdf = pisa.pisaDocument(io.BytesIO(html.encode("UTF-8")), dest=result)
+
+    if not pdf.err:
+        return HttpResponse(result.getvalue(), content_type="application/pdf")
+
+    return HttpResponse("Error al generar PDF", status=500)

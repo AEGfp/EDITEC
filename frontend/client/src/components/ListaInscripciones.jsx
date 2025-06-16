@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { estiloTablas } from "../assets/estiloTablas";
 import tienePermiso from "../utils/tienePermiso";
 import { obtenerInscripciones } from "../api/inscripciones.api";
+import ReporteInscripcionesPage from "../pages/ReporteInscripcionesPage";
 
 export function ListaInscripciones() {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ export function ListaInscripciones() {
       try {
         //Cambiar la API para las demás páginas
         const res = await obtenerInscripciones();
-
+        console.log(res.data);
         if (res.data.length > 0) {
           const arrayColumnas = definirColumnas();
 
@@ -125,6 +126,7 @@ export function ListaInscripciones() {
           className=" border border-gray-300 rounded px-3 py-1 w-full max-w-xs"
         />
       </div>
+      <ReporteInscripcionesPage></ReporteInscripcionesPage>
       <DataTable
         columns={columnas}
         data={elementosFiltrados}

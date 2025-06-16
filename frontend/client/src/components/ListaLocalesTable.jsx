@@ -11,7 +11,7 @@ export function ListaLocalesTable() {
   const [columnas, setColumnas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busqueda, setBusqueda] = useState("");
-  const puedeEscribir = tienePermiso("permisos", "escritura");
+  const puedeEscribir = tienePermiso("locales", "escritura");
 
   useEffect(() => {
     //Cambiar el nombre de la función

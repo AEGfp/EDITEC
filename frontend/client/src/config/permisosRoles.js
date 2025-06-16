@@ -1,18 +1,22 @@
 const permisosRoles = {
   //nombre de la entidad
-  permisos: {
+  /*permisos: {
     //permisos
     lectura: ["director", "profesor"],
     escritura: ["director"],
-  },
+  },*/
   empresas: {
     //permisos
+    lectura: ["director", "administrador"],
+    escritura: ["director", "administrador"],
+  },
+  asistencias: {
     lectura: ["director", "profesor"],
-    escritura: ["director","administrador"],
+    escritura: ["director", "profesor"],
   },
   locales: {
     //permisos
-    lectura: ["director", "profesor"],
+    lectura: ["director", "administrador"],
     escritura: ["director"],
   },
   infantes: {
@@ -20,12 +24,12 @@ const permisosRoles = {
     escritura: ["director"],
   },
   salas: {
-    lectura: ["director", "profesor"],
-    escritura: ["director"],
+    lectura: ["director", "administrador"],
+    escritura: ["director", "administrador"],
   },
   turnos: {
-    lectura: ["director", "profesor"],
-    escritura: ["director"],
+    lectura: ["director", "administrador"],
+    escritura: ["director", "administrador"],
   },
   tutores: {
     lectura: ["director", "profesor"],
@@ -35,9 +39,8 @@ const permisosRoles = {
     lectura: ["director", "administrador"],
     escritura: ["director", "administrador"],
   },
-
   notificaciones: {
-    lectura: ["director", "profesor"],
+    lectura: ["director", "administrador"],
     escritura: ["director", "administrador"],
   },
   funcionarios: {
@@ -74,6 +77,19 @@ const permisosRoles = {
     lectura: ["director", "profesor"],
     escritura: ["director"],
   },
+  cajasPagos: {
+    lectura: ["director", "profesor"],
+    escritura: ["director"],
+  },
+  informes: {
+    lectura: ["director", "profesor"],
+    escritura: ["director", "profesor"],
+  },
+  transferencias: {
+  lectura: ["director"],
+  escritura: ["director"],
+},
+
 };
 
 export default permisosRoles;

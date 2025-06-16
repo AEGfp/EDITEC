@@ -54,7 +54,7 @@ INSTALLED_APPS = [
     "inscripciones",
     "apps.notificaciones",
     "informes", 
-
+    "asistencias", 
 ]
 
 MIDDLEWARE = [
@@ -99,7 +99,6 @@ DATABASES = {
     }
 }
 
-
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -124,7 +123,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = 'America/Argentina/Buenos_Aires'  
 
 USE_I18N = True
 
@@ -173,7 +172,7 @@ MEDIA_URL = "/media/"
 
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'  # O el servidor SMTP que uses
+EMAIL_HOST = 'smtp.gmail.com'  # servidor SMTP 
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'noreply.editec@gmail.com'  #nuestro correo de envios

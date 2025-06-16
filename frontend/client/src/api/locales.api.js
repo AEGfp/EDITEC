@@ -7,8 +7,8 @@ export const obtenerTodasSucursales = () => {
   return Api.get(DIRECCION);
 };
 
-export const crearSucursal = (empresa) => {
-  return Api.post(DIRECCION, empresa);
+export const crearSucursal = (sucursal) => {
+  return Api.post(DIRECCION, sucursal);
 };
 
 export const obtenerSucursal = (id) => {

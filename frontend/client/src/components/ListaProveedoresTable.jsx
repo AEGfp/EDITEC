@@ -11,7 +11,7 @@ export function ListaProveedoresTable() {
   const [columnas, setColumnas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busqueda, setBusqueda] = useState("");
-  const puedeEscribir = tienePermiso("permisos", "escritura");
+  const puedeEscribir = tienePermiso("proveedores", "escritura");
 
   useEffect(() => {
     //Cambiar el nombre de la función
@@ -27,7 +27,7 @@ export function ListaProveedoresTable() {
           const keys = Object.keys(res.data[0]);
 
           //!!! Desactivar si se quiere mostrar el id
-          const columnasFiltradas = keys.filter((key) => key !== "id");
+          const columnasFiltradas = keys.filter((key) => key !== "id" && key !== "persona");
 
           //Esta lógica puede variar un poco según las columnas que tengan
           // que mostrar

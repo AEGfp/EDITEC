@@ -22,3 +22,9 @@ export const eliminarInfante = (id) => {
   console.log(`🗑️ Eliminando infante ID ${id}`);
   return Api.delete(`${DIRECCION}${id}/`);
 };
+
+// Generar PDF de la documentación de un infante específico
+export const crearReporteInfante = (id) =>
+  Api.get(`/educativo/reporte-documentacion/${id}/`, {
+    responseType: "blob",
+  });
