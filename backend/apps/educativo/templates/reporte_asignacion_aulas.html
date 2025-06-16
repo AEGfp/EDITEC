@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 12px; }
+    h2 { margin-top: 30px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #000; padding: 5px; text-align: left; }
+    .fecha { text-align: right; font-size: 10px; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <div class="fecha">Fecha de generación: {{ fecha }}</div>
+  <div style="text-align: center; margin-bottom: 20px;">
+    <h1 style="margin: 0;">EDITEC</h1>
+</div>
+
+  <h1>Reporte de Asignación de Aulas</h1>
+  
+  {% for sala in salas %}
+    <h2>{{ sala.sala }}</h2>
+    <p><strong>Profesor Encargado:</strong> {{ sala.profesor }}</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre del Infante</th>
+          <th>CI</th>
+          <th>Fecha de Nacimiento</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for infante in sala.infantes %}
+        <tr>
+          <td>{{ infante.nombre }}</td>
+          <td>{{ infante.ci }}</td>
+          <td>{{ infante.fecha_nacimiento }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3">Sin infantes asignados</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endfor %}
+</body>
+</html>
