@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "apps.notificaciones",
     "informes", 
     "asistencias", 
+    "cobros",
 ]
 
 MIDDLEWARE = [
