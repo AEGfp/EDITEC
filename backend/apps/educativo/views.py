@@ -9,6 +9,7 @@ from .serializers import (
     InfanteCreateUpdateSerializer,
     TutorCreateUpdateSerializer,
     TransferenciaSalaSerializer,
+    TransferenciaProfesorSerializer,
 )
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -169,3 +170,13 @@ class TransferenciaSalaView(APIView):
                 "nueva_sala": infante.id_sala.descripcion
             }, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+#tranferencioa de profesor
+class TransferenciaProfesorView(APIView):
+    def post(self, request):
+        serializer = TransferenciaProfesorSerializer(data=request.data)
+        if serializer.is_valid():
+            sala_actualizada = serializer.save()
+            return Response({"mensaje": "Profesor transferido con éxito"})
+        return Response(serializer.errors, status=400)
