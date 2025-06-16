@@ -8,6 +8,7 @@ from .serializers import (
     AnhoLectivoSerializer,
     InfanteCreateUpdateSerializer,
     TutorCreateUpdateSerializer,
+    TransferenciaSalaSerializer,
 )
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -18,6 +19,10 @@ from xhtml2pdf import pisa
 from django.template.loader import render_to_string
 import io
 from django.utils import timezone
+from rest_framework import status
+from rest_framework.views import APIView  
+
+
 
 
 
@@ -150,3 +155,17 @@ def calcular_edad(fecha_nac):
     from datetime import date
     hoy = date.today()
     return hoy.year - fecha_nac.year - ((hoy.month, hoy.day) < (fecha_nac.month, fecha_nac.day))
+
+
+#vista tranferencia de sala
+class TransferenciaSalaView(APIView):
+    def post(self, request):
+        serializer = TransferenciaSalaSerializer(data=request.data)
+        if serializer.is_valid():
+            infante = serializer.save()
+            return Response({
+                "mensaje": "Transferencia realizada exitosamente.",
+                "infante_id": infante.id,
+                "nueva_sala": infante.id_sala.descripcion
+            }, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

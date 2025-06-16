@@ -85,6 +85,11 @@ const permisosRoles = {
     lectura: ["director", "profesor"],
     escritura: ["director", "profesor"],
   },
+  transferencias: {
+  lectura: ["director"],
+  escritura: ["director"],
+},
+
 };
 
 export default permisosRoles;
