@@ -2,12 +2,48 @@ from rest_framework import serializers
 from .models import Proveedor, TipoComprobante, Condicion, ComprobanteProveedor, SaldoProveedores, CajaPagos
 import re
 from locales.models import Local
+from api.models import Persona
+from api.serializer import PersonaSerializer
 
 # Serializer para Proveedores
 class ProveedorSerializer(serializers.ModelSerializer):
+    '''persona = PersonaSerializer(source='id_persona', read_only=True)
+    persona_input = PersonaSerializer(write_only=True)'''  # Para la creación de persona
+
     class Meta:
         model = Proveedor
         fields = '__all__'
+        #fields = ['id', 'nombre_fantasia', 'ruc', 'telefono', 'observaciones', 'estado', 'persona', 'persona_input']
+        #read_only_fields = ['id', 'persona']  # Campos de solo lectura
+        #fields = ['id', 'nombre_fantasia', 'ruc', 'telefono', 'observaciones', 'estado', 'id_usuario_aud', 'persona']
+
+    # Se valida que el campo de RUC sea único
+    def validate_ruc(self, value):
+        instance = self.instance
+        if Proveedor.objects.filter(ruc=value).exclude(pk=instance.pk if instance else None).exists():
+            raise serializers.ValidationError("Este RUC ya está registrado para otro proveedor.")
+        return value
+
+'''    def create(self, validated_data):
+        print("Datos recibidos:", validated_data)
+        persona_data = validated_data.pop('persona_input')
+        persona = Persona.objects.create(**persona_data)
+        proveedor = Proveedor.objects.create(id_persona=persona, **validated_data)
+        return proveedor
+    
+    # Para la actualización
+    def update(self, instance, validated_data):
+        persona_data = validated_data.pop('persona_input', None)
+        if persona_data:
+            for attr, value in persona_data.items():
+                setattr(instance.id_persona, attr, value)
+            instance.id_persona.save()
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
+'''
+
 
 
 # Serializer para los tipos de comprobantes
@@ -133,6 +169,10 @@ class SaldoProveedoresSerializer(serializers.ModelSerializer):
 
 # Serializer de las cajas pagos
 class CajaPagosSerializer(serializers.ModelSerializer):
+    monto_saldo = serializers.DecimalField(
+        source="id_saldo.saldo_cuota", max_digits=10, decimal_places=2, read_only=True
+    )
+
     class Meta:
         model = CajaPagos
         fields = '__all__'
@@ -140,16 +180,19 @@ class CajaPagosSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Filtrar comprobantes con al menos una cuota pendiente
-        comprobantes_con_saldo = ComprobanteProveedor.objects.filter(
-            saldos__saldo_cuota__gt=0
-        ).distinct()
-        self.fields['id_comprobante'].queryset = comprobantes_con_saldo
+        # Solo filtrar si estamos en una petición de escritura (POST, PUT, PATCH)
+        request = self.context.get("request", None)
+        if request and request.method in ["POST", "PUT", "PATCH"]:
+            comprobantes_con_saldo = ComprobanteProveedor.objects.filter(
+                saldos__saldo_cuota__gt=0
+            ).distinct()
+            self.fields['id_comprobante'].queryset = comprobantes_con_saldo
 
     def validate(self, data):
         id_comprobante = data.get('id_comprobante')
         nro_cuota = data.get('nro_cuota')
         total_pago = data.get('total_pago')
+        id_saldo = data.get('id_saldo')
 
         try:
             saldo = SaldoProveedores.objects.get(
@@ -159,7 +202,12 @@ class CajaPagosSerializer(serializers.ModelSerializer):
         except SaldoProveedores.DoesNotExist:
             raise serializers.ValidationError("La cuota no existe o no pertenece al comprobante.")
 
-        # Si estamos actualizando, sumamos el valor anterior antes de validar
+        # Validar que id_saldo sea coherente con el resto
+        if id_saldo:
+            if id_saldo.id_comprobante != id_comprobante or id_saldo.numero_cuota != nro_cuota:
+                raise serializers.ValidationError("El saldo no corresponde al comprobante y número de cuota proporcionados.")
+
+        # Validar monto
         if self.instance:
             total_pago_original = self.instance.total_pago
             saldo_restante = saldo.saldo_cuota + total_pago_original
@@ -167,7 +215,8 @@ class CajaPagosSerializer(serializers.ModelSerializer):
             saldo_restante = saldo.saldo_cuota
 
         if total_pago > saldo_restante:
-            raise serializers.ValidationError(f"El pago ({total_pago}) excede el saldo disponible de la cuota ({saldo_restante}).")
+            raise serializers.ValidationError(
+                f"El pago ingresado ({total_pago}) excede el saldo disponible de la cuota seleccionada ({saldo_restante})."
+            )
 
         return data
-    

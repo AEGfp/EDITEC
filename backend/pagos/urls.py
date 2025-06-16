@@ -9,7 +9,9 @@ from .views import (
     ComprobantesConSaldoAPIView,
     CajaPagosView,
     cuotas_disponibles,
+    obtener_saldo_cuota,
     generar_reporte_pdf,
+    generar_reporte_saldo_proveedores,
 )
 from api import views
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -26,7 +28,9 @@ urlpatterns = [
     path('', include(router.urls)),
     path('reporte-pdf/', generar_reporte_pdf, name='reporte_pdf'), 
     path('comprobantes-pendientes/', ComprobantesConSaldoAPIView.as_view()),
-    path('cuotas-disponibles/', cuotas_disponibles), 
+    path('cuotas-disponibles/', cuotas_disponibles),
+    path("saldos/<int:id_comprobante>/<int:numero_cuota>/", obtener_saldo_cuota),
+    path('reporte-saldos/', generar_reporte_saldo_proveedores, name='reporte_saldos'),
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("login/", views.LoginView.as_view(), name="login"),

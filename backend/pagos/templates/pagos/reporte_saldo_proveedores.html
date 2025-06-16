@@ -1,0 +1,78 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            padding: 20px;
+        }
+        h1, h3 {
+            text-align: center;
+            margin: 5px 0;
+        }
+        .resumen {
+            margin: 20px 0;
+        }
+        .resumen p {
+            margin: 3px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            border: 1px solid #444;
+            padding: 6px;
+            text-align: center;
+        }
+        th {
+            background-color: #eee;
+        }
+    </style>
+</head>
+<body>
+    <h1>Reporte de Saldos de Proveedores</h1>
+    <h3>Saldo Acumulado por Comprobantes y Pagos</h3>
+
+    <div class="resumen">
+        <p><strong>Proveedor:</strong> {{ proveedor_filtro }}</p>
+        <p><strong>Rango de Fechas:</strong>
+            {% if fecha_desde %} {{ fecha_desde|date:"d/m/Y" }}{% else %} - {% endif %}
+            &nbsp; a &nbsp;
+            {% if fecha_hasta %} {{ fecha_hasta|date:"d/m/Y" }}{% else %} - {% endif %}
+        </p>
+
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Proveedor</th>
+                <th>Comprobante</th>
+                <th>Número</th>
+                <th>Débito (Gs)</th>
+                <th>Crédito (Gs)</th>
+                <th>Saldo Acumulado (Gs)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for mov in movimientos %}
+            <tr>
+                <td>{{ mov.fecha }}</td>
+                <td>{{ mov.proveedor }}</td>
+                <td>{{ mov.comprobante }}</td>
+                <td>{{ mov.numero }}</td>
+                <td>{{ mov.debito|intcomma }}</td>
+                <td>{{ mov.credito|intcomma }}</td>
+                <td>{{ mov.saldo|intcomma }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
