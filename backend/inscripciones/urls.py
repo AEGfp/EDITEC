@@ -4,6 +4,8 @@ from inscripciones import views
 
 router = routers.DefaultRouter()
 router.register(r"inscripciones", views.InscripcionView, "inscripciones")
+router.register(r"periodos", views.PeriodoInscripcionViewSet, basename="periodo")
+
 
 urlpatterns = [
     path("", include(router.urls)),

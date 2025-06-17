@@ -5,6 +5,8 @@ import { Api } from "./api";
 const DIRECCION = "inscripciones/";
 
 export const obtenerInscripciones = () => Api.get(DIRECCION);
+export const obtenerInscripcionesActuales = (periodo) =>
+  Api.get(`${DIRECCION}actual/?id_periodo=${periodo}`);
 
 export const crearInscripcion = (inscripcion, config = {}) =>
   Api.post("inscripciones-crear/", inscripcion, config);

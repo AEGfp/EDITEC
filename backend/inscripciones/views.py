@@ -4,15 +4,16 @@ from rest_framework.response import Response
 from rest_framework.decorators import (
     authentication_classes,
     permission_classes,
-    api_view,
+    api_view,action
 )
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .serializers import (
     InscripcionSerializer,
     InscripcionCompletaSerializer,
     InscripcionExistenteSerializer,
+    PeriodoInscripcionSerializer
 )
-from .models import Inscripcion
+from .models import Inscripcion,PeriodoInscripcion
 from Roles.roles import ControlarRoles
 from rest_framework.exceptions import PermissionDenied
 from django.utils import timezone
@@ -59,6 +60,25 @@ class InscripcionView(viewsets.ModelViewSet):
             return Inscripcion.objects.filter(id_tutor=tutor)
         except:
             return Inscripcion.objects.none()
+    
+    @action(detail=False, methods=["get"], url_path="actual")
+    def filtrar_por_periodo(self, request):
+        user = request.user
+        id_periodo = request.query_params.get("id_periodo")
+        if not id_periodo:
+            return Response({"detail": "Se requiere id_periodo"}, status=400)
+
+        if user.groups.filter(name__in=["administrador", "director"]).exists():
+            queryset = Inscripcion.objects.filter(periodo_inscripcion_id=id_periodo)
+        else:
+            try:
+                tutor = user.persona.tutor
+                queryset = Inscripcion.objects.filter(id_tutor=tutor, periodo_inscripcion_id=id_periodo)
+            except:
+                queryset = Inscripcion.objects.none()
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -112,6 +132,68 @@ def crear_inscripcion_existente(request):
         return Response(
             {"errores": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
         )
+
+#@authentication_classes([JWTAuthentication])
+#@permission_classes([ControlarRoles])
+@authentication_classes([])
+@permission_classes([AllowAny])
+class PeriodoInscripcionViewSet(viewsets.ModelViewSet):
+    queryset = PeriodoInscripcion.objects.all().order_by('-fecha_inicio')
+    serializer_class = PeriodoInscripcionSerializer
+
+    @action(detail=False, methods=['get'])
+    def activo(self, request):
+        ahora = timezone.now()
+
+        PeriodoInscripcion.objects.filter(
+        activo=True,
+        fecha_fin__lt=ahora
+    ).update(activo=False)
+        activo_o_pendiente = PeriodoInscripcion.objects.filter(
+            activo=True,
+            fecha_fin__gte=ahora
+        ).order_by('fecha_inicio').first()
+
+        if activo_o_pendiente:
+            serializer = self.get_serializer(activo_o_pendiente)
+            return Response(serializer.data)
+        return Response({"detail": "No hay periodo activo"}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=True, methods=['post'])
+    def cerrar(self, request, pk=None):
+        periodo = self.get_object()
+        
+        if not periodo.activo:
+            return Response(
+                {"detail": "El periodo ya está cerrado."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        periodo.activo = False
+        
+        periodo.save()
+        
+        serializer = self.get_serializer(periodo)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def ultimo(self, request):
+        ahora = timezone.now()
+        periodo = PeriodoInscripcion.objects.filter(fecha_fin__lt=ahora).order_by('-fecha_fin').first()
+        if periodo:
+            serializer = self.get_serializer(periodo)
+            return Response(serializer.data)
+        return Response({"detail": "No hay periodos finalizados"}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=False, methods=['get'])
+    def puede_inscribirse(self, request):
+        ahora = timezone.now()
+        puede = PeriodoInscripcion.objects.filter(
+            fecha_inicio__lte=ahora,
+            fecha_fin__gte=ahora,
+            activo=True
+        ).exists()
+        return Response({"puede_inscribirse": puede})
 
 
 @permission_classes([AllowAny])

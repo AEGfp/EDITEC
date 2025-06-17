@@ -1,11 +1,12 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from .models import Inscripcion
+from .models import Inscripcion, PeriodoInscripcion
 from api.models import Persona, User
 from apps.educativo.models import Tutor, Infante, TutorInfante
 from api.serializer import UserSerializer, PersonaSerializer
 from apps.educativo.serializers import TutorSerializer, InfanteSerializer
 from django.db import transaction
+from django.utils import timezone
 from django.contrib.auth.models import Group
 from archivos.serializers import ArchivosSerializer
 from archivos.models import Archivos
@@ -83,7 +84,7 @@ class InscripcionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Ya existe una inscripción pendiente")
 
         validated_data["id_tutor"] = tutor
-        return super().create(validated_data)
+        inscripcion= super().create(validated_data)
  # Relación automática
         TutorInfante.objects.get_or_create(tutor=tutor, infante=infante)
 
@@ -138,6 +139,7 @@ class InscripcionCompletaSerializer(serializers.Serializer):
             inscripcion = Inscripcion.objects.create(
                 id_tutor=tutor, id_infante=infante, estado="pendiente"
             )
+            inscripcion.save() 
 
   # Relación automática
         TutorInfante.objects.get_or_create(tutor=tutor, infante=infante)
@@ -202,8 +204,48 @@ class InscripcionExistenteSerializer(serializers.Serializer):
             inscripcion = Inscripcion.objects.create(
                 id_tutor=tutor, id_infante=infante, estado="pendiente"
             )
-
+            inscripcion.save() 
   # Relación automática
         TutorInfante.objects.get_or_create(tutor=tutor, infante=infante)
 
         return inscripcion
+
+
+class PeriodoInscripcionSerializer(serializers.ModelSerializer):
+    es_abierto = serializers.ReadOnlyField()
+    es_pendiente = serializers.ReadOnlyField()
+    es_cerrado = serializers.ReadOnlyField()
+
+    class Meta:
+        model = PeriodoInscripcion
+        fields = ['id', 'fecha_inicio', 'fecha_fin', 'activo', 'es_abierto', 'es_pendiente', 'es_cerrado']
+
+    def validate(self, data):
+        fecha_inicio = data.get('fecha_inicio', getattr(self.instance, 'fecha_inicio', None))
+        fecha_fin = data.get('fecha_fin', getattr(self.instance, 'fecha_fin', None))
+
+        if fecha_inicio >= fecha_fin:
+            raise serializers.ValidationError("La fecha de inicio debe ser anterior a la fecha de fin.")
+
+        queryset = PeriodoInscripcion.objects.filter(
+            fecha_inicio__lte=fecha_fin,
+            fecha_fin__gte=fecha_inicio
+        )
+        if self.instance:
+            queryset = queryset.exclude(pk=self.instance.pk)
+
+        if queryset.exists():
+            raise serializers.ValidationError("Ya existe un período de inscripción que se solapa con estas fechas.")
+
+        ahora = timezone.now()
+        activo = data.get('activo', getattr(self.instance, 'activo', True))
+
+        sera_activo = fecha_inicio > ahora or (activo and fecha_inicio <= ahora <= fecha_fin)
+
+        if sera_activo:
+            otros_activos = PeriodoInscripcion.objects.exclude(pk=self.instance.pk if self.instance else None)
+            for periodo in otros_activos:
+                if periodo.es_abierto or periodo.es_pendiente:
+                    raise serializers.ValidationError("Ya existe un período activo (abierto o pendiente). Solo puede haber uno a la vez.")
+
+        return data

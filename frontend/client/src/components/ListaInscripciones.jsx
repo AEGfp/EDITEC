@@ -3,139 +3,124 @@ import DataTable from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
 import { estiloTablas } from "../assets/estiloTablas";
 import tienePermiso from "../utils/tienePermiso";
-import { obtenerInscripciones } from "../api/inscripciones.api";
+import { obtenerInscripcionesActuales } from "../api/inscripciones.api";
 import ReporteInscripcionesPage from "../pages/ReporteInscripcionesPage";
 
-export function ListaInscripciones() {
+export default function ListaInscripciones({ periodo }) {
   const navigate = useNavigate();
   const [inscripciones, setInscripciones] = useState([]);
-  const [columnas, setColumnas] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState("");
+
   const puedeEscribir = tienePermiso("inscripciones", "escritura");
 
   useEffect(() => {
-    //Cambiar el nombre de la función
-    async function loadInscripciones() {
-      try {
-        //Cambiar la API para las demás páginas
-        const res = await obtenerInscripciones();
-        console.log(res.data);
-        if (res.data.length > 0) {
-          const arrayColumnas = definirColumnas();
+    async function cargarInscripciones() {
+      if (!periodo || !periodo.id) {
+        setInscripciones([]);
+        return;
+      }
 
-          agregarBotonDetalles(arrayColumnas);
-          setColumnas(arrayColumnas);
-          setInscripciones(res.data);
-          setLoading(false);
-        }
-      } catch (err) {
-        console.error(err);
+      setLoading(true);
+      try {
+        const res = await obtenerInscripcionesActuales(periodo.id);
+        setInscripciones(res.data);
+      } catch (error) {
+        console.error("Error cargando inscripciones:", error);
+        setInscripciones([]);
+      } finally {
         setLoading(false);
       }
     }
-    //Cambiar el nombre de la función
-    loadInscripciones();
-  }, []);
 
-  function handleRowClick(fila) {
-    navigate(`/inscripciones/${fila.id}`);
-  }
+    cargarInscripciones();
+  }, [periodo]);
 
-  function definirColumnas() {
-    const columnas = [
-      {
-        name: "Realizada por:",
-        selector: (row) => row.nombre_tutor,
-        sortable: true,
-      },
-      {
-        name: "Estado",
-        selector: (row) => row.estado,
-        sortable: true,
-        cell: (row) => agregarMayuscula(row.estado),
-      },
-      {
-        name: "Fecha de inscripción",
-        selector: (row) => row.fecha_inscripcion,
-        sortable: true,
-      },
-      {
-        name: "Fecha de aprobación",
-        selector: (row) => row.fecha_revision,
-        sortable: true,
-      },
-      {
-        name: "Revisada por:",
-        selector: (row) => row.nombre_usuario,
-        sortable: true,
-      },
-    ];
-
-    return columnas;
-  }
-
-  function agregarBotonDetalles(arrayColumnas) {
-    arrayColumnas.push({
+  const columnas = [
+    {
+      name: "Realizada por",
+      selector: (row) => row.nombre_tutor,
+      sortable: true,
+    },
+    {
+      name: "Estado",
+      selector: (row) => row.estado,
+      sortable: true,
+      cell: (row) => agregarMayuscula(row.estado),
+    },
+    {
+      name: "Fecha de inscripción",
+      selector: (row) => row.fecha_inscripcion,
+      sortable: true,
+    },
+    {
+      name: "Fecha de aprobación",
+      selector: (row) => row.fecha_revision,
+      sortable: true,
+    },
+    {
+      name: "Revisada por",
+      selector: (row) => row.nombre_usuario,
+      sortable: true,
+    },
+    {
       name: "",
-      selector: (fila) => fila,
-      right: true,
-      cell: (fila) => (
+      cell: (row) => (
         <button
           className="boton-detalles"
           onClick={(e) => {
             e.stopPropagation();
-            handleRowClick(fila);
+            navigate(`/inscripciones/${row.id}`);
           }}
         >
           Detalles
         </button>
       ),
-    });
-  }
+      right: true,
+    },
+  ];
 
-  const elementosFiltrados = inscripciones.filter((inscripcion) =>
-    columnas.some((columna) => {
-      const elem = columna.selector(inscripcion);
-      return elem?.toString().toLowerCase().includes(busqueda.toLowerCase());
+  const inscripcionesFiltradas = inscripciones.filter((inscripcion) =>
+    columnas.some((col) => {
+      const valor = col.selector ? col.selector(inscripcion) : null;
+      return valor?.toString().toLowerCase().includes(busqueda.toLowerCase());
     })
   );
 
-  const paginationComponentOptions = {
-    rowsPerPageText: "Filas por página",
-    rangeSeparatorText: "de",
-    selectAllRowsItem: true,
-    selectAllRowsItemText: "Todos",
-  };
-
-  function agregarMayuscula(palabra) {
-    return palabra.charAt(0).toUpperCase() + palabra.slice(1);
+  function agregarMayuscula(text = "") {
+    return text.charAt(0).toUpperCase() + text.slice(1);
   }
 
   return (
     <div>
-      <h1 className="align-baseline text-2xl font-semibold p-2 pl-3">
-        Inscripciones
-      </h1>
-      <div className="p-2 flex flex-row justify-between">
+      <h1 className="text-2xl font-semibold p-2 pl-3">Inscripciones</h1>
+
+      <div className="p-2 flex justify-between">
         <input
           type="text"
           placeholder="Buscar..."
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
-          className=" border border-gray-300 rounded px-3 py-1 w-full max-w-xs"
+          className="border border-gray-300 rounded px-3 py-1 max-w-xs w-full"
         />
       </div>
-      <ReporteInscripcionesPage></ReporteInscripcionesPage>
+
+      <ReporteInscripcionesPage />
+
       <DataTable
         columns={columnas}
-        data={elementosFiltrados}
+        data={inscripcionesFiltradas}
         progressPending={loading}
         pagination
-        paginationComponentOptions={paginationComponentOptions}
+        paginationComponentOptions={{
+          rowsPerPageText: "Filas por página",
+          rangeSeparatorText: "de",
+          selectAllRowsItem: true,
+          selectAllRowsItemText: "Todos",
+        }}
         highlightOnHover
         customStyles={estiloTablas}
-      ></DataTable>
+      />
     </div>
   );
 }
