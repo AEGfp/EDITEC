@@ -56,4 +56,6 @@ class TutorInfante(models.Model):
     infante = models.ForeignKey("Infante", on_delete=models.CASCADE, related_name="tutores")
 
     def __str__(self):
+        
         return f"{self.tutor} → {self.infante}"
+

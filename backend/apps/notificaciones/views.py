@@ -12,11 +12,10 @@ logger = logging.getLogger(__name__)
 
 def enviar_notificacion_por_correo(notificacion):
     salas_dest = notificacion.salas_destinatarias.all()
-    salas_excluidas = notificacion.excluir_salas.all()
+    salas_excluidas = notificacion.salas_excluidas.all()  # ✅ corregido aquí
 
     ids_dest = set(salas_dest.values_list("id", flat=True))
     ids_excluir = set(salas_excluidas.values_list("id", flat=True))
-
     if ids_dest:
         ids_finales = ids_dest - ids_excluir
     else:
@@ -66,18 +65,16 @@ class NotificacionCreateView(APIView):
 
         # Extraer y castear M2M manualmente
         salas_destinatarias_ids = [int(i) for i in data.pop('salas_destinatarias', [])]
-        salas_excluidas_ids = [int(i) for i in data.pop('salas_excluidas', [])]
+        salas_excluidas_ids = [int(i) for i in data.pop('salas_excluidas', [])]  # ✅ ya estaba bien aquí
 
         serializer = NotificacionSerializer(data=data)
         if serializer.is_valid():
-            # Guardar instancia sin relaciones M2M
             notificacion = serializer.save()
 
-            # Asignar explícitamente las relaciones M2M
             notificacion.salas_destinatarias.set(salas_destinatarias_ids)
-            notificacion.excluir_salas.set(salas_excluidas_ids)
+            notificacion.salas_excluidas.set(salas_excluidas_ids)  # ✅ corregido aquí
 
-            logger.info(f"🚫 Salas excluidas guardadas: {list(notificacion.excluir_salas.values_list('id', flat=True))}")
+            logger.info(f"🚫 Salas excluidas guardadas: {list(notificacion.salas_excluidas.values_list('id', flat=True))}")  # ✅
             logger.info(f"✅ Salas destinatarias guardadas: {list(notificacion.salas_destinatarias.values_list('id', flat=True))}")
 
             enviar_notificacion_por_correo(notificacion)
@@ -86,8 +83,9 @@ class NotificacionCreateView(APIView):
         logger.error("Error al crear notificación: %s", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class NotificacionListView(ListAPIView):
-    queryset = Notificacion.objects.all().order_by('-fecha_envio')
+    queryset = Notificacion.objects.all().order_by('-fecha', '-hora')  # cambie
     serializer_class = NotificacionSerializer
 
 class NotificacionDetailView(RetrieveUpdateDestroyAPIView):

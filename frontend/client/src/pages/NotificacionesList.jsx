@@ -36,9 +36,14 @@ export default function NotificacionesList() {
           },
           {
             name: "Fecha",
-            selector: (fila) => fila.fecha_envio?.split("T")[0] || "Sin fecha",
+            selector: (fila) => {
+              const fecha = fila.fecha || "Sin fecha";
+              const hora = fila.hora ? fila.hora.slice(0, 5) : "";
+              return `${fecha}${hora ? ` ${hora}` : ""}`;
+            },
             wrap: true,
           },
+          
         ];
 
         agregarBotonDetalles(arrayColumnas);
