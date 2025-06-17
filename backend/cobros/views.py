@@ -30,12 +30,18 @@ from Roles.roles import (
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import ParametrosCobros, SaldoCuotas
-from .serializers import ParametrosCobrosSerializer, SaldoCuotasSerializer
-from datetime import date 
+from .models import ParametrosCobros, SaldoCuotas, CobroCuotaInfante
+from .serializers import ParametrosCobrosSerializer, SaldoCuotasSerializer, CobroCuotaInfanteSerializer
+from datetime import date, timedelta
 from calendar import monthrange
 from apps.educativo.models import Infante
 from django.db import IntegrityError
+from decimal import Decimal
+
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from django.http import HttpResponse
+from django.db.models import Sum, F, DecimalField, ExpressionWrapper
 
 
 # View para los parámetros
@@ -114,3 +120,223 @@ def generar_cuotas(request):
             return Response({"detalle": "No se generaron nuevas cuotas. Ya existen para el infante."}, status=200)
 
         return Response(serializer.data, status=201)
+    
+# View para obtener cuotas por infante
+@permission_classes([AllowAny])
+class CuotasPorInfanteView(viewsets.ModelViewSet):
+    serializer_class = SaldoCuotasSerializer
+
+    # Se obtiene las cuotas por infante
+    def get_queryset(self):
+        infante = self.kwargs['id_infante']
+        return SaldoCuotas.objects.filter(id_infante = infante)
+
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def registrar_cobro_cuota(request):
+    cuota_id = request.data.get("cuota_id")
+    monto_cobrado = request.data.get("monto_cobrado")
+    fecha_cobro = request.data.get("fecha_cobro")  # formato: 'YYYY-MM-DD'
+
+    if not all([cuota_id, monto_cobrado, fecha_cobro]):
+        return Response({"error": "cuota_id, monto_cobrado y fecha_cobro son requeridos"}, status=400)
+
+    try:
+        cuota = SaldoCuotas.objects.get(id=cuota_id)
+    except SaldoCuotas.DoesNotExist:
+        return Response({"error": "Cuota no encontrada"}, status=404)
+
+    parametros = ParametrosCobros.objects.filter(estado=True).first()
+    if not parametros:
+        return Response({"error": "No hay parámetros activos para los cálculos"}, status=400)
+
+    # Calcular fecha límite con días de gracia
+    fecha_cobro_dt = date.fromisoformat(fecha_cobro)
+    fecha_limite_sin_mora = cuota.fecha_vencimiento + timedelta(days=parametros.dias_gracia)
+
+    # Calcular mora si corresponde
+    mora = 0
+    if fecha_cobro_dt > fecha_limite_sin_mora:
+        dias_mora = (fecha_cobro_dt - fecha_limite_sin_mora).days
+        mora = dias_mora * parametros.mora_por_dia
+
+    # Actualizar saldo y estado de la cuota
+    total_cobrado = Decimal(monto_cobrado) + Decimal(mora)
+    cuota.monto_mora = mora
+    cuota.monto_total = cuota.monto_cuota + mora
+    cuota.saldo = max(Decimal("0.00"), cuota.monto_total - Decimal(monto_cobrado))
+    cuota.fecha_pago = fecha_cobro_dt
+    cuota.estado = cuota.saldo == 0
+    cuota.save()
+
+    # Registrar el cobro
+    cobro = CobroCuotaInfante.objects.create(
+        cuota=cuota,
+        fecha_cobro=fecha_cobro_dt,
+        monto_cobrado=monto_cobrado,
+        total_cobrado = total_cobrado,
+        observacion=f"Cobro con mora de {mora}" if mora > 0 else "Cobro sin mora"
+    )
+
+    serializer = CobroCuotaInfanteSerializer(cobro)
+    return Response(serializer.data, status=201)
+
+
+@permission_classes([AllowAny])
+def generar_pdf_resumen_cobros(request, id_infante):
+    try:
+        infante = Infante.objects.get(id=id_infante)
+    except Infante.DoesNotExist:
+        return HttpResponse("Infante no encontrado", status=404)
+
+    parametros = ParametrosCobros.objects.filter(estado=True).first()
+    if not parametros:
+        return HttpResponse("No hay parámetros activos", status=400)
+
+    hoy = date.today()
+    resumen = []
+
+    total_cuota = 0
+    total_mora_calculada = 0
+    total_mora_original = 0
+    total_pagado = 0
+    cuotas_pagadas = 0
+    cuotas_pendientes = 0
+
+    cuotas = SaldoCuotas.objects.filter(id_infante=infante).order_by("anho", "mes")
+
+    for cuota in cuotas:
+        vencimiento_con_gracia = cuota.fecha_vencimiento + timedelta(days=parametros.dias_gracia)
+
+        if not cuota.estado and hoy > vencimiento_con_gracia:
+            dias_mora = (hoy - vencimiento_con_gracia).days
+            mora_calculada = dias_mora * parametros.mora_por_dia
+        else:
+            mora_calculada = 0
+
+        if cuota.estado:
+            total_pagado_item = cuota.monto_cuota + cuota.monto_mora
+        else:
+            total_pagado_item = cuota.monto_cuota + mora_calculada
+
+        resumen.append({
+            "anho": cuota.anho,
+            "mes": cuota.mes,
+            "total_cuota": cuota.monto_cuota,
+            "monto_mora_original": cuota.monto_mora,
+            "monto_mora_calculada": mora_calculada,
+            "total_pagado": total_pagado_item,
+            "pagada": cuota.estado,
+            "fecha_vencimiento": cuota.fecha_vencimiento,
+        })
+
+        total_cuota += cuota.monto_cuota
+        total_mora_original += cuota.monto_mora
+        total_mora_calculada += mora_calculada
+        total_pagado += total_pagado_item
+        if cuota.estado:
+            cuotas_pagadas += 1
+        else:
+            cuotas_pendientes += 1
+
+
+    context = {
+        "infante": infante,
+        "resumen": resumen,
+        "fecha_actual": hoy,
+        "total_cuota": total_cuota,
+        "total_mora_original": total_mora_original,
+        "total_mora_calculada": total_mora_calculada,
+        "total_pagado": total_pagado,
+        "cuotas_pagadas": cuotas_pagadas,
+        "cuotas_pendientes": cuotas_pendientes,
+    }
+
+    template = get_template("cobros/resumen_cobros.html")
+    html = template.render(context)
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="resumen_cobros_{infante.id}.pdf"'
+
+    pisa_status = pisa.CreatePDF(html, dest=response)
+
+    if pisa_status.err:
+        return HttpResponse("Error al generar PDF", status=500)
+    return response
+
+
+# View para front, consulta por docente/funcionario
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def resumen_cobros_json(request, id_infante):
+    try:
+        infante = Infante.objects.get(id=id_infante)
+    except Infante.DoesNotExist:
+        return Response({"error": "Infante no encontrado"}, status=404)
+
+    parametros = ParametrosCobros.objects.filter(estado=True).first()
+    if not parametros:
+        return Response({"error": "No hay parámetros activos"}, status=400)
+
+    hoy = date.today()
+    cuotas = SaldoCuotas.objects.filter(id_infante=infante).order_by("anho", "mes")
+
+    resumen = []
+    total_cuota = Decimal("0.00")
+    total_mora_original = Decimal("0.00")
+    total_mora_calculada = Decimal("0.00")
+    total_pagado = Decimal("0.00")
+    cuotas_pagadas = 0
+    cuotas_pendientes = 0
+
+    for cuota in cuotas:
+        vencimiento_con_gracia = cuota.fecha_vencimiento + timedelta(days=parametros.dias_gracia)
+        total_cobrado = cuota.cobros.aggregate(total=Sum('monto_cobrado'))['total'] or Decimal("0.00")
+
+        if not cuota.estado and hoy > vencimiento_con_gracia:
+            dias_mora = (hoy - vencimiento_con_gracia).days
+            mora_calculada = dias_mora * parametros.mora_por_dia
+        else:
+            mora_calculada = Decimal("0.00")
+
+        if cuota.estado:
+            total_pagado_item = cuota.monto_cuota + cuota.monto_mora
+        else:
+            total_pagado_item = cuota.monto_cuota + mora_calculada
+
+        resumen.append({
+            "anho": cuota.anho,
+            "mes": cuota.mes,
+            "fecha_vencimiento": cuota.fecha_vencimiento,
+            "cuota": cuota.monto_cuota,
+            "mora_original": cuota.monto_mora,
+            "mora_calculada": mora_calculada,
+            "total_pagado": total_pagado_item,
+            "total_cobrado": total_cobrado,
+            "pagada": cuota.estado,
+        })
+
+        total_cuota += cuota.monto_cuota
+        total_mora_original += cuota.monto_mora
+        total_mora_calculada += mora_calculada
+        total_pagado += total_pagado_item
+        cuotas_pagadas += int(cuota.estado)
+        cuotas_pendientes += int(not cuota.estado)
+
+    return Response({
+        "infante": {
+            "id": infante.id,
+            "nombre": str(infante),
+        },
+        "resumen": resumen,
+        "totales": {
+            "total_cuotas_emitidas": total_cuota,
+            "total_mora_original": total_mora_original,
+            "total_mora_calculada": total_mora_calculada,
+            "total_pagado_estimado": total_pagado,
+            "cuotas_pagadas": cuotas_pagadas,
+            "cuotas_pendientes": cuotas_pendientes,
+        }
+    })
