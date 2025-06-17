@@ -30,6 +30,7 @@ import { CajasPagosFormPage } from "../pages/CajasPagosFormPage";
 import { InformesFormPage } from "../pages/InformesFormPage";
 import { InformesPage } from "../pages/InformesPage";
 import TransferenciaInfantePage from "../pages/TransferenciaInfantePage";
+import { CuotasPage } from "../pages/CuotasPage";
 
 
 export default [
@@ -144,6 +145,30 @@ export default [
     entidad: "infantes",
     permiso: "lectura",
   },
+
+  {
+    path: "/cuotas", //url
+    componente: CuotasPage, //.jsx
+    entidad: "cuotas", //tabla con la que interactúa
+    permiso: "lectura", //permisos minimos
+    nombre: "Cuotas", //Nombre del elemento en el Sidebar
+    /*subrutas: [
+      {
+        path: "/permisos-crear",
+        componente: PermisosFormPage,
+        entidad: "permisos",
+        permiso: "escritura",
+        nombre: "Crear Permisos",
+      },
+    ],*/
+  },
+  {
+    path: "/cuotas-por-infante/:id",
+    componente: CuotasPage,
+    entidad: "cuotas",
+    permiso: "lectura",
+  },
+
   {
     path: "/salas",
     componente: SalasList,
