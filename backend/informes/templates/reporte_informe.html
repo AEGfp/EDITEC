@@ -26,17 +26,32 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            table-layout: fixed;
+            /* Forza a respetar ancho fijo */
         }
 
         th,
         td {
             border: 1px solid #000;
             padding: 8px;
-            text-align: left;
+            vertical-align: top;
         }
 
         th {
             background-color: #ddd;
+        }
+
+        .col-nombre {
+            width: 30%;
+        }
+
+        .col-logrado {
+            width: 10%;
+            text-align: center;
+        }
+
+        .col-descripcion {
+            width: 60%;
         }
     </style>
 </head>
@@ -68,22 +83,27 @@
     <table>
         <thead>
             <tr>
-                <th>Descripción</th>
-                <th>Logrado</th>
+                <th class="col-nombre">Nombre</th>
+                <th class="col-logrado">Logrado</th>
+                <th class="col-descripcion">Descripción</th>
             </tr>
         </thead>
         <tbody>
             {% for indicador in informe.indicadores_detalle %}
             <tr>
-                <td>{{ indicador.descripcion }}</td>
-                <td>{% if indicador.ind_logrado %}Sí{% else %}No{% endif %}</td>
+                <td class="col-nombre">{{ indicador.nombre }}</td>
+                <td class="col-logrado">
+                    {% if indicador.ind_logrado %}Sí{% else %}No{% endif %}
+                </td>
+                <td class="col-descripcion">{{ indicador.descripcion }}</td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="2">No hay indicadores</td>
+                <td colspan="3">No hay indicadores</td>
             </tr>
             {% endfor %}
         </tbody>
+
     </table>
 </body>
 

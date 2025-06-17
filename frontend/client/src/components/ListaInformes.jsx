@@ -3,7 +3,11 @@ import DataTable from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
 import { estiloTablas } from "../assets/estiloTablas";
 import tienePermiso from "../utils/tienePermiso";
-import { obtenerInforme, obtenerTodosInformes } from "../api/informes.api";
+import {
+  crearReporteInforme,
+  obtenerInforme,
+  obtenerTodosInformes,
+} from "../api/informes.api";
 import { obtenerInfantesAsignados } from "../api/asistencias.api";
 
 export function ListaInformes() {
@@ -62,8 +66,16 @@ export function ListaInformes() {
     ];
   }
 
-  function handleRowClick(fila) {
-    navigate(`/informes/${fila.id}`);
+  async function handleRowClick(fila) {
+    try {
+      const res = await crearReporteInforme(fila.id);
+      const url = window.URL.createObjectURL(
+        new Blob([res.data], { type: "application/pdf" })
+      );
+      window.open(url, "_blank");
+    } catch (err) {
+      console.error("Error al obtener el informe PDF", err);
+    }
   }
 
   function agregarElemento() {
@@ -80,10 +92,10 @@ export function ListaInformes() {
           className="boton-detalles"
           onClick={(e) => {
             e.stopPropagation();
-            handleRowClick(fila); // Llama a la función de descarga
+            handleRowClick(fila);
           }}
         >
-          Detalles
+          Ver PDF
         </button>
       ),
     });

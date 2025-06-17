@@ -26,3 +26,10 @@ export const eliminarInforme = (id) => {
 export const actualizarInforme = (id, datos) => {
   return Api.put(`${DIRECCION}${id}/`, datos);
 };
+
+export const crearReporteInforme = (id) => {
+  return Api.get("reporte-informe/", {
+    params: { id: id },
+    responseType: "blob",
+  });
+};

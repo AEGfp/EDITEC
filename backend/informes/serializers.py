@@ -56,16 +56,17 @@ class InformeSerializer(serializers.ModelSerializer):
     
     # Para obtener los indicadores asociados en el GET
     def get_indicadores_detalle(self, obj):
-        relacionados = InformeIndicador.objects.filter(id_informe = obj).select_related('id_indicador')
+        relacionados = InformeIndicador.objects.filter(id_informe=obj).select_related('id_indicador')
         return [
             {
                 'id_indicador': r.id_indicador.id,
+                'nombre': r.id_indicador.nombre,  # ← ESTE CAMPO FALTABA
                 'descripcion': r.id_indicador.descripcion,
                 'ind_logrado': r.ind_logrado
             }
             for r in relacionados
-            ]
-    
+        ]
+        
     
     def get_descripcion_tipo_informe(self, obj):
         return obj.id_tipo_informe.descripcion if obj.id_tipo_informe else None

@@ -31,7 +31,6 @@ import { InformesFormPage } from "../pages/InformesFormPage";
 import { InformesPage } from "../pages/InformesPage";
 import TransferenciaInfantePage from "../pages/TransferenciaInfantePage";
 
-
 export default [
   {
     path: "/home",
@@ -373,18 +372,16 @@ export default [
       },
     ],
   },
-  {
-    path: "/informe/:id",
+  /*{
+    path: "/informes/:id",
     componente: InformesFormPage,
     entidad: "informes",
     permiso: "lectura",
-  },
+  },*/
   {
     path: "/transferencias",
-  componente: TransferenciaInfantePage,
-  publico: true,
-  nombre: "Transferencia",
+    componente: TransferenciaInfantePage,
+    publico: true,
+    nombre: "Transferencia",
   },
- 
-  
 ];
