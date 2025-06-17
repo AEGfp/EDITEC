@@ -34,9 +34,10 @@ from .models import ParametrosCobros, SaldoCuotas, CobroCuotaInfante
 from .serializers import ParametrosCobrosSerializer, SaldoCuotasSerializer, CobroCuotaInfanteSerializer
 from datetime import date, timedelta
 from calendar import monthrange
-from apps.educativo.models import Infante
+from apps.educativo.models import Infante, Sala
 from django.db import IntegrityError
 from decimal import Decimal
+
 
 from django.template.loader import get_template
 from xhtml2pdf import pisa
@@ -207,6 +208,21 @@ def generar_pdf_resumen_cobros(request, id_infante):
 
     cuotas = SaldoCuotas.objects.filter(id_infante=infante).order_by("anho", "mes")
 
+    meses = {
+        1: "Enero",
+        2: "Febrero",
+        3: "Marzo",
+        4: "Abril",
+        5: "Mayo",
+        6: "Junio",
+        7: "Julio",
+        8: "Agosto",
+        9: "Septiembre",
+        10: "Octubre",
+        11: "Noviembre",
+        12: "Diciembre",
+    }
+    
     for cuota in cuotas:
         vencimiento_con_gracia = cuota.fecha_vencimiento + timedelta(days=parametros.dias_gracia)
 
@@ -223,7 +239,7 @@ def generar_pdf_resumen_cobros(request, id_infante):
 
         resumen.append({
             "anho": cuota.anho,
-            "mes": cuota.mes,
+            "mes": meses.get(cuota.mes, "Mes inválido"),
             "total_cuota": cuota.monto_cuota,
             "monto_mora_original": cuota.monto_mora,
             "monto_mora_calculada": mora_calculada,
@@ -291,6 +307,21 @@ def resumen_cobros_json(request, id_infante):
     cuotas_pagadas = 0
     cuotas_pendientes = 0
 
+    meses = {
+        1: "Enero",
+        2: "Febrero",
+        3: "Marzo",
+        4: "Abril",
+        5: "Mayo",
+        6: "Junio",
+        7: "Julio",
+        8: "Agosto",
+        9: "Septiembre",
+        10: "Octubre",
+        11: "Noviembre",
+        12: "Diciembre",
+    }
+    
     for cuota in cuotas:
         vencimiento_con_gracia = cuota.fecha_vencimiento + timedelta(days=parametros.dias_gracia)
         total_cobrado = cuota.cobros.aggregate(total=Sum('monto_cobrado'))['total'] or Decimal("0.00")
@@ -308,7 +339,7 @@ def resumen_cobros_json(request, id_infante):
 
         resumen.append({
             "anho": cuota.anho,
-            "mes": cuota.mes,
+            "mes": meses.get(cuota.mes, "Mes inválido"),
             "fecha_vencimiento": cuota.fecha_vencimiento,
             "cuota": cuota.monto_cuota,
             "mora_original": cuota.monto_mora,
@@ -340,3 +371,73 @@ def resumen_cobros_json(request, id_infante):
             "cuotas_pendientes": cuotas_pendientes,
         }
     })
+
+
+# View para el reporte general de cuotas de infantes asignados a un docente
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def generar_pdf_resumen_todos(request):
+    usuario = request.user
+    persona = getattr(usuario, "persona", None)
+
+    if not persona:
+        return HttpResponse("El usuario no tiene persona asociada", status=400)
+
+    sala = Sala.objects.filter(profesor_encargado=persona)
+    infantes = Infante.objects.filter(id_sala__in=sala)
+
+    if not infantes.exists():
+        return HttpResponse("No hay infantes asignados", status=200)
+
+    parametros = ParametrosCobros.objects.filter(estado=True).first()
+    if not parametros:
+        return HttpResponse("No hay parámetros activos", status=400)
+
+    hoy = date.today()
+    template = get_template("cobros/resumen_cobros_multiple.html")
+    todos_los_resumenes = []
+
+    for infante in infantes:
+        cuotas = SaldoCuotas.objects.filter(id_infante=infante).order_by("anho", "mes")
+        resumen = []
+
+        for cuota in cuotas:
+            vencimiento_con_gracia = cuota.fecha_vencimiento + timedelta(days=parametros.dias_gracia)
+
+            if not cuota.estado and hoy > vencimiento_con_gracia:
+                dias_mora = (hoy - vencimiento_con_gracia).days
+                mora_calculada = dias_mora * parametros.mora_por_dia
+            else:
+                mora_calculada = 0
+
+            total_cobrado = cuota.cobros.aggregate(total=Sum("monto_cobrado"))['total'] or Decimal("0.00")
+
+            resumen.append({
+                "anho": cuota.anho,
+                "mes": cuota.mes,
+                "fecha_vencimiento": cuota.fecha_vencimiento,
+                "cuota": cuota.monto_cuota,
+                "mora_original": cuota.monto_mora,
+                "mora_calculada": mora_calculada,
+                "total_pagado": cuota.monto_cuota + mora_calculada,
+                "total_cobrado": total_cobrado,
+                "pagada": cuota.estado,
+            })
+
+        todos_los_resumenes.append({
+            "infante": infante,
+            "resumen": resumen
+        })
+
+    html = template.render({
+        "fecha_actual": hoy,
+        "reportes": todos_los_resumenes
+    })
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="resumen_todos_los_infantes.pdf"'
+    pisa_status = pisa.CreatePDF(html, dest=response)
+
+    if pisa_status.err:
+        return HttpResponse("Error al generar PDF", status=500)
+    return response

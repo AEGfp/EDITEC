@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    body { font-family: Helvetica, sans-serif; font-size: 11px; }
+    h1, h2 { text-align: center; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #333; padding: 6px; text-align: center; }
+    th { background-color: #f2f2f2; }
+    .page-break { page-break-after: always; }
+  </style>
+</head>
+<body>
+  <h1>Resumen de Cuotas - Infantes Asignados</h1>
+  <p style="text-align: center;">Fecha del reporte: {{ fecha_actual }}</p>
+
+  {% for reporte in reportes %}
+    <div class="page-break"></div>
+    <h2>{{ reporte.infante }}</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Año</th>
+          <th>Mes</th>
+          <th>Vencimiento</th>
+          <th>Cuota</th>
+          <th>Mora Original</th>
+          <th>Mora Calculada</th>
+          <th>Total Pagado</th>
+          <th>Total Cobrado</th>
+          <th>Pagada</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in reporte.resumen %}
+        <tr>
+          <td>{{ item.anho }}</td>
+          <td>{{ item.mes }}</td>
+          <td>{{ item.fecha_vencimiento }}</td>
+          <td>{{ item.cuota }}</td>
+          <td>{{ item.mora_original }}</td>
+          <td>{{ item.mora_calculada }}</td>
+          <td>{{ item.total_pagado }}</td>
+          <td>{{ item.total_cobrado }}</td>
+          <td>{% if item.pagada %}Sí{% else %}No{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endfor %}
+</body>
+</html>
