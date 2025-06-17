@@ -1,3 +1,4 @@
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -15,7 +16,7 @@
 </head>
 <body>
     <h1>Resumen de Cobros - {{ infante }}</h1>
-    <p style="text-align: center;">Fecha del reporte: {{ fecha_actual }}</p>
+    <p style="text-align: center;">Fecha del reporte: {{ fecha_actual|date:"d/m/Y" }}</p>
 
     <table>
         <thead>
@@ -34,10 +35,10 @@
             <tr>
                 <td>{{ item.anho }}</td>
                 <td>{{ item.mes }}</td>
-                <td>{{ item.fecha_vencimiento }}</td>
-                <td>{{ item.total_cuota }}</td>
-                <td>{{ item.monto_mora_calculada }}</td>
-                <td>{{ item.total_pagado }}</td>
+                <td>{{ item.fecha_vencimiento|date:"d/m/Y" }}</td>
+                <td>{{ item.total_cuota|floatformat:0|intcomma }}</td>
+                <td>{{ item.monto_mora_calculada|floatformat:0|intcomma }}</td>
+                <td>{{ item.total_pagado|floatformat:0|intcomma }}</td>
                 <td>{% if item.pagada %}Sí{% else %}No{% endif %}</td>
             </tr>
             {% endfor %}
@@ -48,15 +49,15 @@
     <table class="resumen">
         <tr>
             <td><strong>Total Cuotas Emitidas:</strong></td>
-            <td>{{ total_cuota }}</td>
+            <td>{{ total_cuota|floatformat:0|intcomma }} Gs</td>
         </tr>
         <tr>
             <td><strong>Total Mora Estimada al Día de Hoy:</strong></td>
-            <td>{{ total_mora_calculada }}</td>
+            <td>{{ total_mora_calculada|floatformat:0|intcomma }} Gs</td>
         </tr>
         <tr>
             <td><strong>Total a Cobrar (cuotas + mora):</strong></td>
-            <td>{{ total_pagado }}</td>
+            <td>{{ total_pagado|floatformat:0|intcomma }} Gs</td>
         </tr>
         <tr>
             <td><strong>Cuotas Pagadas:</strong></td>

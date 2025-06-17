@@ -24,7 +24,7 @@ router.register(r"anhos", AnhoLectivoView)
 urlpatterns = [
     path("", include(router.urls)),
     path("salas-publicas/", salas_publicas),
-  #  path("infantes-asignados/", infantes_asignados),
+ #   path("infantes-asignados/", infantes_asignados),
     path("reporte-documentacion/<int:infante_id>/", reporte_documentacion, name="reporte_documentacion"),
     path("transferir-infante/", TransferenciaSalaView.as_view(), name="transferir-infante"),
     path("transferir-profesor/", TransferenciaProfesorView.as_view(), name="transferir-profesor"),
