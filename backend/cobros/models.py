@@ -9,7 +9,8 @@ class ParametrosCobros(models.Model):
     anho = models.IntegerField()
     mes_inicio = models.IntegerField()
     mes_fin = models.IntegerField()
-    dia_limite_pago = models.IntegerField(default=5)
+    dia_limite_pago = models.IntegerField(default=31) # Para día de vencimiento
+    dias_gracia = models.IntegerField(default=5)  # Para días de gracia
     monto_cuota = models.DecimalField(max_digits=10, decimal_places=2)
     mora_por_dia = models.DecimalField(max_digits=10, decimal_places=2)
     estado = models.BooleanField(default=True)
@@ -38,3 +39,14 @@ class SaldoCuotas(models.Model):
 
     def __str__(self):
         return f"{self.id_infante.nombre} {self.id_infante.apellido} - Cuota N° {self.nro_cuota}: {self.mes}/{self.anho}"
+
+
+# Clase para entidad de pagos de cuotas
+class CobroCuotaInfante(models.Model):
+    cuota = models.ForeignKey(SaldoCuotas, on_delete=models.CASCADE, related_name="cobros")
+    fecha_cobro = models.DateField()
+    monto_cobrado = models.DecimalField(max_digits=10, decimal_places=2)
+    observacion = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"Cobro de {self.monto_pagado} para cuota {self.cuota}"
