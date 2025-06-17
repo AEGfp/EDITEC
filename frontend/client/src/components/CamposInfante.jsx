@@ -1,9 +1,29 @@
+import { useEffect } from "react";
 import CampoRequerido from "./CampoRequerido";
 import CamposArchivo from "./CamposArchivo";
+import { useFormContext } from "react-hook-form";
 
-export default function CamposInfante({ register, errors, watch, setValue }) {
+export default function CamposInfante() {
+  const {
+    register,
+    setValue,
+    formState: { errors },
+    watch,
+  } = useFormContext();
   const permisoFotos = watch("permiso_fotos");
   const permisoPanhal = watch("permiso_cambio_panhal");
+
+  useEffect(() => {
+    if (permisoPanhal !== "S") {
+      setValue("archivo_permiso_panhal", null);
+    }
+  }, [permisoPanhal, setValue]);
+
+  useEffect(() => {
+    if (permisoFotos !== "S") {
+      setValue("archivo_permiso_fotos", null);
+    }
+  }, [permisoFotos, setValue]);
 
   return (
     <>
@@ -98,6 +118,7 @@ export default function CamposInfante({ register, errors, watch, setValue }) {
               setValue={setValue}
               watch={watch}
               nombreCampo="archivo_permiso_panhal"
+              esRequerido={true}
             />
           )}
           <h4 className="formulario-elemento">¿Permiso para fotos?</h4>
@@ -112,6 +133,7 @@ export default function CamposInfante({ register, errors, watch, setValue }) {
               setValue={setValue}
               watch={watch}
               nombreCampo="archivo_permiso_fotos"
+              esRequerido={true}
             />
           )}
         </div>

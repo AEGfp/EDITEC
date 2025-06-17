@@ -1,29 +1,28 @@
-import { useEffect } from "react";
+import { Controller, useFormContext } from "react-hook-form";
+import CampoRequerido from "./CampoRequerido";
 
-export default function CamposArchivo({
-  register,
-  nombreCampo,
-  setValue,
-  watch,
-}) {
-  const archivoSeleccionado = watch(nombreCampo);
-
-  useEffect(() => {
-    register(nombreCampo); 
-  }, [register, nombreCampo]);
-
-  const manejarCambioArchivo = (e) => {
-    const archivo = e.target.files[0];
-    if (archivo) {
-      setValue(nombreCampo, archivo, { shouldValidate: true });
-    }
-  };
+export default function CamposArchivo({ nombreCampo, esRequerido = false }) {
+  const { control } = useFormContext();
 
   return (
-    <div>
-      <label className="formulario-elemento">Seleccionar archivo</label>
-      <input type="file" onChange={manejarCambioArchivo} />
-      {archivoSeleccionado && <p>{archivoSeleccionado.name}</p>}
-    </div>
+    <Controller
+      name={nombreCampo}
+      control={control}
+      rules={{ required: esRequerido }}
+      render={({ field: { onChange }, fieldState: { error } }) => (
+        <div>
+          <label className="formulario-elemento">Seleccionar archivo</label>
+          <input
+            className="formulario-input bg-green-100"
+            type="file"
+            onChange={(e) => {
+              const archivo = e.target.files?.[0] || null;
+              onChange(archivo);
+            }}
+          />
+          {error && <CampoRequerido />}
+        </div>
+      )}
+    />
   );
 }

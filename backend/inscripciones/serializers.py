@@ -102,13 +102,7 @@ class InscripcionCompletaSerializer(serializers.Serializer):
     def create(self, validated_data):
         request = self.context.get("request")
         print("FILES:", request.FILES)
-        archivos_files = []
-        archivo_fotos = request.FILES.get("archivo_permiso_fotos")
-        if archivo_fotos:
-            archivos_files.append(archivo_fotos)
-        archivo_panhal = request.FILES.get("archivo_permiso_panhal")
-        if archivo_panhal:
-            archivos_files.append(archivo_panhal)
+        
 
         user_data_tutor = validated_data["user_data_tutor"]
         tutor_data = validated_data["tutor_data"]
@@ -130,21 +124,15 @@ class InscripcionCompletaSerializer(serializers.Serializer):
 
             infante = Infante.objects.create(id_persona=persona_infante, **infante_data)
 
-            if archivo_fotos:
-                Archivos.objects.create(
-                    persona=persona_infante,
-                    archivo=archivo_fotos,
-                    descripcion=f"permiso_fotos_{persona_infante.ci}",
-                )
+            for nombre_campo, archivo in request.FILES.items():
+                if nombre_campo.startswith("archivo_"):
+                    descripcion = nombre_campo.replace("archivo_", "")
+                    Archivos.objects.create(
+                        persona=persona_infante,
+                        archivo=archivo,
+                        descripcion=f"{descripcion}_{persona_infante.ci}",)
 
-            if archivo_panhal:
-                Archivos.objects.create(
-                    persona=persona_infante,
-                    archivo=archivo_panhal,
-                    descripcion=f"permiso_panhal{persona_infante.ci}",
-                )
-            print("archivo_fotos:", archivo_fotos)
-            print("archivo_panhal:", archivo_panhal)
+
             validar_inscripcion_pendiente(tutor, infante)
 
             inscripcion = Inscripcion.objects.create(
@@ -165,22 +153,16 @@ class InscripcionExistenteSerializer(serializers.Serializer):
 
     def validate(self, data):
         user = data["user_id"]
+        persona = user.persona
 
-        if user.groups.filter(name="tutor").exists():
-            if "tutor_data" in data:
-                data.pop("tutor_data", None)
+        if hasattr(persona, "tutor") and "tutor_data" in data:
+            data.pop("tutor_data", None)
+
         return data
 
     def create(self, validated_data):
         request = self.context.get("request")
-        print("FILES:", request.FILES)
-        archivos_files = []
-        archivo_fotos = request.FILES.get("archivo_permiso_fotos")
-        if archivo_fotos:
-            archivos_files.append(archivo_fotos)
-        archivo_panhal = request.FILES.get("archivo_permiso_panhal")
-        if archivo_panhal:
-            archivos_files.append(archivo_panhal)
+       
         user = validated_data["user_id"]
         tutor_data = validated_data.get("tutor_data")
         persona = user.persona
@@ -206,19 +188,14 @@ class InscripcionExistenteSerializer(serializers.Serializer):
 
             validar_inscripcion_pendiente(tutor, infante)
 
-            if archivo_fotos:
-                Archivos.objects.create(
-                    persona=persona_infante,
-                    archivo=archivo_fotos,
-                    descripcion=f"permiso_fotos_{persona_infante.ci}",
-                )
-
-            if archivo_panhal:
-                Archivos.objects.create(
-                    persona=persona_infante,
-                    archivo=archivo_panhal,
-                    descripcion=f"permiso_panhal_{persona_infante.ci}",
-                )
+            for nombre_campo, archivo in request.FILES.items():
+                if nombre_campo.startswith("archivo_"):
+                    descripcion = nombre_campo.replace("archivo_", "")
+                    Archivos.objects.create(
+                        persona=persona_infante,
+                        archivo=archivo,
+                        descripcion=f"{descripcion}_{persona_infante.ci}",
+                    ) 
             # print("archivo_fotos:", archivo_fotos)
             # print("archivo_panhal:", archivo_panhal)
 

@@ -1,6 +1,11 @@
+import { useFormContext } from "react-hook-form";
 import CampoRequerido from "./CampoRequerido";
 
-export default function CamposTutor({ register, errors }) {
+export default function CamposTutor() {
+  const {
+    register,
+    formState: { errors },
+  } = useFormContext();
   return (
     <>
       <h2 className="formulario-titulo">Datos del Tutor</h2>

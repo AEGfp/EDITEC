@@ -31,7 +31,7 @@ function ConsultarTutores({ idTutor }) {
           setValue("observaciones", data.observaciones);
         }
       } catch (error) {
-        console.error("❌ Error al cargar el tutor:", error);
+        console.error("Error al cargar el tutor:", error);
       }
     }
 
