@@ -171,7 +171,13 @@ class InscripcionExistenteSerializer(serializers.Serializer):
         tutor = getattr(persona, "tutor", None)
 
         with transaction.atomic():
-            if not tutor:
+            if tutor:
+                pass
+            else:
+                if user.groups.filter(name="tutor").exists():
+                    raise serializers.ValidationError(
+                        "El usuario ya pertenece al grupo 'tutor' pero no tiene un objeto Tutor asociado."
+                    )
                 if not tutor_data:
                     raise serializers.ValidationError(
                         "Datos del tutor requeridos para crear uno nuevo"
