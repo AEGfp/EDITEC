@@ -6,10 +6,7 @@ import {
   obtenerInfante,
   crearReporteInfante,
 } from "../api/infantes.api";
-import {
-  crearPersona,
-  actualizarPersona,
-} from "../api/personas.api";
+import { crearPersona, actualizarPersona } from "../api/personas.api";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import tienePermiso from "../utils/tienePermiso";
@@ -23,7 +20,11 @@ function InfantesFormPage() {
     setValue,
     reset,
     watch,
-  } = useForm();
+  } = useForm({
+    defaultValues: {
+      es_propio: false,
+    },
+  });
 
   const [editable, setEditable] = useState(false);
   const navigate = useNavigate();
@@ -51,7 +52,8 @@ function InfantesFormPage() {
           setValue("ind_celiaquismo", data.ind_celiaquismo);
           setValue("permiso_cambio_panhal", data.permiso_cambio_panhal);
           setValue("permiso_fotos", data.permiso_fotos);
-
+          setValue("es_propio", data.es_propio);
+          console.log(data);
           setEditable(false);
         } else {
           reset({
@@ -129,7 +131,9 @@ function InfantesFormPage() {
   const habilitarEdicion = () => setEditable(true);
 
   const descartarInfante = async () => {
-    const confirmar = window.confirm("¿Estás seguro que quieres eliminar este infante?");
+    const confirmar = window.confirm(
+      "¿Estás seguro que quieres eliminar este infante?"
+    );
     if (confirmar) {
       await eliminarInfante(params.id);
       navigate(pagina);
@@ -157,23 +161,39 @@ function InfantesFormPage() {
 
           <fieldset disabled={!editable}>
             <h4 className="formulario-elemento">Nombre</h4>
-            <input className="formulario-input" {...register("nombre", { required: true })} />
+            <input
+              className="formulario-input"
+              {...register("nombre", { required: true })}
+            />
             {errors.nombre && <CampoRequerido />}
 
             <h4 className="formulario-elemento">Apellido</h4>
-            <input className="formulario-input" {...register("apellido", { required: true })} />
+            <input
+              className="formulario-input"
+              {...register("apellido", { required: true })}
+            />
             {errors.apellido && <CampoRequerido />}
 
             <h4 className="formulario-elemento">CI</h4>
-            <input className="formulario-input" {...register("ci", { required: true })} />
+            <input
+              className="formulario-input"
+              {...register("ci", { required: true })}
+            />
             {errors.ci && <CampoRequerido />}
 
             <h4 className="formulario-elemento">Fecha de Nacimiento</h4>
-            <input className="formulario-input" type="date" {...register("fecha_nacimiento", { required: true })} />
+            <input
+              className="formulario-input"
+              type="date"
+              {...register("fecha_nacimiento", { required: true })}
+            />
             {errors.fecha_nacimiento && <CampoRequerido />}
 
             <h4 className="formulario-elemento">Sexo</h4>
-            <select className="formulario-input" {...register("sexo", { required: true })}>
+            <select
+              className="formulario-input"
+              {...register("sexo", { required: true })}
+            >
               <option value="">Seleccione</option>
               <option value="M">Masculino</option>
               <option value="F">Femenino</option>
@@ -182,38 +202,78 @@ function InfantesFormPage() {
             {errors.sexo && <CampoRequerido />}
 
             <h4 className="formulario-elemento">¿Alergia?</h4>
-            <select className="formulario-input" {...register("ind_alergia")}> <option value="N">No</option> <option value="S">Sí</option> </select>
+            <select className="formulario-input" {...register("ind_alergia")}>
+              {" "}
+              <option value="N">No</option> <option value="S">Sí</option>{" "}
+            </select>
 
             <h4 className="formulario-elemento">¿Intolerancia a la lactosa?</h4>
-            <select className="formulario-input" {...register("ind_intolerancia_lactosa")}> <option value="N">No</option> <option value="S">Sí</option> </select>
+            <select
+              className="formulario-input"
+              {...register("ind_intolerancia_lactosa")}
+            >
+              {" "}
+              <option value="N">No</option> <option value="S">Sí</option>{" "}
+            </select>
 
             <h4 className="formulario-elemento">¿Celiaquismo?</h4>
-            <select className="formulario-input" {...register("ind_celiaquismo")}> <option value="N">No</option> <option value="S">Sí</option> </select>
+            <select
+              className="formulario-input"
+              {...register("ind_celiaquismo")}
+            >
+              {" "}
+              <option value="N">No</option> <option value="S">Sí</option>{" "}
+            </select>
 
-            <h4 className="formulario-elemento">¿Permiso para cambiar pañal?</h4>
-            <select className="formulario-input" {...register("permiso_cambio_panhal")}> <option value="N">No</option> <option value="S">Sí</option> </select>
+            <h4 className="formulario-elemento">
+              ¿Permiso para cambiar pañal?
+            </h4>
+            <select
+              className="formulario-input"
+              {...register("permiso_cambio_panhal")}
+            >
+              {" "}
+              <option value="N">No</option> <option value="S">Sí</option>{" "}
+            </select>
 
             <h4 className="formulario-elemento">¿Permiso para fotos?</h4>
-            <select className="formulario-input" {...register("permiso_fotos")}> <option value="N">No</option> <option value="S">Sí</option> </select>
+            <select className="formulario-input" {...register("permiso_fotos")}>
+              {" "}
+              <option value="N">No</option> <option value="S">Sí</option>{" "}
+            </select>
           </fieldset>
         </form>
 
-        <div className="botones-grupo flex gap-2">
-          {puedeEscribir && !editable && (
+        <div className="botones-grupo ">
+          <button
+            onClick={generarReporteInfante}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
+          >
+            Generar Reporte
+          </button>
+
+          {!editable && watch("es_propio") && (
             <>
-              <button onClick={habilitarEdicion} className="boton-editar">Editar</button>
-              <button onClick={generarReporteInfante} className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">
-                Generar Reporte
+              <button onClick={habilitarEdicion} className="boton-editar">
+                Editar
               </button>
             </>
           )}
 
-          {puedeEscribir && editable && (
-            <button type="submit" form="editar-infante" className="boton-guardar">Guardar</button>
+          {editable && watch("es_propio") && (
+            <button
+              type="submit"
+              form="editar-infante"
+              className="boton-guardar"
+            >
+              Guardar
+            </button>
           )}
 
-          {params.id && puedeEscribir && editable && (
-            <button onClick={descartarInfante} className="boton-eliminar">Eliminar</button>
+          {params.id && watch("es_propio") && editable && (
+            <button onClick={descartarInfante} className="boton-eliminar">
+              Eliminar
+            </button>
           )}
         </div>
       </div>

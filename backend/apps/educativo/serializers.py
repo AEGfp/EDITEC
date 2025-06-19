@@ -7,7 +7,7 @@ from api.serializer import PersonaSerializer
 class InfanteSerializer(serializers.ModelSerializer):
     id_persona = PersonaSerializer(read_only=True)
     nombre_sala=serializers.SerializerMethodField(read_only=True)
-    
+    es_propio=serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Infante
         fields = '__all__'
@@ -18,6 +18,18 @@ class InfanteSerializer(serializers.ModelSerializer):
         if sala is None:
             return ""
         return sala.descripcion
+
+    def get_es_propio(self, obj):
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return False
+
+        user = request.user
+        try:
+            tutor = Tutor.objects.get(id_persona__user=user)
+            return obj.tutores.filter(tutor=tutor).exists()
+        except:
+            return False
 
 class InfanteCreateUpdateSerializer(serializers.ModelSerializer):
     id_persona = serializers.PrimaryKeyRelatedField(queryset=Persona.objects.all())
@@ -30,10 +42,16 @@ class InfanteCreateUpdateSerializer(serializers.ModelSerializer):
 class TutorSerializer(serializers.ModelSerializer):
     id_persona = PersonaSerializer(read_only=True)
     email = serializers.SerializerMethodField(read_only=True)
-
+    es_propio=serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Tutor
         fields = '__all__'
+
+    def get_es_propio(self, obj):
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return False
+        return obj.id_persona.user == request.user
 
     def get_email(self, obj):
         try:

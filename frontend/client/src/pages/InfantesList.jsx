@@ -103,14 +103,14 @@ export default function InfantesList() {
           onChange={(e) => setBusqueda(e.target.value)}
           className="border border-gray-300 rounded px-3 py-1 w-full max-w-xs"
         />
-        {puedeEscribir && (
+        {/*puedeEscribir && (
           <button
             className="boton-guardar items-end"
             onClick={() => navigate("/infantes-crear")}
           >
             Agregar...
           </button>
-        )}
+        )*/}
       </div>
 
       <DataTable

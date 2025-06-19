@@ -22,7 +22,8 @@ import io
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.views import APIView  
-
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 
 
 
@@ -31,20 +32,60 @@ from rest_framework.views import APIView
 
 class InfanteView(viewsets.ModelViewSet):
     queryset = Infante.objects.all()
+    permission_classes = [IsAuthenticated]  
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.is_superuser or user.is_staff:
+            return Infante.objects.all()
+
+        grupos = set(user.groups.values_list("name", flat=True))
+
+        if grupos == {"tutor"}:
+            try:
+                tutor = Tutor.objects.get(id_persona__user=user)
+                return Infante.objects.filter(tutores__tutor=tutor)
+            except Tutor.DoesNotExist:
+                return Infante.objects.none()
+
+        return Infante.objects.all()
 
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update"]:
             return InfanteCreateUpdateSerializer
         return InfanteSerializer
 
+    def get_serializer_context(self):
+        return {"request": self.request}
+
 
 class TutorView(viewsets.ModelViewSet):
     queryset = Tutor.objects.all()
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.is_superuser or user.is_staff:
+            return Tutor.objects.all()
+
+        grupos = set(user.groups.values_list("name", flat=True))
+
+        if grupos == {"tutor"}:
+            return Tutor.objects.filter(id_persona__user=user)
+
+        return Tutor.objects.all()
 
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update"]:
             return TutorCreateUpdateSerializer
         return TutorSerializer
+    
+    def perform_update(self, serializer):
+        tutor = self.get_object()
+        if self.request.user != tutor.id_persona.user:
+            raise PermissionDenied("No tenés permiso para editar este tutor.")
+        serializer.save()
 
 
 class TurnoView(viewsets.ModelViewSet):

@@ -92,7 +92,9 @@ export default function TutoresList() {
 
   return (
     <div>
-      <h1 className="align-baseline text-2xl font-semibold p-2 pl-3">Tutores</h1>
+      <h1 className="align-baseline text-2xl font-semibold p-2 pl-3">
+        Tutores
+      </h1>
       <div className="p-2 flex flex-row justify-between">
         <input
           type="text"
@@ -101,14 +103,14 @@ export default function TutoresList() {
           onChange={(e) => setBusqueda(e.target.value)}
           className="border border-gray-300 rounded px-3 py-1 w-full max-w-xs"
         />
-        {puedeEscribir && (
+        {/*puedeEscribir && (
           <button
             className="boton-guardar items-end"
             onClick={() => navigate("/tutores-crear")}
           >
             Agregar...
           </button>
-        )}
+        )*/}
       </div>
 
       <DataTable

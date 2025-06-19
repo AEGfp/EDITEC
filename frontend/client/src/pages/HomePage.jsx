@@ -6,10 +6,10 @@ export default function HomePage() {
     <div>
       <h1>Home Page</h1>
 
-      <ConsultarArchivos></ConsultarArchivos>
+      {/*<ConsultarArchivos></ConsultarArchivos>
 
       <br />
-      <SubirArchivos></SubirArchivos>
+      <SubirArchivos></SubirArchivos>*/}
     </div>
   );
 }

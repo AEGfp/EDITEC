@@ -19,8 +19,11 @@ function TutoresFormPage() {
     setValue,
     reset,
     watch,
-  } = useForm();
-
+  } = useForm({
+    defaultValues: {
+      es_propio: false,
+    },
+  });
   const [editable, setEditable] = useState(false);
   const navigate = useNavigate();
   const params = useParams();
@@ -52,7 +55,7 @@ function TutoresFormPage() {
           setValue("nombre_empresa_trabajo", data.nombre_empresa_trabajo);
           setValue("direccion_trabajo", data.direccion_trabajo);
           setValue("observaciones", data.observaciones);
-
+          setValue("es_propio", data.es_propio);
           setEditable(false);
         } else {
           reset({
@@ -136,7 +139,9 @@ function TutoresFormPage() {
   const habilitarEdicion = () => setEditable(true);
 
   const descartarTutor = async () => {
-    const confirmar = window.confirm("¿Estás seguro que quieres eliminar este tutor?");
+    const confirmar = window.confirm(
+      "¿Estás seguro que quieres eliminar este tutor?"
+    );
     if (confirmar) {
       await eliminarTutor(params.id);
       navigate(pagina);
@@ -201,7 +206,10 @@ function TutoresFormPage() {
             {errors.sexo && <CampoRequerido />}
 
             <h4 className="formulario-elemento">Teléfono casa</h4>
-            <input className="formulario-input" {...register("telefono_casa")} />
+            <input
+              className="formulario-input"
+              {...register("telefono_casa")}
+            />
 
             <h4 className="formulario-elemento">Email</h4>
             <input
@@ -212,10 +220,16 @@ function TutoresFormPage() {
             {errors.email && <CampoRequerido />}
 
             <h4 className="formulario-elemento">Teléfono particular</h4>
-            <input className="formulario-input" {...register("telefono_particular")} />
+            <input
+              className="formulario-input"
+              {...register("telefono_particular")}
+            />
 
             <h4 className="formulario-elemento">Teléfono trabajo</h4>
-            <input className="formulario-input" {...register("telefono_trabajo")} />
+            <input
+              className="formulario-input"
+              {...register("telefono_trabajo")}
+            />
 
             <h4 className="formulario-elemento">Nombre empresa trabajo</h4>
             <input
@@ -230,23 +244,26 @@ function TutoresFormPage() {
             />
 
             <h4 className="formulario-elemento">Observaciones</h4>
-            <textarea className="formulario-input" {...register("observaciones")} />
+            <textarea
+              className="formulario-input"
+              {...register("observaciones")}
+            />
           </fieldset>
         </form>
 
         <div className="botones-grupo">
-          {puedeEscribir && !editable && (
+          {watch("es_propio") && !editable && (
             <button onClick={habilitarEdicion} className="boton-editar">
               Editar
             </button>
           )}
-          {puedeEscribir && editable && (
+          {watch("es_propio") && editable && (
             <button type="submit" form="editar-tutor" className="boton-guardar">
               Guardar
             </button>
           )}
           <br />
-          {params.id && puedeEscribir && editable && (
+          {params.id && watch("es_propio") && editable && (
             <button onClick={descartarTutor} className="boton-eliminar">
               Eliminar
             </button>

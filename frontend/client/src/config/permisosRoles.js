@@ -20,8 +20,8 @@ const permisosRoles = {
     escritura: ["director"],
   },
   infantes: {
-    lectura: ["director", "profesor"],
-    escritura: ["director"],
+    lectura: ["director", "profesor", "tutor"],
+    escritura: ["tutor"],
   },
   cuotas: {
     lectura: ["director", "profesor"],
@@ -36,8 +36,8 @@ const permisosRoles = {
     escritura: ["director", "administrador"],
   },
   tutores: {
-    lectura: ["director", "profesor"],
-    escritura: ["director"],
+    lectura: ["director", "profesor", "tutor"],
+    escritura: ["tutor"],
   },
   inscripciones: {
     lectura: ["director", "administrador"],
@@ -86,14 +86,13 @@ const permisosRoles = {
     escritura: ["director"],
   },
   informes: {
-    lectura: ["director", "profesor"],
+    lectura: ["director", "profesor", "tutor"],
     escritura: ["director", "profesor"],
   },
   transferencias: {
-  lectura: ["director"],
-  escritura: ["director"],
-},
-
+    lectura: ["director"],
+    escritura: ["director"],
+  },
 };
 
 export default permisosRoles;

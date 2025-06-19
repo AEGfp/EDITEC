@@ -10,7 +10,7 @@ class Infante(models.Model):
     permiso_cambio_panhal = models.CharField(max_length= 200)
     permiso_fotos = models.CharField(max_length= 200)
     #! Agregar obligatorio
-    id_sala=models.ForeignKey("Sala",on_delete=models.CASCADE,null=True, blank=True)
+    id_sala=models.ForeignKey("Sala",on_delete=models.SET_NULL,null=True, blank=True)
 
     def __str__(self):
         return str(self.id_persona)

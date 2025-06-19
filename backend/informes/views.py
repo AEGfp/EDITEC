@@ -21,6 +21,7 @@ from django.template.loader import render_to_string
 from django.db.models import Count
 import io
 from xhtml2pdf import pisa
+from apps.educativo.models import Tutor, Infante
 # View para tipos de informe
 @permission_classes([AllowAny])
 class TipoInformeView(viewsets.ModelViewSet):
@@ -37,11 +38,29 @@ class IndicadorView(viewsets.ModelViewSet):
     filterset_fields = ['id_tipo_informe'] # Para poder usar ?id_tipo_informe=x
 
 # View para informes
-@permission_classes([AllowAny])
+@authentication_classes([JWTAuthentication])
+@permission_classes([ControlarRoles])
 class InformeView(viewsets.ModelViewSet):
     serializer_class = InformeSerializer
+    roles_permitidos=["director","profesor","tutor"]
     queryset = Informe.objects.all()
 
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.is_superuser or user.is_staff:
+            return Informe.objects.all()
+
+        grupos = set(user.groups.values_list("name", flat=True))
+
+        if grupos == {"tutor"}:
+            try:
+                tutor = Tutor.objects.get(id_persona__user=user)
+                return Informe.objects.filter(id_infante__tutores__tutor=tutor)
+            except Tutor.DoesNotExist:
+                return Informe.objects.none()
+
+        return Informe.objects.all()
 
 # View para tabla intermedia informe indicadores
 @permission_classes([AllowAny])

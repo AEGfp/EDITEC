@@ -23,6 +23,7 @@ export default function GestionarInscripcionesPage() {
       try {
         // Si no hay periodo activo, obtengo el último
         const resUltimo = await obtenerUltimoPeriodo();
+        console.log(resUltimo.data);
         setPeriodo(resUltimo.data);
       } catch (errUltimo) {
         // No hay ningún período
@@ -50,10 +51,9 @@ export default function GestionarInscripcionesPage() {
   // Derivo si hay período activo para mensajes y lógica
   const hayPeriodoActivo = periodo?.activo === true && fechaFin > ahora;
 
-  // Mensaje dinámico según estado del período
   const mensajeDinamico = () => {
     if (!periodo) return "No hay períodos de inscripción disponibles.";
-    if (hayPeriodoActivo) return ""; // No muestro mensaje si hay período activo
+    if (hayPeriodoActivo) return "";
     const inicio = new Date(periodo.fecha_inicio);
     const ahora = new Date();
     if (inicio > ahora) return "Hay un período pendiente por comenzar.";

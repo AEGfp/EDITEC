@@ -127,7 +127,7 @@ export default [
     entidad: "infantes",
     permiso: "lectura",
     nombre: "Infantes",
-    subrutas: [
+    /* subrutas: [
       {
         path: "/infantes-crear",
         componente: InfanteForm,
@@ -135,7 +135,7 @@ export default [
         permiso: "escritura",
         nombre: "Añadir infante",
       },
-    ],
+    ],*/
   },
 
   {
@@ -190,7 +190,7 @@ export default [
     entidad: "salas",
     permiso: "lectura",
   },
-
+  /*
   {
     path: "/turnos",
     componente: TurnosList,
@@ -213,14 +213,14 @@ export default [
     entidad: "turnos",
     permiso: "lectura",
   },
-
+*/
   {
     path: "/tutores",
     componente: TutoresList,
     entidad: "tutores",
     permiso: "lectura",
     nombre: "Tutores",
-    subrutas: [
+    /* subrutas: [
       {
         path: "/tutores-crear",
         componente: TutoresFormPage,
@@ -228,7 +228,7 @@ export default [
         permiso: "escritura",
         nombre: "Añadir turores",
       },
-    ],
+    ],*/
   },
   {
     path: "/tutores/:id",
