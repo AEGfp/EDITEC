@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import tienePermiso from "../utils/tienePermiso";
 import CampoRequerido from "../components/CampoRequerido";
 import MostrarError from "../components/MostrarError";
+import ReporteAsistencia from "../components/ReporteAsistencia";
 
 function InfantesFormPage() {
   const {
@@ -298,6 +299,10 @@ function InfantesFormPage() {
           >
             Generar Reporte
           </button>
+
+          <div >
+          <ReporteAsistencia infante={params.id}/>
+        </div>
 
           {!editable && watch("es_propio") && (
             <button onClick={habilitarEdicion} className="boton-editar">

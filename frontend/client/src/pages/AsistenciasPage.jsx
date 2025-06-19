@@ -9,6 +9,7 @@ import {
   obtenerInfantesAsignados,
   marcarSalida,
 } from "../api/asistencias.api";
+import ReporteAsistencia from "../components/ReporteAsistencia";
 
 export default function AsistenciasPage() {
   const navigate = useNavigate();
@@ -182,14 +183,18 @@ export default function AsistenciasPage() {
   return (
     <div>
       <h1 className="text-2xl font-semibold p-2 pl-3">Infantes de mi Salas</h1>
-      <div className="p-2 flex flex-row justify-between">
+       <div className="p-2 flex flex-wrap items-center justify-between gap-4">
         <input
           type="text"
           placeholder="Buscar..."
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
-          className=" border border-gray-300 rounded px-3 py-1 w-full max-w-xs"
+          className="border border-gray-300 rounded px-3 py-1 max-w-xs w-full sm:w-auto"
         />
+
+        <div className="flex gap-2">
+          <ReporteAsistencia />
+        </div>
       </div>
       <DataTable
         columns={columnas}

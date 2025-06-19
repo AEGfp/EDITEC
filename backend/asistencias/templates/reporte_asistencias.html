@@ -40,10 +40,11 @@
 
 <body>
   <h2>
-    Reporte de Asistencias {% if estado %} - Estado: {{ estado|capfirst }} {%
-    endif %} {% if fecha_desde %} - Desde: {{ fecha_desde }} {% endif %} {% if
-    fecha_hasta %} - Hasta: {{ fecha_hasta }} {% endif %} {% if id_infante %}
-    - Infante ID: {{ id_infante }} {% endif %}
+    Reporte de Asistencias
+    {% if estado %} - Estado: {{ estado|capfirst }}{% endif %}
+    {% if fecha_desde %} - Desde: {{ fecha_desde }}{% endif %}
+    {% if fecha_hasta %} - Hasta: {{ fecha_hasta }}{% endif %}
+    {% if id_infante %} - Infante ID: {{ id_infante }}{% endif %}
   </h2>
 
   <table>
@@ -63,9 +64,7 @@
     </tr>
   </table>
 
-  <h3>
-    Detalles de Asistencias {% if estado %} {{ estado|capfirst }} {% endif %}
-  </h3>
+  <h3>Detalles de Asistencias</h3>
   <table>
     <thead>
       <tr>
@@ -82,16 +81,12 @@
       {% for asistencia in detalles %}
       <tr>
         <td>{{ forloop.counter }}</td>
-        <td>
-          {{ asistencia.nombre_infante }} {{ asistencia.apellido_infante }}
-        </td>
+        <td>{{ asistencia.nombre_infante }} {{ asistencia.apellido_infante }}</td>
         <td>{{ asistencia.fecha_formateada }}</td>
         <td>{{ asistencia.hora_entrada_formateada }}</td>
         <td>{{ asistencia.hora_salida_formateada }}</td>
         <td>{{ asistencia.estado|capfirst }}</td>
-        <td>
-          {{ asistencia.nombre_usuario }} {{ asistencia.apellido_usuario }}
-        </td>
+        <td>{{ asistencia.nombre_usuario }} {{ asistencia.apellido_usuario }}</td>
       </tr>
       {% empty %}
       <tr>

@@ -9,11 +9,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from apps.educativo.models import Infante, Sala
 from django.utils.timezone import now,localtime
+from datetime import date
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.db.models import Count
 import io
 from xhtml2pdf import pisa
+
 # Create your views here.
 #! Cambiar permisos
 #@authentication_classes([JWTAuthentication])
@@ -58,6 +60,13 @@ class InfantesAsignadosConAsistenciaView(APIView):
         return Response(serializer.data)
 
 
+def calcular_edad(fecha_nac):
+    if not fecha_nac:
+        return None
+    hoy = date.today()
+    edad = hoy.year - fecha_nac.year - ((hoy.month, hoy.day) < (fecha_nac.month, fecha_nac.day))
+    return edad if edad >= 0 else None
+
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def generar_reporte_asistencias(request):
@@ -68,43 +77,84 @@ def generar_reporte_asistencias(request):
 
     asistencias = Asistencia.objects.all()
 
-    if fecha_desde:
-        asistencias = asistencias.filter(fecha__gte=fecha_desde)
-    if fecha_hasta:
-        asistencias = asistencias.filter(fecha__lte=fecha_hasta)
+    if not id_infante and not fecha_desde and not fecha_hasta:
+        hoy = date.today()
+        asistencias = asistencias.filter(fecha=hoy)
+    else:
+        if fecha_desde:
+            asistencias = asistencias.filter(fecha__gte=fecha_desde)
+        if fecha_hasta:
+            asistencias = asistencias.filter(fecha__lte=fecha_hasta)
+
     if id_infante:
         asistencias = asistencias.filter(id_infante=id_infante)
-    if estado:
-        asistencias = asistencias.filter(estado=estado)
 
-    resumen_estados = (
-        asistencias.values("estado")
-        .annotate(cantidad=Count("id"))
-        .order_by("estado")
-    )
-    total = sum(item["cantidad"] for item in resumen_estados)
+        resumen_estados = (
+            asistencias.values("estado")
+            .annotate(cantidad=Count("id"))
+            .order_by("estado")
+        )
+        total = sum(item["cantidad"] for item in resumen_estados)
+        serializer = AsistenciaSerializer(asistencias, many=True)
 
-    serializer = AsistenciaSerializer(asistencias, many=True)
+        if asistencias.exists():
+            primer_asistencia = asistencias.first()
+            persona = primer_asistencia.id_infante.id_persona
+            fecha_nac = getattr(persona, "fecha_nacimiento", None)
+            fecha_nacimiento_str = fecha_nac.strftime("%d/%m/%Y") if fecha_nac else ""
+            infante_info = {
+                "nombre_completo": f"{persona.nombre} {persona.apellido}",
+                "ci": getattr(persona, "ci", ""),
+                "fecha_nacimiento":fecha_nacimiento_str, 
+                "edad": calcular_edad(getattr(persona, "fecha_nacimiento", None)),
+                "sala": getattr(primer_asistencia.id_infante.id_sala, "nombre", ""),
+            }
+        else:
+            infante_info = {}
 
-    context = {
-        "resumen_estados": resumen_estados,
-        "total": total,
-        "detalles": serializer.data,
-        "fecha_desde": fecha_desde,
-        "fecha_hasta": fecha_hasta,
-        "id_infante": id_infante,
-        "estado": estado,
-    }
+        fecha_hoy= date.today().strftime("%d/%m/%Y")
+        context = {
+            "resumen_estados": resumen_estados,
+            "total": total,
+            "detalles": serializer.data,
+            "fecha_desde": fecha_desde,
+            "fecha_hasta": fecha_hasta,
+            "id_infante": id_infante,
+            "estado": estado,
+            "infante": infante_info,
+            "fecha_hoy":fecha_hoy,
+        }
 
-    html = render_to_string("reporte_asistencias.html", context)
+        template = "reporte_asistencias_detallado.html"
 
+    else:
+        resumen_estados = (
+            asistencias.values("estado")
+            .annotate(cantidad=Count("id"))
+            .order_by("estado")
+        )
+        total = sum(item["cantidad"] for item in resumen_estados)
+        serializer = AsistenciaSerializer(asistencias, many=True)
+
+        context = {
+            "resumen_estados": resumen_estados,
+            "total": total,
+            "detalles": serializer.data,
+            "fecha_desde": fecha_desde,
+            "fecha_hasta": fecha_hasta,
+            "id_infante": None,
+            "estado": estado,
+        }
+
+        template = "reporte_asistencias_general.html"
+
+    html = render_to_string(template, context)
     result = io.BytesIO()
     pdf = pisa.pisaDocument(io.BytesIO(html.encode("UTF-8")), result)
 
     if not pdf.err:
         return HttpResponse(result.getvalue(), content_type="application/pdf")
     return HttpResponse("Error al generar PDF", status=500)
-
 
 '''
 @api_view(["POST"])

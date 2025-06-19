@@ -37,4 +37,21 @@ export const marcarSalida = (id) => {
   return Api.post(`${DIRECCION}${id}/marcar-salida/`);
 };
 
+export const crearReporteAsistencia = ({
+  fecha_desde,
+  fecha_hasta,
+  estado,
+  id_infante,  
+} = {}) =>
+  Api.get("reporte-asistencias/", {
+    params: {
+      estado,
+      fecha_desde,
+      fecha_hasta,
+      id_infante,  
+    },
+    responseType: "blob",
+  });
+
+
 export const obtenerInfantesAsignados = () => Api.get("infantes-asignados");
