@@ -18,10 +18,15 @@ from Roles.roles import ControlarRoles
 from rest_framework.exceptions import PermissionDenied
 from django.utils import timezone
 from django.template.loader import render_to_string
+from django.db import transaction
 from xhtml2pdf import pisa
 import io
 from django.db.models import Count
 from django.http import HttpResponse
+from django.contrib.auth.models import Group
+from api.models import Persona,User
+from apps.educativo.models import Infante,Tutor, TutorInfante
+from archivos.models import Archivos
 
 
 def desanidar_data(data):
@@ -79,6 +84,23 @@ class InscripcionView(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['post'])
+    def limpiar_rechazadas(self, request):
+        #probar 24 0 19
+        inscripciones_rechazadas = Inscripcion.objects.filter(estado="rechazada",periodo_inscripcion=24)
+        inscripciones_totales = Inscripcion.objects.filter(periodo_inscripcion=24)
+        contador = 0
+        print(inscripciones_totales)
+        for insc in inscripciones_rechazadas:
+            print(insc)
+            # try:
+            #     limpiar_inscripcion_rechazada(insc)
+            contador += 1
+            # except Exception as e:
+            #     continue  # opcionalmente loggear errores
+
+        return Response({"detail": f"Se limpiaron {contador} inscripciones rechazadas."})
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -146,18 +168,24 @@ class PeriodoInscripcionViewSet(viewsets.ModelViewSet):
         ahora = timezone.now()
 
         PeriodoInscripcion.objects.filter(
-        activo=True,
-        fecha_fin__lt=ahora
-    ).update(activo=False)
-        activo_o_pendiente = PeriodoInscripcion.objects.filter(
             activo=True,
+            fecha_fin__lt=ahora
+        ).update(activo=False)
+
+        periodo = PeriodoInscripcion.objects.filter(
+            activo=True,
+            fecha_inicio__lte=ahora,
             fecha_fin__gte=ahora
         ).order_by('fecha_inicio').first()
 
-        if activo_o_pendiente:
-            serializer = self.get_serializer(activo_o_pendiente)
+        if not periodo:
+            periodo = PeriodoInscripcion.objects.order_by('-fecha_inicio').first()
+
+        if periodo:
+            serializer = self.get_serializer(periodo)
             return Response(serializer.data)
-        return Response({"detail": "No hay periodo activo"}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response({"detail": "No hay periodos disponibles"}, status=status.HTTP_404_NOT_FOUND)
 
     @action(detail=True, methods=['post'])
     def cerrar(self, request, pk=None):
@@ -168,9 +196,13 @@ class PeriodoInscripcionViewSet(viewsets.ModelViewSet):
                 {"detail": "El periodo ya está cerrado."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        ahora = timezone.now()
         
+        if periodo.fecha_fin > ahora:
+            periodo.fecha_fin = ahora
+
         periodo.activo = False
-        
         periodo.save()
         
         serializer = self.get_serializer(periodo)
@@ -242,3 +274,52 @@ def generar_reporte_inscripciones(request):
     if not pdf.err:
         return HttpResponse(result.getvalue(), content_type="application/pdf")
     return HttpResponse("Error al generar PDF", status=500)
+
+@transaction.atomic
+def limpiar_inscripcion_rechazada(inscripcion):
+    if inscripcion.estado != 'rechazada':
+        raise ValueError("Solo se pueden limpiar inscripciones rechazadas")
+
+    tutor = inscripcion.id_tutor
+    infante = inscripcion.id_infante
+    persona_infante = infante.id_persona
+    persona_tutor = tutor.id_persona
+    usuario = persona_tutor.user  
+
+    # 1. Eliminar archivos del infante
+    Archivos.objects.filter(persona=persona_infante).delete()
+
+    # 2. Eliminar relación tutor-infante
+    TutorInfante.objects.filter(tutor=tutor, infante=infante).delete()
+
+    # 3. Eliminar inscripción
+    inscripcion.delete()
+
+    # 4. Eliminar infante y su persona
+    infante.delete()
+    persona_infante.delete()  # esto NO borra persona_tutor
+
+    # 5. Verificar si el tutor tiene otros infantes o inscripciones
+    tiene_otro_infante = TutorInfante.objects.filter(tutor=tutor).exists()
+    tiene_otras_inscripciones = Inscripcion.objects.filter(id_tutor=tutor).exists()
+
+    if not tiene_otro_infante and not tiene_otras_inscripciones:
+        # 6. Eliminar tutor
+        tutor.delete()
+
+        # 7. Eliminar persona del tutor (esto borra automáticamente el user por la señal)
+        persona_tutor.delete()
+
+        if usuario:
+            # 8. Quitar grupo "tutor"
+            try:
+                grupo_tutor = Group.objects.get(name="tutor")
+                usuario.groups.remove(grupo_tutor)
+            except Group.DoesNotExist:
+                pass
+
+            # 9. Si no tiene más grupos, eliminar usuario (si no se eliminó ya)
+            if usuario.groups.count() == 0 and User.objects.filter(pk=usuario.pk).exists():
+                usuario.delete()
+
+
