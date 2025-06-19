@@ -51,19 +51,21 @@
         <tr>
             <th>Estado</th>
             <th>Cantidad</th>
+            <th>Porcentaje</th>
         </tr>
-        {% for item in resumen_estados %}
+        {% for item in resumen_completo %}
         <tr>
             <td>{{ item.estado|capfirst }}s</td>
             <td>{{ item.cantidad }}</td>
+            <td>{{ item.porcentaje }}%</td>
         </tr>
         {% endfor %}
         <tr>
             <td><strong>Total</strong></td>
             <td><strong>{{ total }}</strong></td>
+            <td><strong>100%</strong></td>
         </tr>
     </table>
-
     <h3>Detalles de Inscripciones {% if estado_filtro %} {{ estado_filtro|capfirst }} {% endif %}</h3>
     <table>
         <thead>

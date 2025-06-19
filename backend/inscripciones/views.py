@@ -228,16 +228,32 @@ class PeriodoInscripcionViewSet(viewsets.ModelViewSet):
         return Response({"puede_inscribirse": puede})
 
 
+
 @permission_classes([AllowAny])
 def generar_reporte_inscripciones(request):
-    estado_filtro = request.GET.get("estado")
+    estado_filtro = request.GET.get("estado_filtro")
     fecha_desde = request.GET.get("fecha_desde")
     fecha_hasta = request.GET.get("fecha_hasta")
     id_tutor = request.GET.get("id_tutor")
     id_infante = request.GET.get("id_infante")
 
-    inscripciones = Inscripcion.objects.all()
+    ahora = timezone.now()
+    periodo = PeriodoInscripcion.objects.filter(
+        activo=True,
+        fecha_inicio__lte=ahora,
+        fecha_fin__gte=ahora
+    ).order_by("fecha_inicio").first()
+    print(periodo)
+    if not periodo:
+        periodo = PeriodoInscripcion.objects.filter(
+            fecha_fin__lt=ahora
+        ).order_by("-fecha_fin").first()
 
+    if not periodo:
+        return HttpResponse("No hay periodos disponibles", status=400)
+
+    inscripciones = Inscripcion.objects.filter(periodo_inscripcion=periodo)
+    total =inscripciones.count() 
     if estado_filtro:
         inscripciones = inscripciones.filter(estado=estado_filtro)
     if fecha_desde:
@@ -252,12 +268,29 @@ def generar_reporte_inscripciones(request):
     resumen_estados = (
         inscripciones.values("estado").annotate(cantidad=Count("id")).order_by("estado")
     )
-
-    total = sum(item["cantidad"] for item in resumen_estados)
+    
     serializer = InscripcionSerializer(inscripciones, many=True)
 
+    resumen_completo = []
+    if total > 0:
+        for item in resumen_estados:
+            estado = item["estado"]
+            cantidad = item["cantidad"]
+            porcentaje = round((cantidad / total) * 100, 2)
+            resumen_completo.append({
+                "estado": estado,
+                "cantidad": cantidad,
+                "porcentaje": porcentaje,
+            })
+    else:
+        resumen_completo = [
+            {"estado": "pendiente", "cantidad": 0, "porcentaje": 0},
+            {"estado": "aprobada", "cantidad": 0, "porcentaje": 0},
+            {"estado": "rechazada", "cantidad": 0, "porcentaje": 0},
+        ]
+
     context = {
-        "resumen_estados": resumen_estados,
+        "resumen_completo": resumen_completo,
         "total": total,
         "estado_filtro": estado_filtro,
         "detalles": serializer.data,
@@ -265,7 +298,9 @@ def generar_reporte_inscripciones(request):
         "fecha_hasta": fecha_hasta,
         "id_tutor": id_tutor,
         "id_infante": id_infante,
+        "periodo": periodo,
     }
+
     html = render_to_string("inscripciones/reporte_inscripciones.html", context)
 
     result = io.BytesIO()
@@ -274,6 +309,7 @@ def generar_reporte_inscripciones(request):
     if not pdf.err:
         return HttpResponse(result.getvalue(), content_type="application/pdf")
     return HttpResponse("Error al generar PDF", status=500)
+
 
 @transaction.atomic
 def limpiar_inscripcion_rechazada(inscripcion):

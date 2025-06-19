@@ -95,17 +95,20 @@ export default function ListaInscripciones({ periodo }) {
     <div>
       <h1 className="text-2xl font-semibold p-2 pl-3">Inscripciones</h1>
 
-      <div className="p-2 flex justify-between">
+      <div className="p-2 flex flex-wrap items-center justify-between gap-4">
         <input
           type="text"
           placeholder="Buscar..."
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-1 max-w-xs w-full"
+          className="border border-gray-300 rounded px-3 py-1 max-w-xs w-full sm:w-auto"
         />
-      </div>
 
-      <ReporteInscripcionesPage />
+        <div className="flex gap-2">
+          <ReporteInscripcionesPage />
+          <ReporteInscripcionesPage estado="rechazada" />
+        </div>
+      </div>
 
       <DataTable
         columns={columnas}

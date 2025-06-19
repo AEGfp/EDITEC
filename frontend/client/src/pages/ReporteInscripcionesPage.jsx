@@ -3,10 +3,14 @@ import {
   crearReporteInscripcion,
 } from "../api/inscripciones.api";
 
-export default function ReporteInscripcionesPage() {
+export default function ReporteInscripcionesPage({ estado }) {
   async function generarReporte() {
     try {
-      const res = await crearReporteInscripcion({ responseType: "blob" });
+      const params = {};
+      if (estado) {
+        params.estado_filtro = estado;
+      }
+      const res = await crearReporteInscripcion(params);
       console.log(res.data);
 
       const archivo = new Blob([res.data], { type: "application/pdf" });
@@ -18,10 +22,15 @@ export default function ReporteInscripcionesPage() {
       alert("No se pudo generar el reporte");
     }
   }
+
+  const botonClassName =
+    estado === "rechazada" ? "boton-eliminar" : "boton-detalles";
+  const textoBoton = `Reporte inscripciones${estado ? ` ${estado}s` : ""}`;
+
   return (
     <div>
-      <button className="boton-detalles" onClick={generarReporte}>
-        Generar Reporte
+      <button className={botonClassName} onClick={generarReporte}>
+        {textoBoton}
       </button>
     </div>
   );
