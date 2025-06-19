@@ -90,7 +90,6 @@ class InscripcionSerializer(serializers.ModelSerializer):
 
         return inscripcion
 
-#! Arreglar tutores con varios hijos
 class InscripcionCompletaSerializer(serializers.Serializer):
     user_data_tutor = UserSerializer()
     tutor_data = TutorSerializer()
@@ -168,8 +167,8 @@ class InscripcionExistenteSerializer(serializers.Serializer):
         user = validated_data["user_id"]
         tutor_data = validated_data.get("tutor_data")
         persona = user.persona
-        tutor = getattr(persona, "tutor", None)
-
+        tutor = Tutor.objects.filter(id_persona=persona).first()
+        
         with transaction.atomic():
             if tutor:
                 pass
