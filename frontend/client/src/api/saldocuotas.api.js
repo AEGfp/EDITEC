@@ -3,6 +3,7 @@ import { Api } from "./api";
 //Cambiar según la url del backend
 const DIRECCION = "cuotas/";
 const PORINFANTE = "cuotas-por-infante/";
+const CUOTAS = 'generar-cuotas/';
 
 export const obtenerTodasCuotas = () => {
   return Api.get(DIRECCION);
@@ -40,3 +41,7 @@ export const descargarResumenTodosLosInfantesPDF = () =>
     responseType: "blob",
   });
 
+// Para generar las cuotas de los infantes
+export const generarCuota = (infante) => {
+  return Api.post(CUOTAS, infante);
+};

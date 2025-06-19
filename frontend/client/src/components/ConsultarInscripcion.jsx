@@ -7,6 +7,7 @@ import {
   aceptarInscripcion,
   rechazarInscripcion,
 } from "../api/inscripciones.api";
+import { generarCuota } from "../api/saldocuotas.api";
 import ConsultarArchivos from "./ConsultarArchivos";
 
 export default function ConsultarInscripcion() {
@@ -108,7 +109,8 @@ export default function ConsultarInscripcion() {
           <button
             disabled={procesando}
             className="boton-guardar px-8 py-3 text-lg"
-            onClick={() => manejarAceptar(inscripcion.id)}
+            onClick={() => {  generarCuota(inscripcion);
+                              manejarAceptar(inscripcion.id);}}
           >
             Aprobar
           </button>
