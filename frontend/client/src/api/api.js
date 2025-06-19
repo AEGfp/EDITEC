@@ -16,7 +16,7 @@ Api.interceptors.request.use(
     if (config.data instanceof FormData) {
       delete config.headers["Content-Type"];
     }
-    
+
     return config;
   },
   (error) => {
@@ -51,7 +51,9 @@ Api.interceptors.response.use(
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
         alert("No se pudo ingresar al sistema. Intenta otra vez");
-        window.location.href = "/login";
+        if (window.location.pathname !== "/login") {
+          window.location.assign("/login");
+        }
       }
     }
 
