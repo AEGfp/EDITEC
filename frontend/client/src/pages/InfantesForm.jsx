@@ -11,6 +11,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import tienePermiso from "../utils/tienePermiso";
 import CampoRequerido from "../components/CampoRequerido";
+import MostrarError from "../components/MostrarError";
 
 function InfantesFormPage() {
   const {
@@ -27,6 +28,7 @@ function InfantesFormPage() {
   });
 
   const [editable, setEditable] = useState(false);
+  const [errorBackend, setErrorBackend] = useState(null);
   const navigate = useNavigate();
   const params = useParams();
   const pagina = "/infantes";
@@ -76,6 +78,7 @@ function InfantesFormPage() {
   }, [params.id, reset, setValue]);
 
   const onSubmit = async (data) => {
+    setErrorBackend(null);
     try {
       const idPersona = data.id_persona || watch("id_persona");
 
@@ -125,6 +128,7 @@ function InfantesFormPage() {
       navigate(pagina);
     } catch (error) {
       console.error("Error al guardar el infante", error);
+      setErrorBackend(error.response?.data || "Error desconocido");
     }
   };
 
@@ -163,48 +167,91 @@ function InfantesFormPage() {
             <h4 className="formulario-elemento">Nombre</h4>
             <input
               className="formulario-input"
-              {...register("nombre", { required: true })}
+              {...register("nombre", {
+                required: "El nombre es obligatorio",
+                minLength: {
+                  value: 2,
+                  message: "El nombre debe tener al menos 2 letras",
+                },
+              })}
             />
-            {errors.nombre && <CampoRequerido />}
+            {errors.nombre && <MostrarError errores={errors.nombre.message} />}
 
             <h4 className="formulario-elemento">Apellido</h4>
             <input
               className="formulario-input"
-              {...register("apellido", { required: true })}
+              {...register("apellido", {
+                required: "El apellido es obligatorio",
+                minLength: {
+                  value: 2,
+                  message: "El apellido debe tener al menos 2 letras",
+                },
+              })}
             />
-            {errors.apellido && <CampoRequerido />}
+            {errors.apellido && (
+              <MostrarError errores={errors.apellido.message} />
+            )}
 
             <h4 className="formulario-elemento">CI</h4>
             <input
               className="formulario-input"
-              {...register("ci", { required: true })}
+              {...register("ci", {
+                required: "El CI es obligatorio",
+                pattern: {
+                  value: /^[0-9]+[A-D]?$/,
+                  message:
+                    "Debe contener solo números y opcionalmente una letra A-D al final",
+                },
+                minLength: {
+                  value: 5,
+                  message: "El CI debe tener al menos 5 caracteres",
+                },
+              })}
             />
-            {errors.ci && <CampoRequerido />}
+            {errors.ci && <MostrarError errores={errors.ci.message} />}
 
             <h4 className="formulario-elemento">Fecha de Nacimiento</h4>
             <input
               className="formulario-input"
               type="date"
-              {...register("fecha_nacimiento", { required: true })}
+              {...register("fecha_nacimiento", {
+                required: "La fecha de nacimiento es obligatoria",
+                validate: (value) => {
+                  if (!value) return "La fecha es obligatoria";
+
+                  const hoy = new Date();
+                  const fechaNacimiento = new Date(value);
+
+                  const edadEnMeses =
+                    (hoy.getFullYear() - fechaNacimiento.getFullYear()) * 12 +
+                    (hoy.getMonth() - fechaNacimiento.getMonth());
+
+                  return edadEnMeses >= 6 && edadEnMeses <= 48
+                    ? true
+                    : "El infante debe tener entre 6 meses y 4 años";
+                },
+              })}
             />
-            {errors.fecha_nacimiento && <CampoRequerido />}
+            {errors.fecha_nacimiento && (
+              <MostrarError errores={errors.fecha_nacimiento.message} />
+            )}
 
             <h4 className="formulario-elemento">Sexo</h4>
             <select
               className="formulario-input"
-              {...register("sexo", { required: true })}
+              {...register("sexo", { required: "Debe seleccionar un sexo" })}
             >
               <option value="">Seleccione</option>
               <option value="M">Masculino</option>
               <option value="F">Femenino</option>
               <option value="O">Otro</option>
             </select>
-            {errors.sexo && <CampoRequerido />}
+            {errors.sexo && <MostrarError errores={errors.sexo.message} />}
 
             <h4 className="formulario-elemento">¿Alergia?</h4>
             <select className="formulario-input" {...register("ind_alergia")}>
-              {" "}
-              <option value="N">No</option> <option value="S">Sí</option>{" "}
+              <option value="N">No</option>
+              <option value="S">Sí</option>
             </select>
 
             <h4 className="formulario-elemento">¿Intolerancia a la lactosa?</h4>
@@ -212,8 +259,8 @@ function InfantesFormPage() {
               className="formulario-input"
               {...register("ind_intolerancia_lactosa")}
             >
-              {" "}
-              <option value="N">No</option> <option value="S">Sí</option>{" "}
+              <option value="N">No</option>
+              <option value="S">Sí</option>
             </select>
 
             <h4 className="formulario-elemento">¿Celiaquismo?</h4>
@@ -221,8 +268,8 @@ function InfantesFormPage() {
               className="formulario-input"
               {...register("ind_celiaquismo")}
             >
-              {" "}
-              <option value="N">No</option> <option value="S">Sí</option>{" "}
+              <option value="N">No</option>
+              <option value="S">Sí</option>
             </select>
 
             <h4 className="formulario-elemento">
@@ -232,14 +279,14 @@ function InfantesFormPage() {
               className="formulario-input"
               {...register("permiso_cambio_panhal")}
             >
-              {" "}
-              <option value="N">No</option> <option value="S">Sí</option>{" "}
+              <option value="N">No</option>
+              <option value="S">Sí</option>
             </select>
 
             <h4 className="formulario-elemento">¿Permiso para fotos?</h4>
             <select className="formulario-input" {...register("permiso_fotos")}>
-              {" "}
-              <option value="N">No</option> <option value="S">Sí</option>{" "}
+              <option value="N">No</option>
+              <option value="S">Sí</option>
             </select>
           </fieldset>
         </form>
@@ -253,11 +300,9 @@ function InfantesFormPage() {
           </button>
 
           {!editable && watch("es_propio") && (
-            <>
-              <button onClick={habilitarEdicion} className="boton-editar">
-                Editar
-              </button>
-            </>
+            <button onClick={habilitarEdicion} className="boton-editar">
+              Editar
+            </button>
           )}
 
           {editable && watch("es_propio") && (
@@ -276,6 +321,7 @@ function InfantesFormPage() {
             </button>
           )}
         </div>
+        {errorBackend && <MostrarError errores={errorBackend} />}
       </div>
     </div>
   );

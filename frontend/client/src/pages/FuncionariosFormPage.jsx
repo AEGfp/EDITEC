@@ -9,6 +9,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import tienePermiso from "../utils/tienePermiso";
 import CampoRequerido from "../components/CampoRequerido";
+import MostrarError from "../components/MostrarError";
 
 export default function FuncionarioFormPage() {
   const {
@@ -20,7 +21,7 @@ export default function FuncionarioFormPage() {
   } = useForm();
 
   const [editable, setEditable] = useState(false);
-
+  const [backendError, setBackendError] = useState(null);
   const navigate = useNavigate();
   const pagina = "/funcionarios";
   const params = useParams();
@@ -49,28 +50,26 @@ export default function FuncionarioFormPage() {
   }, [params.id]);
 
   const onSubmit = handleSubmit(async (data) => {
-    if (params.id) {
-      try {
+    try {
+      setBackendError(null);
+      if (params.id) {
         const { persona, password, ...datos } = data;
         const personaPatch = { ...persona };
         delete personaPatch.ci;
 
         const datosCompletos = { ...datos, persona: personaPatch };
-        console.log(
-          "Datos enviados al actualizar:",
-          JSON.stringify(datos, null, 2)
-        );
         await actualizarUsuario(params.id, datosCompletos);
-      } catch (error) {
-        console.error(
-          "Error al actualizar usuario:",
-          error.response?.data || error.message
-        );
+      } else {
+        await crearUsuario(data);
       }
-    } else {
-      await crearUsuario(data);
+      navigate(pagina);
+    } catch (error) {
+      console.error(
+        "Error al guardar usuario:",
+        error.response?.data || error.message
+      );
+      setBackendError(error.response?.data || { detail: "Error desconocido" });
     }
-    navigate(pagina);
   });
 
   const habilitarEdicion = () => setEditable(true);
@@ -98,19 +97,42 @@ export default function FuncionarioFormPage() {
                   type="text"
                   placeholder="Nombre de usuario"
                   className="formulario-input"
-                  {...register("username", { required: true })}
+                  {...register("username", {
+                    required: "El nombre de usuario es obligatorio",
+                    minLength: {
+                      value: 4,
+                      message: "El usuario debe tener al menos 4 caracteres",
+                    },
+                    pattern: {
+                      value: /^[a-zA-Z0-9_]+$/,
+                      message:
+                        "Solo letras, números y guiones bajos son permitidos",
+                    },
+                  })}
                 />
-                {errors.username && <CampoRequerido />}
+                {errors.username && (
+                  <MostrarError errores={errors.username.message} />
+                )}
 
                 <h4 className="formulario-elemento">Correo</h4>
                 <input
                   type="email"
                   placeholder="Correo electrónico"
                   className="formulario-input"
-                  {...register("email", { required: true })}
+                  {...register("email", {
+                    required: "El correo es obligatorio",
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: "Formato de correo inválido",
+                    },
+                  })}
                 />
-                {errors.email && <CampoRequerido />}
-
+                {errors.email && (
+                  <MostrarError errores={errors.email.message} />
+                )}
+                {/*
+                //! Cambiar requisitos de contraseña
+                */}
                 {!params.id && (
                   <>
                     <h4 className="formulario-elemento">Contraseña</h4>
@@ -118,9 +140,18 @@ export default function FuncionarioFormPage() {
                       type="password"
                       placeholder="Contraseña"
                       className="formulario-input"
-                      {...register("password", { required: true })}
+                      {...register("password", {
+                        required: "La contraseña es obligatoria",
+                        minLength: {
+                          value: 6,
+                          message:
+                            "La contraseña debe tener al menos 6 caracteres",
+                        },
+                      })}
                     />
-                    {errors.password && <CampoRequerido />}
+                    {errors.password && (
+                      <MostrarError errores={errors.password.message} />
+                    )}
                   </>
                 )}
 
@@ -193,9 +224,29 @@ export default function FuncionarioFormPage() {
                 <input
                   type="date"
                   className="formulario-input"
-                  {...register("persona.fecha_nacimiento", { required: true })}
+                  {...register("persona.fecha_nacimiento", {
+                    required: "La fecha de nacimiento es obligatoria",
+                    validate: (value) => {
+                      if (!value)
+                        return "La fecha de nacimiento es obligatoria";
+
+                      const hoy = new Date();
+                      const fechaNacimiento = new Date(value);
+                      const edadDifMs = hoy - fechaNacimiento;
+                      const edadDate = new Date(edadDifMs);
+                      const edad = Math.abs(edadDate.getUTCFullYear() - 1970);
+
+                      return (
+                        edad >= 18 || "La persona debe ser mayor de 18 años"
+                      );
+                    },
+                  })}
                 />
-                {errors.persona?.fecha_nacimiento && <CampoRequerido />}
+                {errors.persona?.fecha_nacimiento && (
+                  <MostrarError
+                    errores={errors.persona?.fecha_nacimiento.message}
+                  />
+                )}
 
                 <h4 className="formulario-elemento">Sexo</h4>
                 <select
@@ -212,10 +263,22 @@ export default function FuncionarioFormPage() {
                 <input
                   type="text"
                   className="formulario-input"
-                  {...register("persona.ci", { required: !params.id })}
-                  disabled={Boolean(params.id)}
+                  {...register("persona.ci", {
+                    required: !params.id ? "El CI es obligatorio" : false,
+                    pattern: {
+                      value: /^[0-9]+[A-D]?$/,
+                      message:
+                        "El CI debe contener solo números y opcionalmente una letra mayúscula entre A y D al final",
+                    },
+                    minLength: {
+                      value: 5,
+                      message: "El CI debe tener al menos 5 dígitos",
+                    },
+                  })}
                 />
-                {errors.persona?.ci && <CampoRequerido />}
+                {errors.persona?.ci && (
+                  <MostrarError errores={errors.persona?.ci.message} />
+                )}
 
                 <h4 className="formulario-elemento">Domicilio</h4>
                 <input
@@ -250,6 +313,7 @@ export default function FuncionarioFormPage() {
             </button>
           )}
         </div>
+        <MostrarError errores={backendError} />
       </div>
     </div>
   );

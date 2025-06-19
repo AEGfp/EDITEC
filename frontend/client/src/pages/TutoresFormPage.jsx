@@ -10,6 +10,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import tienePermiso from "../utils/tienePermiso";
 import CampoRequerido from "../components/CampoRequerido";
+import MostrarError from "../components/MostrarError";
 
 function TutoresFormPage() {
   const {
@@ -25,6 +26,7 @@ function TutoresFormPage() {
     },
   });
   const [editable, setEditable] = useState(false);
+  const [errorBackend, setErrorBackend] = useState(null);
   const navigate = useNavigate();
   const params = useParams();
   const pagina = "/tutores";
@@ -74,6 +76,7 @@ function TutoresFormPage() {
   }, [params.id, reset, setValue]);
 
   const onSubmit = async (data) => {
+    setErrorBackend(null);
     try {
       const idPersona = data.id_persona || watch("id_persona");
 
@@ -97,7 +100,7 @@ function TutoresFormPage() {
           nombre_empresa_trabajo: data.nombre_empresa_trabajo,
           direccion_trabajo: data.direccion_trabajo,
           observaciones: data.observaciones,
-          email: data.email, // ✅ Agregado
+          email: data.email,
         });
 
         navigate(pagina);
@@ -127,12 +130,13 @@ function TutoresFormPage() {
         nombre_empresa_trabajo: data.nombre_empresa_trabajo,
         direccion_trabajo: data.direccion_trabajo,
         observaciones: data.observaciones,
-        email: data.email, // ✅ Agregado
+        email: data.email,
       });
 
       navigate(pagina);
     } catch (error) {
       console.error("❌ Error al guardar el tutor:", error);
+      setErrorBackend(error.response?.data || "Error desconocido");
     }
   };
 
@@ -182,17 +186,36 @@ function TutoresFormPage() {
             <h4 className="formulario-elemento">CI</h4>
             <input
               className="formulario-input"
-              {...register("ci", { required: true })}
+              {...register("ci", {
+                required: "El CI es obligatorio",
+                pattern: {
+                  value: /^\d{5,}[A-D]?$/,
+                  message:
+                    "Debe tener al menos 5 números y puede terminar con una letra A, B, C o D",
+                },
+              })}
             />
-            {errors.ci && <CampoRequerido />}
+            {errors.ci && <CampoRequerido mensaje={errors.ci.message} />}
 
             <h4 className="formulario-elemento">Fecha de nacimiento</h4>
             <input
               type="date"
               className="formulario-input"
-              {...register("fecha_nacimiento", { required: true })}
+              {...register("fecha_nacimiento", {
+                required: "La fecha de nacimiento es obligatoria",
+                validate: (value) => {
+                  if (!value) return "La fecha de nacimiento es obligatoria";
+                  const fecha = new Date(value);
+                  const hoy = new Date();
+                  if (fecha > hoy) return "La fecha no puede ser futura";
+                  const edad = hoy.getFullYear() - fecha.getFullYear();
+                  return edad >= 18 ? true : "El tutor debe ser mayor de edad";
+                },
+              })}
             />
-            {errors.fecha_nacimiento && <CampoRequerido />}
+            {errors.fecha_nacimiento && (
+              <MostrarError errores={errors.fecha_nacimiento.message} />
+            )}
 
             <h4 className="formulario-elemento">Sexo</h4>
             <select
@@ -208,28 +231,64 @@ function TutoresFormPage() {
             <h4 className="formulario-elemento">Teléfono casa</h4>
             <input
               className="formulario-input"
-              {...register("telefono_casa")}
+              {...register("telefono_casa", {
+                required: "El teléfono de casa es obligatorio",
+                pattern: {
+                  value: /^[\d\s]{6,20}$/,
+                  message:
+                    "El teléfono debe tener entre 6 y 15 dígitos numéricos",
+                },
+              })}
             />
+            {errors.telefono_casa && (
+              <CampoRequerido mensaje={errors.telefono_casa.message} />
+            )}
 
             <h4 className="formulario-elemento">Email</h4>
             <input
               className="formulario-input"
               type="email"
-              {...register("email", { required: true })}
+              {...register("email", {
+                required: "El correo es obligatorio",
+                pattern: {
+                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                  message: "Formato de correo inválido",
+                },
+              })}
             />
-            {errors.email && <CampoRequerido />}
+            {errors.email && <MostrarError errores={errors.email.message} />}
 
             <h4 className="formulario-elemento">Teléfono particular</h4>
             <input
               className="formulario-input"
-              {...register("telefono_particular")}
+              {...register("telefono_particular", {
+                required: "El teléfono particular es obligatorio",
+                pattern: {
+                  value: /^[\d\s]{6,20}$/,
+                  message:
+                    "El teléfono debe tener entre 6 y 15 dígitos numéricos",
+                },
+              })}
             />
+            {errors.telefono_particular && (
+              <CampoRequerido mensaje={errors.telefono_particular.message} />
+            )}
 
             <h4 className="formulario-elemento">Teléfono trabajo</h4>
             <input
               className="formulario-input"
-              {...register("telefono_trabajo")}
+              {...register("telefono_trabajo", {
+                required: "El teléfono de trabajo es obligatorio",
+                pattern: {
+                  value: /^[\d\s]{6,20}$/,
+                  message:
+                    "El teléfono debe tener entre 6 y 15 dígitos numéricos",
+                },
+              })}
             />
+            {errors.telefono_trabajo && (
+              <CampoRequerido mensaje={errors.telefono_trabajo.message} />
+            )}
 
             <h4 className="formulario-elemento">Nombre empresa trabajo</h4>
             <input
@@ -269,6 +328,8 @@ function TutoresFormPage() {
             </button>
           )}
         </div>
+
+        {errorBackend && <MostrarError errores={errorBackend} />}
       </div>
     </div>
   );

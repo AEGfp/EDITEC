@@ -1,11 +1,16 @@
 export default function MostrarError({ errores }) {
-  const extraerMensajes = (data) => {
-    if (typeof data === "string") return [data];
+  const extraerMensajes = (data, campo = null) => {
+    if (typeof data === "string") {
+      return campo ? [`${campo}: ${data}`] : [data];
+    }
     if (Array.isArray(data)) {
-      return data.flatMap(extraerMensajes);
+      return data.flatMap((item) => extraerMensajes(item, campo));
     }
     if (typeof data === "object" && data !== null) {
-      return Object.values(data).flatMap(extraerMensajes);
+      // Recorremos las claves con sus valores, incluyendo el nombre del campo
+      return Object.entries(data).flatMap(([key, value]) =>
+        extraerMensajes(value, key)
+      );
     }
     return ["Error desconocido"];
   };

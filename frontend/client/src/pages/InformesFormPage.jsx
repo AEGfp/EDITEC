@@ -11,6 +11,7 @@ import CampoRequerido from "../components/CampoRequerido";
 import tienePermiso from "../utils/tienePermiso";
 import { obtenerTodosIndicadores } from "../api/indicadores.api";
 import { obtenerInfantesAsignados } from "../api/asistencias.api";
+import MostrarError from "../components/MostrarError";
 
 export function InformesFormPage() {
   const {
@@ -32,6 +33,7 @@ export function InformesFormPage() {
   const [descripcionVisible, setDescripcionVisible] = useState({});
   const [editable, setEditable] = useState(false);
   const [indicadoresInforme, setIndicadoresInforme] = useState([]);
+  const [errorBackend, setErrorBackend] = useState(null);
 
   const params = useParams();
 
@@ -69,6 +71,7 @@ export function InformesFormPage() {
   );
 
   const onSubmit = handleSubmit(async (data) => {
+    setErrorBackend(null);
     try {
       const usuarioStr = localStorage.getItem("usuario");
       const usuario = JSON.parse(usuarioStr);
@@ -92,6 +95,7 @@ export function InformesFormPage() {
       navigate("/informes");
     } catch (error) {
       console.error("Error al guardar informe:", error.response?.data || error);
+      setErrorBackend(error.response?.data || "Error desconocido");
     }
   });
 
@@ -142,9 +146,21 @@ export function InformesFormPage() {
             <input
               type="date"
               className="formulario-input"
-              {...register("fecha_informe", { required: true })}
+              {...register("fecha_informe", {
+                required: "La fecha del informe es obligatoria",
+                validate: (value) => {
+                  if (!value) return "La fecha del informe es obligatoria";
+                  const hoy = new Date();
+                  const fecha = new Date(value);
+                  return fecha <= hoy
+                    ? true
+                    : "La fecha del informe no puede ser futura";
+                },
+              })}
             />
-            {errors.fecha_informe && <CampoRequerido />}
+            {errors.fecha_informe && (
+              <CampoRequerido mensaje={errors.fecha_informe.message} />
+            )}
 
             {tipoInformeSeleccionado && (
               <>
@@ -214,6 +230,7 @@ export function InformesFormPage() {
               )}
             </div>
           </fieldset>
+          {errorBackend && <MostrarError errores={errorBackend} />}
         </form>
       </div>
     </div>
