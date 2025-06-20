@@ -119,7 +119,7 @@ class SaldoProveedoresView(viewsets.ModelViewSet):
     queryset = SaldoProveedores.objects.all()
     serializer_class = SaldoProveedoresSerializer
 
-class ComprobantesConSaldoAPIView(APIView):
+'''class ComprobantesConSaldoAPIView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
@@ -135,11 +135,73 @@ class ComprobantesConSaldoAPIView(APIView):
             for c in comprobantes
         ]
         return Response(data)
-    
+    '''
+class ComprobantesConSaldoAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        mostrar_todas = request.query_params.get('mostrar_todas', 'false').lower() == 'true'
+        id_comprobante_actual = request.query_params.get('id_comprobante_actual')
+
+        if mostrar_todas:
+            comprobantes = ComprobanteProveedor.objects.all()
+        else:
+            comprobantes = ComprobanteProveedor.objects.filter(
+                saldos__saldo_cuota__gt=0
+            ).distinct()
+
+            # Si me pasan un comprobante actual, lo agrego aunque tenga saldo 0
+            if id_comprobante_actual:
+                comprobante_actual_qs = ComprobanteProveedor.objects.filter(id=id_comprobante_actual)
+                comprobantes = comprobantes | comprobante_actual_qs
+
+        comprobantes = comprobantes.distinct()
+
+        data = [
+            {
+                "id": c.id,
+                "descripcion": str(c),  # Puedes mejorar la descripción para el front
+            }
+            for c in comprobantes
+        ]
+        return Response(data)
+
+
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def cuotas_disponibles(request):
+    id_comprobante = request.query_params.get("id_comprobante")
+    mostrar_todas = request.query_params.get('mostrar_todas', 'false').lower() == 'true'
+
+    if not id_comprobante:
+        return Response(
+            {"error": "Falta el parámetro 'id_comprobante'."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if mostrar_todas:
+        cuotas = SaldoProveedores.objects.filter(
+            id_comprobante=id_comprobante
+        ).order_by('numero_cuota')
+    else:
+        cuotas = SaldoProveedores.objects.filter(
+            id_comprobante=id_comprobante,
+            saldo_cuota__gt=0
+        ).order_by('numero_cuota')
+
+    data = [
+        {
+            "numero_cuota": c.numero_cuota,
+            "saldo_cuota": c.saldo_cuota,
+            "monto_cuota": c.monto_cuota,
+            "id_saldo": c.id
+        }
+        for c in cuotas
+    ]
+    return Response(data)
+
+'''def cuotas_disponibles(request):
     id_comprobante = request.query_params.get("id_comprobante")
 
     if not id_comprobante:
@@ -162,7 +224,9 @@ def cuotas_disponibles(request):
         }
         for c in cuotas
     ]
-    return Response(data)
+    return Response(data)'''
+
+
 
 @permission_classes([AllowAny])
 class CajaPagosView(viewsets.ModelViewSet):

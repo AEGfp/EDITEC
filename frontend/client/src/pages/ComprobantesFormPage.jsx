@@ -12,6 +12,9 @@ import tienePermiso from "../utils/tienePermiso";
 import CampoRequerido from "../components/CampoRequerido";
 import FormatoNumero from "../components/FormatoNumero";
 import ValidarNumero from "../components/ValidarNumero";
+import ValidarNumerosCero from "../components/ValidarNumerosCero";
+import FormatoTimbrado from "../components/FormatoTimbrado";
+import { eliminarSaldo } from "../api/saldo_proveedores.api";
 
 export function ComprobantesFormPage() {
   const {
@@ -20,9 +23,14 @@ export function ComprobantesFormPage() {
     formState: { errors },
     setValue,
     reset,
+    getValues,
+    trigger,
   } = useForm({
       defaultValues: {
         fecha_comprobante: new Date().toISOString().slice(0, 10),
+        gravadas_10: 0,
+        gravadas_5: 0,
+        exentas: 0
     },
   });
 
@@ -69,6 +77,10 @@ export function ComprobantesFormPage() {
       setValue("fecha_comprobante", data.fecha_comprobante);
       setValue("total_comprobante", data.total_comprobante);
       setValue("numero_comprobante", data.numero_comprobante);
+      setValue("timbrado", data.timbrado);
+      setValue("gravadas_10", data.gravadas_10);
+      setValue("gravadas_5", data.gravadas_5);
+      setValue("exentas", data.exentas);
 
       // Cargamos los proveedores
       const resProveedores = await fetch("http://localhost:8000/api/proveedores/");
@@ -130,20 +142,26 @@ export function ComprobantesFormPage() {
 }, [params.id]);
 
   const onSubmit = handleSubmit(async (data) => {
-    try{
-    if (params.id) {
-      console.log("Payload a enviar actualizar:", data);
-      await actualizarComprobante(params.id, data);
-    } else {
-      console.log("Payload a enviar crear:", data);
-      await crearComprobante(data);
+    const finalData = {
+    ...data,
+    gravadas_10: data.gravadas_10 || 0,
+    gravadas_5: data.gravadas_5 || 0,
+    exentas: data.exentas || 0,
+    };
+    try {
+      if (params.id) {
+        console.log("Payload a enviar actualizar:", finalData);
+        await actualizarComprobante(params.id, finalData);
+      } else {
+        console.log("Payload a enviar crear:", finalData);
+        await crearComprobante(finalData);
+      }
+      navigate(pagina);
+    } catch (error) {
+      console.error("Detalles del error:", error.response?.data || error.message);
     }
-    navigate(pagina);
-}catch (error){
-    console.error("Detalles del error:", error.response?.data || error.message);
-}
   });
-
+ 
   const habilitarEdicion = async () => {
     setEditable(true);
   };
@@ -251,6 +269,25 @@ export function ComprobantesFormPage() {
             {errors.numero_comprobante?.type === "required" && <CampoRequerido />}
             {errors.numero_comprobante?.type === "pattern" && <FormatoNumero />}
             {/*errors.numero_comprobante?.type === "maxLength" && <ValidarNumero />*/} 
+            <h4 className="formulario-elemento">N° Timbrado</h4>
+            <input
+              type="number"
+              placeholder="Ingrese el timbrado del comprobante..."
+              className="formulario-input"
+              {...register("timbrado", { 
+                required: true , 
+                valueAsNumber: true, 
+                min: { value: 1},
+                validate: (value) => {
+                  return value.toString().length <= 8 || "El número del timbrado debe contener como máximo 8 dígitos";
+              }
+              })}
+            />
+            {errors.timbrado?.type === "required" && <CampoRequerido />}
+            {errors.timbrado?.type === "min" && <ValidarNumero />}
+            {errors.timbrado?.message && (
+              <span className="text-red-500 text-sm">{errors.timbrado.message}</span>
+            )}
             <h4 className="formulario-elemento">Concepto</h4>
             <input
               type="text"
@@ -262,19 +299,112 @@ export function ComprobantesFormPage() {
             <input
               type="date"
               className="formulario-input"
-              {...register("fecha_comprobante", { required: true })}
+              {...register("fecha_comprobante", { 
+                required: true,
+               validate: (value) => {
+                const hoy = new Date();
+                const fechaIngresada = new Date(value);
+                // Quitar hora para comparar solo fechas (opcional pero recomendable)
+                hoy.setHours(0, 0, 0, 0);
+                fechaIngresada.setHours(0, 0, 0, 0);
+                return fechaIngresada <= hoy || "La fecha del comprobante no puede ser futura";
+               }
+              })}
             />
             {/*Mensaje de error si no se completa un campo obligatorio*/}
             {errors.fecha_comprobante && <CampoRequerido></CampoRequerido>}
+            {errors.fecha_comprobante?.message && (
+              <span className="text-red-500 text-sm">{errors.fecha_comprobante.message}</span>
+            )}
+            <h3 className="subtitulo-formulario">Subtotales</h3>
+            <div className="fila-campos">
+                <div className="w-1/3">
+                  <h4 className="formulario-elemento">Gravadas 10</h4>
+                  <input
+                    type="number"
+                    placeholder="Ingrese las gravadas del 10%..."
+                    className="formulario-input"
+                    {...register("gravadas_10", { 
+                      required: true , 
+                      valueAsNumber: true, 
+                      min: { value: 0},
+                      onBlur: (e) => {
+                        //Si el usuario borra el cero por defecto y deja vacio, completa otra vez con cero
+                        if (e.target.value === "") setValue("gravadas_10", 0);
+                        //si cambia algo vuelve a verificar totales
+                        trigger("total_comprobante");
+                      }  
+                    })}
+                  />
+                  {/*errors.gravadas_10?.type === "required" && <CampoRequerido />*/}
+                  {errors.gravadas_10?.type === "min" && <ValidarNumerosCero />}
+                </div>
+                <div className="w-1/3">
+                  <h4 className="formulario-elemento">Gravadas 5</h4>
+                  <input
+                    type="number"
+                    placeholder="Ingrese las gravadas del 5%..."
+                    className="formulario-input"
+                    {...register("gravadas_5", { 
+                      required: true , 
+                      valueAsNumber: true, 
+                      min: { value: 0},
+                      onBlur: (e) => {
+                        //Si el usuario borra el cero por defecto y deja vacio, completa otra vez con cero
+                        if (e.target.value === "") setValue("gravadas_5", 0);
+                        //si cambia algo vuelve a verificar totales
+                        trigger("total_comprobante");
+                      }
+                    })}
+                  />
+                  {/*errors.gravadas_5?.type === "required" && <CampoRequerido />*/}
+                  {errors.gravadas_5?.type === "min" && <ValidarNumerosCero />}
+                </div>  
+                  <div className="w-1/3">
+                  <h4 className="formulario-elemento">Exentas</h4>
+                  <input
+                    type="number"
+                    placeholder="Ingrese el total de exentas..."
+                    className="formulario-input"
+                    {...register("exentas", { 
+                      required: true , 
+                      valueAsNumber: true, 
+                      min: { value: 0},
+                      onBlur: (e) => {
+                        //Si el usuario borra el cero por defecto y deja vacio, completa otra vez con cero
+                        if (e.target.value === "") setValue("exentas", 0);
+                        //si cambia algo vuelve a verificar totales
+                        trigger("total_comprobante");
+                      }
+                    })}
+                  />
+                  {/*errors.exentas?.type === "required" && <CampoRequerido />*/}
+                  {errors.exentas?.type === "min" && <ValidarNumerosCero />}
+                </div>
+            </div>
             <h4 className="formulario-elemento">Total</h4>
             <input
               type="number"
               placeholder="Ingrese el total en números..."
               className="formulario-input"
-              {...register("total_comprobante", { required: true , valueAsNumber: true, min: { value: 1},})}
+              {...register("total_comprobante", { 
+                required: true , 
+                valueAsNumber: true, 
+                min: { value: 1},
+                validate: (value) => {
+                    const g10 = Number(getValues("gravadas_10") || 0);
+                    const g5 = Number(getValues("gravadas_5") || 0);
+                    const exen = Number(getValues("exentas") || 0);
+                    const suma = g10 + g5 + exen;
+                    return value === suma || "El total no coincide con la suma de los subtotales.";
+              }
+            })}
             />
             {errors.total_comprobante?.type === "required" && <CampoRequerido />}
             {errors.total_comprobante?.type === "min" && <ValidarNumero />}
+            {errors.total_comprobante?.message && (
+              <span className="text-red-500 text-sm">{errors.total_comprobante.message}</span>
+            )}
           </fieldset>
         </form>
 
