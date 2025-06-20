@@ -10,7 +10,6 @@ import {
   crearInscripcion,
   crearInscripcionExistente,
 } from "../api/inscripciones.api";
-import VistaPreviaInscripcion from "../components/VistaPreviaInscripcion";
 import MostrarError from "../components/MostrarError";
 
 export default function RealizarInscripcionPage() {
@@ -25,6 +24,7 @@ export default function RealizarInscripcionPage() {
 
   const location = useLocation();
   const omitirUsuario = location.state?.omitirUsuario || false;
+  const usuarioLocal = JSON.parse(localStorage.getItem("usuario"));
 
   const [pestanha, setPestanha] = useState(0);
   const [formulario, setFormulario] = useState({});
@@ -40,7 +40,16 @@ export default function RealizarInscripcionPage() {
   if (!omitirUsuario) {
     pasos.push(<CamposUsuario />);
   }
-  pasos.push(<CamposTutor />);
+  if (usuarioLocal && Array.isArray(usuarioLocal.groups)) {
+    console.log("Grupos del usuario:", usuarioLocal.groups);
+  }
+
+  const esTutor = usuarioLocal?.groups?.includes("tutor");
+
+  if (!esTutor) {
+    pasos.push(<CamposTutor />);
+  }
+
   pasos.push(<CamposInfante />);
   pasos.push(<CamposDocumentos />);
   pasos.push(<SeleccionSala />);

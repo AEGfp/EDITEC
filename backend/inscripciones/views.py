@@ -211,11 +211,26 @@ class PeriodoInscripcionViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def ultimo(self, request):
         ahora = timezone.now()
-        periodo = PeriodoInscripcion.objects.filter(fecha_fin__lt=ahora).order_by('-fecha_fin').first()
-        if periodo:
-            serializer = self.get_serializer(periodo)
+
+        periodo_activo = PeriodoInscripcion.objects.filter(
+            activo=True,
+            fecha_inicio__lte=ahora,
+            fecha_fin__gte=ahora
+        ).order_by('fecha_inicio').first()
+
+        if periodo_activo:
+            serializer = self.get_serializer(periodo_activo)
             return Response(serializer.data)
-        return Response({"detail": "No hay periodos finalizados"}, status=status.HTTP_404_NOT_FOUND)
+
+        periodo_finalizado = PeriodoInscripcion.objects.filter(
+            fecha_fin__lt=ahora
+        ).order_by('-fecha_fin').first()
+
+        if periodo_finalizado:
+            serializer = self.get_serializer(periodo_finalizado)
+            return Response(serializer.data)
+
+        return Response({"detail": "No hay periodos disponibles"}, status=status.HTTP_404_NOT_FOUND)
 
     @action(detail=False, methods=['get'])
     def puede_inscribirse(self, request):

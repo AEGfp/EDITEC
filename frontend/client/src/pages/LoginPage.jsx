@@ -1,17 +1,40 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import logo from "../components/images/5235784.png";
 import { loginUsuario } from "../utils/loginUsuario";
+import { puedeInscribirse, obtenerUltimoPeriodo } from "../api/periodos.api";
 
 export function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [inscripcionesAbiertas, setInscripcionesAbiertas] = useState(false);
+  const [verificacionError, setVerificacionError] = useState("");
   const navigate = useNavigate();
 
   const location = useLocation();
   const desdeInscripcion = location.state?.desdeInscripcion || false;
+
+  useEffect(() => {
+    async function verificar() {
+      try {
+        setVerificacionError("");
+        const res = await puedeInscribirse();
+        setInscripcionesAbiertas(res.data.puede_inscribirse);
+
+        const periodo = await obtenerUltimoPeriodo();
+        sessionStorage.setItem("id_periodo", periodo.data.id);
+      } catch (error) {
+        console.error("Error al verificar inscripciones:", error);
+        setVerificacionError(
+          "No se pudo verificar el estado de inscripción o el periodo. Intenta más tarde."
+        );
+      }
+    }
+
+    verificar();
+  }, []);
 
   const login = async (event) => {
     event.preventDefault();
@@ -73,28 +96,33 @@ export function LoginPage() {
                   : "Ingresar"}
               </button>
               <br />
-              <button
-                className="boton-detalles"
-                onClick={() => navigate("/signup-falso")}
-                type="button"
-                hidden={desdeInscripcion}
-              >
-                Sign Up
-              </button>
-
-              <br />
-              <br />
-              <button
-                className="boton-editar"
-                onClick={() => navigate("/iniciar-inscripcion")}
-                type="button"
-                hidden={desdeInscripcion}
-              >
-                Inscribir
-              </button>
+              {!desdeInscripcion && (
+                <>
+                  {/*  <button
+                    className="boton-detalles"
+                    onClick={() => navigate("/signup-falso")}
+                    type="button"
+                  >
+                    Sign Up
+                  </button>*/}
+                  <br />
+                  <br />
+                  {inscripcionesAbiertas && (
+                    <button
+                      className="boton-editar"
+                      onClick={() => navigate("/iniciar-inscripcion")}
+                      type="button"
+                    >
+                      Inscribir
+                    </button>
+                  )}
+                </>
+              )}
             </div>
           </form>
-
+          {verificacionError && (
+            <p className="mensaje-error">{verificacionError}</p>
+          )}
           {error && <p className="mensaje-error">{error}</p>}
         </div>
       </div>

@@ -1,6 +1,5 @@
 from django.db import models
 from api.models import User, Persona
-from apps.educativo.models import Tutor, Infante
 from django.conf import settings
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
@@ -33,10 +32,14 @@ class PeriodoInscripcion(models.Model):
 
 class Inscripcion(models.Model):
     id_tutor = models.ForeignKey(
-        Tutor, on_delete=models.CASCADE, related_name="inscripciones"
+        "educativo.Tutor",  
+        on_delete=models.CASCADE,
+        related_name="inscripciones"
     )
     id_infante = models.ForeignKey(
-        Infante, on_delete=models.CASCADE, related_name="inscripciones"
+        "educativo.Infante",
+        on_delete=models.CASCADE,
+        related_name="inscripciones"
     )
     estado = models.CharField(max_length=10, choices=ESTADOS, default="pendiente")
     fecha_inscripcion = models.DateField(auto_now_add=True)

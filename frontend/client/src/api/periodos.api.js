@@ -18,3 +18,7 @@ export const cerrarPeriodo = (id) => {
 export const obtenerUltimoPeriodo = () => {
   return Api.get(`${DIRECCION}ultimo/`);
 };
+
+export const puedeInscribirse = () => {
+  return Api.get(`${DIRECCION}puede_inscribirse/`);
+};

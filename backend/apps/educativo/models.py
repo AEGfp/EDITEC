@@ -1,6 +1,5 @@
 from django.db import models
 from api.models import Persona
-
 #Tabla Infante
 class Infante(models.Model):
     id_persona = models.ForeignKey(Persona, on_delete=models.CASCADE)
@@ -11,7 +10,11 @@ class Infante(models.Model):
     permiso_fotos = models.CharField(max_length= 200)
     #! Agregar obligatorio
     id_sala=models.ForeignKey("Sala",on_delete=models.SET_NULL,null=True, blank=True)
-
+    periodo_inscripcion = models.ForeignKey(
+        "inscripciones.PeriodoInscripcion",
+        null=True, blank=True,
+        on_delete=models.PROTECT
+    )
     def __str__(self):
         return str(self.id_persona)
 #Tabla Tutor
@@ -28,7 +31,11 @@ class Tutor(models.Model):
     nombre_empresa_trabajo = models.CharField(max_length=255)
     direccion_trabajo = models.CharField(max_length=255)
     observaciones = models.TextField(null=True, blank=True)
-
+    periodo_inscripcion = models.ForeignKey(
+        "inscripciones.PeriodoInscripcion",
+        null=True, blank=True,
+        on_delete=models.PROTECT
+    )    
     def __str__(self):
         return str(self.id_persona)
 class Turno(models.Model):
@@ -41,6 +48,11 @@ class Turno(models.Model):
 class Sala(models.Model):
     descripcion = models.CharField(max_length=100)
     profesor_encargado=models.ForeignKey(Persona,null=True,on_delete=models.SET_NULL,related_name='salas')
+    periodo_inscripcion = models.ForeignKey(
+        "inscripciones.PeriodoInscripcion",
+        null=True, blank=True,
+        on_delete=models.PROTECT
+    )
     def __str__(self):
         return self.descripcion
 
