@@ -58,12 +58,27 @@ export default function CamposInfante() {
           {errors.infante_ci && <CampoRequerido />}
 
           <h4 className="formulario-elemento">Fecha de Nacimiento</h4>
-          <input
-            type="date"
-            className="formulario-input"
-            {...register("infante_fecha_nacimiento", { required: true })}
-          />
-          {errors.infante_fecha_nacimiento && <CampoRequerido />}
+  <input
+  type="date"
+  className="formulario-input"
+  {...register("infante_fecha_nacimiento", {
+    required: "Campo requerido",
+    validate: {
+      noHoyNiFuturo: (value) => {
+        if (!value) return true;
+        const fecha = new Date(value);
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0); // limpiar hora
+        return fecha < hoy || "La fecha no puede ser futura";
+      }
+    }
+  })}
+/>
+{errors.infante_fecha_nacimiento && (
+  <p className="text-red-500 text-sm mt-1">
+    {errors.infante_fecha_nacimiento.message}
+  </p>
+)}
 
           <h4 className="formulario-elemento">Sexo</h4>
           <select
