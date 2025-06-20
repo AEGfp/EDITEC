@@ -43,6 +43,10 @@ const permisosRoles = {
     lectura: ["director", "profesor", "tutor"],
     escritura: ["tutor"],
   },
+  periodos: {
+    lectura: ["director", "administrador"],
+    escritura: ["director", "administrador"],
+  },
   inscripciones: {
     lectura: ["director", "administrador"],
     escritura: ["director", "administrador"],
