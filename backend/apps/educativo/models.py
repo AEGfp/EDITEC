@@ -129,3 +129,26 @@ class TutorInfante(models.Model):
         
         return f"{self.tutor} → {self.infante}"
 
+
+
+class TransferenciaInfante(models.Model):
+    infante = models.ForeignKey("Infante", on_delete=models.CASCADE)
+    sala_origen = models.ForeignKey("Sala", related_name="transferencias_salientes", on_delete=models.SET_NULL, null=True)
+    sala_destino = models.ForeignKey("Sala", related_name="transferencias_entrantes", on_delete=models.SET_NULL, null=True)
+    motivo = models.TextField()
+    fecha = models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return f"{self.infante} de {self.sala_origen} a {self.sala_destino}"
+
+class TransferenciaProfesor(models.Model):
+    profesor = models.ForeignKey(Persona, on_delete=models.CASCADE)
+    sala_origen = models.ForeignKey("Sala", related_name="profesor_saliente", on_delete=models.SET_NULL, null=True)
+    sala_destino = models.ForeignKey("Sala", related_name="profesor_entrante", on_delete=models.SET_NULL, null=True)
+    motivo = models.TextField()
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        
+        return f"{self.profesor} de {self.sala_origen} a {self.sala_destino}"
