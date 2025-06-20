@@ -94,6 +94,10 @@ class ComprobanteProveedorSerializer(serializers.ModelSerializer):
         'id_tipo_comprobante',
         'id_condicion',
         'id_local',
+        'gravadas_10',
+        'gravadas_5',
+        'exentas',
+        'timbrado',
         # Campos legibles agregados:
         'proveedor_nombre',
         'tipo_comprobante_nombre',
@@ -108,13 +112,47 @@ class ComprobanteProveedorSerializer(serializers.ModelSerializer):
         proveedor = data.get('id_proveedor')
         tipo = data.get('id_tipo_comprobante')
         total_comp = data.get('total_comprobante')
+        grv_10 = data.get('gravadas_10')
+        grv_5 = data.get('gravadas_5')
+        exen = data.get('exentas')
+        tim = data.get('timbrado')
               
         # Se valida duplicación de comprobantes por proveedor, tipo y número
         if ComprobanteProveedor.objects.filter(id_proveedor = proveedor, numero_comprobante = numero, id_tipo_comprobante = tipo).exists():
             raise serializers.ValidationError({"numero_comprobante":"El número de comprobante ingresado ya existe para este proveedor"})
 
+        if not isinstance(total_comp, (int, float)):
+            raise serializers.ValidationError("El total del comprobante debe ser un número.")
+
         if total_comp <= 0:
             raise serializers.ValidationError("El total del comprobante debe ser mayor a 0.")
+        
+        if not isinstance(grv_10, (int, float)):
+            raise serializers.ValidationError("La gravada 10 debe ser un número.")
+
+        if grv_10 < 0:
+            raise serializers.ValidationError("La gravada 10 debe ser mayor o igual a 0.")
+        
+        if not isinstance(grv_5, (int, float)):
+            raise serializers.ValidationError("La gravada 5 debe ser un número.")
+
+        if grv_5 < 0:
+            raise serializers.ValidationError("La gravada de 5 debe ser mayor o igual a 0.")
+        
+        if not isinstance(exen, (int, float)):
+            raise serializers.ValidationError("Exentas debe ser un número.")
+        
+        if exen < 0:
+            raise serializers.ValidationError("Las exentas deben ser mayor o igual 0.")
+        
+        if not isinstance(tim, (int, float)):
+            raise serializers.ValidationError("El timbrado debe ser un número.")
+        
+        if tim <= 0:
+            raise serializers.ValidationError("El timbrado debe ser un número mayor a 0.")
+        
+        if (grv_10 + grv_5 + exen) != total_comp:
+            raise serializers.ValidationError("Los subtotales deben ser igual al total del comprobante.")
 
         return data
 
