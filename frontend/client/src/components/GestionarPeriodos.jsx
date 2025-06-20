@@ -25,6 +25,12 @@ export default function GestionarPeriodos({
       setMensaje("La fecha de fin debe ser posterior a la fecha de inicio.");
       return;
     }
+    const diferenciaMs = fin - inicio;
+    const dias = diferenciaMs / (1000 * 60 * 60 * 24);
+    if (dias > 31) {
+      setMensaje("El período no puede superar 1 mes (31 días).");
+      return;
+    }
 
     setLoading(true);
     try {
@@ -50,6 +56,9 @@ export default function GestionarPeriodos({
       await cerrarPeriodo(periodo.id);
       const res = await obtenerUltimoPeriodo();
       actualizarPeriodo(res.data);
+      if (res?.data?.id) {
+        sessionStorage.setItem("id_periodo", res.data.id);
+      }
       setMensaje("Período cerrado correctamente.");
     } catch (error) {
       setMensaje("Error al cerrar el período.");

@@ -33,6 +33,8 @@ import TransferenciaInfantePage from "../pages/TransferenciaInfantePage";
 import { CuotasPage } from "../pages/CuotasPage";
 import { ParametrosFormPage } from "../pages/ParametrosFormPage";
 import { ParametrosPage } from "../pages/ParametrosPage";
+import PeriodosPage from "../pages/PeriodosPage";
+import PeriodosFormPage from "../pages/PeriodosFormPage";
 
 export default [
   {
@@ -432,5 +434,27 @@ export default [
     componente: TransferenciaInfantePage,
     publico: true,
     nombre: "Transferencia",
+  },
+  {
+    path: "/periodos", //url
+    componente: PeriodosPage, //.jsx
+    entidad: "periodos", //tabla con la que interactúa
+    permiso: "lectura", //permisos minimos
+    nombre: "Periodos", //Nombre del elemento en el Sidebar
+    subrutas: [
+      {
+        path: "/periodos-crear",
+        componente: PeriodosFormPage,
+        entidad: "periodos",
+        permiso: "escritura",
+        nombre: "Crear Periodos",
+      },
+    ],
+  },
+  {
+    path: "/periodos/:id",
+    componente: PeriodosFormPage,
+    entidad: "periodos",
+    permiso: "lectura",
   },
 ];
