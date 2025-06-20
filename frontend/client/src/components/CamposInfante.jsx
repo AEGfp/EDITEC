@@ -58,27 +58,27 @@ export default function CamposInfante() {
           {errors.infante_ci && <CampoRequerido />}
 
           <h4 className="formulario-elemento">Fecha de Nacimiento</h4>
-  <input
-  type="date"
-  className="formulario-input"
-  {...register("infante_fecha_nacimiento", {
-    required: "Campo requerido",
-    validate: {
-      noHoyNiFuturo: (value) => {
-        if (!value) return true;
-        const fecha = new Date(value);
-        const hoy = new Date();
-        hoy.setHours(0, 0, 0, 0); // limpiar hora
-        return fecha < hoy || "La fecha no puede ser futura";
-      }
-    }
-  })}
-/>
-{errors.infante_fecha_nacimiento && (
-  <p className="text-red-500 text-sm mt-1">
-    {errors.infante_fecha_nacimiento.message}
-  </p>
-)}
+          <input
+            type="date"
+            className="formulario-input"
+            {...register("infante_fecha_nacimiento", {
+              required: "Campo requerido",
+              validate: {
+                noHoyNiFuturo: (value) => {
+                  if (!value) return true;
+                  const fecha = new Date(value);
+                  const hoy = new Date();
+                  hoy.setHours(0, 0, 0, 0); // limpiar hora
+                  return fecha < hoy || "La fecha no puede ser futura";
+                },
+              },
+            })}
+          />
+          {errors.infante_fecha_nacimiento && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.infante_fecha_nacimiento.message}
+            </p>
+          )}
 
           <h4 className="formulario-elemento">Sexo</h4>
           <select
@@ -95,7 +95,34 @@ export default function CamposInfante() {
             className="formulario-input"
             {...register("infante_domicilio")}
           />
+          <h4 className="formulario-elemento">Hora de Entrada</h4>
+          <input
+            type="time"
+            className="formulario-input"
+            {...register("hora_entrada", {
+              required: "La hora de entrada es obligatoria",
+              validate: {
+                dentroDeHorario: (value) => {
+                  if (!value) return true;
+                  const [hora, minuto] = value.split(":").map(Number);
+                  const totalMinutos = hora * 60 + minuto;
+                  const min = 7 * 60; // 07:00
+                  const max = 15 * 60; // 15:00
+                  return (
+                    (totalMinutos >= min && totalMinutos <= max) ||
+                    "La hora debe ser entre 07:00 y 15:00"
+                  );
+                },
+              },
+            })}
+          />
+          {errors.hora_entrada && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.hora_entrada.message}
+            </p>
+          )}
         </div>
+
         <div className="flex-1">
           <h4 className="formulario-elemento">¿Alergia?</h4>
           <select className="formulario-input" {...register("ind_alergia")}>
