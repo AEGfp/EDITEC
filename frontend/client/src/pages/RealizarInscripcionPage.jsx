@@ -76,7 +76,7 @@ export default function RealizarInscripcionPage() {
 
   pasos.push(<CamposInfante />);
   pasos.push(<CamposDocumentos />);
-  pasos.push(<SeleccionSala />);
+  //pasos.push(<SeleccionSala />);
   /*pasos.push(
     <VistaPreviaInscripcion datos={formData}></VistaPreviaInscripcion>
   );*/
@@ -202,8 +202,8 @@ export default function RealizarInscripcionPage() {
           ind_celiaquismo: datos.ind_celiaquismo,
           permiso_cambio_panhal: datos.permiso_cambio_panhal,
           permiso_fotos: datos.permiso_fotos,
-          id_sala: datos.id_sala,
         },
+        hora_entrada: datos.hora_entrada,
       };
 
       if (!omitirUsuario) {
@@ -275,7 +275,7 @@ export default function RealizarInscripcionPage() {
             <button
               type="submit"
               className="boton-guardar"
-              disabled={!captchaValido && pestanha === 0}
+              disabled={!omitirUsuario && pestanha === 0 && !captchaValido}
             >
               {loading
                 ? "Procesando inscripcion"

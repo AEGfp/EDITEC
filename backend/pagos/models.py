@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from api.models import Persona
 from locales.models import Local
 from django.contrib.auth.models import User
@@ -14,7 +15,11 @@ class Proveedor(models.Model):
     telefono = models.CharField(max_length= 12) 
     observaciones = models.TextField(blank=True, null=True)
     estado = models.BooleanField(default=True) 
-    id_usuario_aud = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    id_usuario_aud = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,)
 
 
     def __str__(self):
@@ -40,7 +45,11 @@ class TipoComprobante(models.Model):
     )
     descripcion = models.CharField(max_length=30)
     estado = models.BooleanField(default=True)
-    id_usuario_aud = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True) #!Configurar
+    id_usuario_aud = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,)
 
     def __str__(self):
         return self.descripcion
@@ -51,7 +60,11 @@ class Condicion(models.Model):
     descripcion = models.CharField(max_length=30)
     estado = models.BooleanField(default=True)
     cantidad_cuotas = models.PositiveIntegerField(default=1)
-    id_usuario_aud = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True) #!Configurar
+    id_usuario_aud = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,)
 
     def __str__(self):
         return self.descripcion
@@ -71,7 +84,15 @@ class ComprobanteProveedor(models.Model):
     #cantidad_cuotas = models.IntegerField(default=1) # Por defecto siempre será 1
     total_comprobante = models.IntegerField()
     numero_comprobante = models.CharField(max_length=15)
-    id_usuario_aud = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True) #!Configurar
+    gravadas_10 = models.IntegerField()
+    gravadas_5 = models.IntegerField()
+    exentas = models.IntegerField()
+    timbrado = models.IntegerField()
+    id_usuario_aud = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,)
 
     def __str__(self):
         return f"{self.id_tipo_comprobante} - {self.id_condicion} - {self.numero_comprobante} - {self.id_proveedor}"

@@ -72,6 +72,14 @@ h4 {
     @apply flex items-center justify-center min-h-screen;
   }
 
+  .subtitulo-formulario {
+    @apply text-lg font-semibold text-gray-700 mb-2 mt-4;
+  }
+
+  .fila-campos {
+    @apply flex gap-4 mb-3 w-full;
+  }
+  
   @layer components {
     input:disabled,
     select:disabled,

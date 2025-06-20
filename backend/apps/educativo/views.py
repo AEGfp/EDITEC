@@ -36,20 +36,22 @@ class InfanteView(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        periodo_id = self.request.query_params.get("id_periodo")
 
-        if user.is_superuser or user.is_staff:
-            return Infante.objects.all()
+        qs = Infante.objects.all()
+        if periodo_id:
+            qs = qs.filter(periodo_inscripcion_id=periodo_id)
 
         grupos = set(user.groups.values_list("name", flat=True))
 
         if grupos == {"tutor"}:
             try:
                 tutor = Tutor.objects.get(id_persona__user=user)
-                return Infante.objects.filter(tutores__tutor=tutor)
+                return qs.filter(tutores__tutor=tutor)
             except Tutor.DoesNotExist:
-                return Infante.objects.none()
+                return qs.none()
 
-        return Infante.objects.all()
+        return qs
 
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update"]:
@@ -65,16 +67,18 @@ class TutorView(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        periodo_id = self.request.query_params.get("id_periodo")
 
-        if user.is_superuser or user.is_staff:
-            return Tutor.objects.all()
+        qs = Tutor.objects.all()
+        if periodo_id:
+            qs = qs.filter(periodo_inscripcion_id=periodo_id)
 
         grupos = set(user.groups.values_list("name", flat=True))
 
         if grupos == {"tutor"}:
-            return Tutor.objects.filter(id_persona__user=user)
+            return qs.filter(id_persona__user=user)
 
-        return Tutor.objects.all()
+        return qs
 
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update"]:
@@ -98,12 +102,24 @@ class SalaView(viewsets.ModelViewSet):
     serializer_class = SalaSerializer
 
 
+    def get_queryset(self):
+        qs = Sala.objects.all()
+        periodo_id = self.request.query_params.get("periodo_id")
+        if periodo_id:
+            qs = qs.filter(periodo_inscripcion_id=periodo_id)
+        return qs
+
+
+
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def salas_publicas(request):
     hora_entrada = request.GET.get("hora_entrada")
     hora_salida = request.GET.get("hora_salida")
+    periodo_id=request.GET.get("periodo_id")
     salas = Sala.objects.all()
+    if periodo_id:
+        salas=salas.filter(periodo_inscripcion_id=periodo_id)
     if hora_entrada and hora_salida:
         salas = salas.filter(
             hora_entrada__lte=hora_entrada, hora_salida__gte=hora_salida
@@ -198,18 +214,16 @@ def calcular_edad(fecha_nac):
     hoy = date.today()
     return hoy.year - fecha_nac.year - ((hoy.month, hoy.day) < (fecha_nac.month, fecha_nac.day))
 
-
-#VISTA PARA REPORTE DE ASIGNACION DE AULAS 
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def reporte_asignacion_aulas(request):
-    salas = Sala.objects.select_related("profesor_encargado").prefetch_related("infante_set__id_persona")
+    salas = Sala.objects.select_related("profesor_encargado").prefetch_related("infantes__id_persona")
 
     data = []
 
     for sala in salas:
         profesor = sala.profesor_encargado
-        infantes = sala.infante_set.all()
+        infantes = sala.infantes.all()
 
         data.append({
             "sala": sala.descripcion,

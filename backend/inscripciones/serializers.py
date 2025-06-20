@@ -4,12 +4,13 @@ from .models import Inscripcion, PeriodoInscripcion
 from api.models import Persona, User
 from apps.educativo.models import Tutor, Infante, TutorInfante
 from api.serializer import UserSerializer, PersonaSerializer
-from apps.educativo.serializers import TutorSerializer, InfanteSerializer
+from apps.educativo.serializers import TutorSerializer, InfanteSerializer,InfanteCreateUpdateSerializer,TutorCreateUpdateSerializer,obtener_periodo_activo
 from django.db import transaction
 from django.utils import timezone
 from django.contrib.auth.models import Group
 from archivos.serializers import ArchivosSerializer
 from archivos.models import Archivos
+from .utils import asignar_sala_automatica
 
 
 def validar_inscripcion_pendiente(tutor, infante):
@@ -85,7 +86,7 @@ class InscripcionSerializer(serializers.ModelSerializer):
 
         validated_data["id_tutor"] = tutor
         inscripcion= super().create(validated_data)
- # Relación automática
+
         TutorInfante.objects.get_or_create(tutor=tutor, infante=infante)
 
         return inscripcion
@@ -95,34 +96,51 @@ class InscripcionCompletaSerializer(serializers.Serializer):
     tutor_data = TutorSerializer()
     persona_data_infante = PersonaSerializer()
     infante_data = InfanteSerializer()
+    hora_entrada = serializers.TimeField(write_only=True) 
 
     def validate(self, data):
         return data
 
     def create(self, validated_data):
         request = self.context.get("request")
-        print("FILES:", request.FILES)
-        
 
         user_data_tutor = validated_data["user_data_tutor"]
         tutor_data = validated_data["tutor_data"]
         persona_data_infante = validated_data["persona_data_infante"]
         infante_data = validated_data["infante_data"]
+        hora_entrada = validated_data["hora_entrada"]
 
         with transaction.atomic():
             user_serializer = UserSerializer(data=user_data_tutor)
             user_serializer.is_valid(raise_exception=True)
             user_tutor = user_serializer.save()
-            tutor_group = Group.objects.get(name="tutor")
-            user_tutor.groups.add(tutor_group)
+            user_tutor.groups.add(Group.objects.get(name="tutor"))
 
-            tutor = Tutor.objects.create(id_persona=user_tutor.persona, **tutor_data)
+            tutor_data["id_persona"] = user_tutor.persona.id
+            tutor_serializer = TutorCreateUpdateSerializer(data=tutor_data)
+            tutor_serializer.is_valid(raise_exception=True)
+            tutor = tutor_serializer.save()
 
             persona_infante_serializer = PersonaSerializer(data=persona_data_infante)
             persona_infante_serializer.is_valid(raise_exception=True)
             persona_infante = persona_infante_serializer.save()
 
-            infante = Infante.objects.create(id_persona=persona_infante, **infante_data)
+            sala = asignar_sala_automatica(
+                persona_infante.fecha_nacimiento,
+                hora_entrada,
+            )
+            if not sala:
+                raise serializers.ValidationError(
+                    "No se encontró una sala adecuada para el infante según la edad y horario seleccionado."
+                )
+
+            infante_data["id_persona"] = persona_infante.id
+            infante_data["id_sala"] = sala.id
+            infante_data["periodo_inscripcion"] = obtener_periodo_activo().id
+
+            infante_serializer = InfanteCreateUpdateSerializer(data=infante_data)
+            infante_serializer.is_valid(raise_exception=True)
+            infante = infante_serializer.save()
 
             for nombre_campo, archivo in request.FILES.items():
                 if nombre_campo.startswith("archivo_"):
@@ -130,32 +148,34 @@ class InscripcionCompletaSerializer(serializers.Serializer):
                     Archivos.objects.create(
                         persona=persona_infante,
                         archivo=archivo,
-                        descripcion=f"{descripcion}_{persona_infante.ci}",)
-
+                        descripcion=f"{descripcion}_{persona_infante.ci}",
+                    )
 
             validar_inscripcion_pendiente(tutor, infante)
 
             inscripcion = Inscripcion.objects.create(
-                id_tutor=tutor, id_infante=infante, estado="pendiente"
+                id_tutor=tutor,
+                id_infante=infante,
+                estado="pendiente"
             )
-            inscripcion.save() 
 
-  # Relación automática
-        TutorInfante.objects.get_or_create(tutor=tutor, infante=infante)
+            TutorInfante.objects.get_or_create(tutor=tutor, infante=infante)
 
         return inscripcion
 
 
 class InscripcionExistenteSerializer(serializers.Serializer):
     user_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    tutor_data = TutorSerializer(required=False)  # antes era DictField
+    tutor_data = TutorCreateUpdateSerializer(required=False)
     persona_data_infante = PersonaSerializer()
     infante_data = InfanteSerializer()
+    hora_entrada = serializers.TimeField(write_only=True)
 
     def validate(self, data):
         user = data["user_id"]
         persona = user.persona
 
+        # Si ya tiene tutor, no permitir tutor_data (opcional)
         if hasattr(persona, "tutor") and "tutor_data" in data:
             data.pop("tutor_data", None)
 
@@ -163,15 +183,27 @@ class InscripcionExistenteSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         request = self.context.get("request")
-       
+
         user = validated_data["user_id"]
         tutor_data = validated_data.get("tutor_data")
         persona = user.persona
+        infante_data = validated_data["infante_data"]
+        hora_entrada = validated_data["hora_entrada"]
+
         tutor = Tutor.objects.filter(id_persona=persona).first()
-        
+        periodo_actual = obtener_periodo_activo()
+
         with transaction.atomic():
             if tutor:
-                pass
+                tutor.periodo_inscripcion = periodo_actual
+                if tutor_data:
+                    tutor_serializer = TutorCreateUpdateSerializer(
+                        tutor, data=tutor_data, partial=True
+                    )
+                    tutor_serializer.is_valid(raise_exception=True)
+                    tutor = tutor_serializer.save()
+                else:
+                    tutor.save()
             else:
                 if user.groups.filter(name="tutor").exists():
                     raise serializers.ValidationError(
@@ -181,19 +213,34 @@ class InscripcionExistenteSerializer(serializers.Serializer):
                     raise serializers.ValidationError(
                         "Datos del tutor requeridos para crear uno nuevo"
                     )
-                tutor_serializer = TutorSerializer(data=tutor_data)
+                tutor_data["id_persona"] = persona.id
+                tutor_serializer = TutorCreateUpdateSerializer(data=tutor_data)
                 tutor_serializer.is_valid(raise_exception=True)
-                tutor = tutor_serializer.save(id_persona=persona)
-            persona_data_infante = validated_data["persona_data_infante"]
-            infante_data = validated_data["infante_data"]
+                tutor = tutor_serializer.save()
 
-            persona_infante_serializer = PersonaSerializer(data=persona_data_infante)
+                if not user.groups.filter(name="tutor").exists():
+                    user.groups.add(Group.objects.get(name="tutor"))
+
+            persona_infante_serializer = PersonaSerializer(data=validated_data["persona_data_infante"])
             persona_infante_serializer.is_valid(raise_exception=True)
             persona_infante = persona_infante_serializer.save()
 
-            infante = Infante.objects.create(id_persona=persona_infante, **infante_data)
+            sala = asignar_sala_automatica(
+                persona_infante.fecha_nacimiento,
+                hora_entrada,
+            )
+            if not sala:
+                raise serializers.ValidationError(
+                    "No se encontró una sala adecuada para el infante según la edad y horario seleccionado."
+                )
 
-            validar_inscripcion_pendiente(tutor, infante)
+            infante_data["id_persona"] = persona_infante.id
+            infante_data["id_sala"] = sala.id
+            infante_data["periodo_inscripcion"] = obtener_periodo_activo().id
+
+            infante_serializer = InfanteCreateUpdateSerializer(data=infante_data)
+            infante_serializer.is_valid(raise_exception=True)
+            infante = infante_serializer.save()
 
             for nombre_campo, archivo in request.FILES.items():
                 if nombre_campo.startswith("archivo_"):
@@ -202,18 +249,20 @@ class InscripcionExistenteSerializer(serializers.Serializer):
                         persona=persona_infante,
                         archivo=archivo,
                         descripcion=f"{descripcion}_{persona_infante.ci}",
-                    ) 
-            # print("archivo_fotos:", archivo_fotos)
-            # print("archivo_panhal:", archivo_panhal)
+                    )
+
+            validar_inscripcion_pendiente(tutor, infante)
 
             inscripcion = Inscripcion.objects.create(
-                id_tutor=tutor, id_infante=infante, estado="pendiente"
+                id_tutor=tutor,
+                id_infante=infante,
+                estado="pendiente"
             )
-            inscripcion.save() 
-  # Relación automática
-        TutorInfante.objects.get_or_create(tutor=tutor, infante=infante)
+
+            TutorInfante.objects.get_or_create(tutor=tutor, infante=infante)
 
         return inscripcion
+
 
 
 class PeriodoInscripcionSerializer(serializers.ModelSerializer):
