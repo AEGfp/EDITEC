@@ -31,6 +31,8 @@ import { InformesFormPage } from "../pages/InformesFormPage";
 import { InformesPage } from "../pages/InformesPage";
 import TransferenciaInfantePage from "../pages/TransferenciaInfantePage";
 import { CuotasPage } from "../pages/CuotasPage";
+import { ParametrosFormPage } from "../pages/ParametrosFormPage";
+import { ParametrosPage } from "../pages/ParametrosPage";
 
 export default [
   {
@@ -145,6 +147,28 @@ export default [
     permiso: "lectura",
   },
 
+  {
+    path: "/parametros", //url
+    componente: ParametrosPage, //.jsx
+    entidad: "parametros", //tabla con la que interactúa
+    permiso: "lectura", //permisos minimos
+    nombre: "Parametros Cobros", //Nombre del elemento en el Sidebar
+    /*subrutas: [
+      {
+        path: "/crear-parametro",
+        componente: ParametrosFormPage,
+        entidad: "parametros",
+        permiso: "escritura",
+        //nombre: "Crear Permisos",
+      },
+    ],*/
+  },
+  {
+    path: "/parametros/:id",
+    componente: ParametrosFormPage,
+    entidad: "parametros",
+    permiso: "lectura",
+  },
   {
     path: "/cuotas", //url
     componente: CuotasPage, //.jsx

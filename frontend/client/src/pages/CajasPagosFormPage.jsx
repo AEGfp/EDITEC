@@ -193,7 +193,7 @@ useEffect(() => {
                   const cuotaSeleccionada = saldos.find(c => c.numero_cuota === nro);
 
                   setSaldoDisponible(cuotaSeleccionada?.saldo_cuota || 0);
-                  setIdSaldo(cuotaSeleccionada?.id_saldo || null); // 👈 AQUI GUARDÁS EL ID
+                  setIdSaldo(cuotaSeleccionada?.id_saldo || null); // 
                   setValue("nro_cuota", nro);
                 }}
               >
