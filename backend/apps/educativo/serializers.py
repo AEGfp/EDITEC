@@ -18,6 +18,18 @@ class InfanteSerializer(serializers.ModelSerializer):
         if sala is None:
             return ""
         return sala.descripcion
+    
+    def get_es_propio(self, obj):
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return False
+
+        user = request.user
+        try:
+            tutor = Tutor.objects.get(id_persona__user=user)
+            return obj.tutores.filter(tutor=tutor).exists()
+        except:
+            return False
 
 class InfanteCreateUpdateSerializer(serializers.ModelSerializer):
     id_persona = serializers.PrimaryKeyRelatedField(queryset=Persona.objects.all())
@@ -35,7 +47,14 @@ class TutorSerializer(serializers.ModelSerializer):
         model = Tutor
         fields = '__all__'
 
+    def get_es_propio(self, obj):
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return False
+        return obj.id_persona.user == request.user
+
     def get_email(self, obj):
+        
         try:
             return obj.id_persona.user.email
         except AttributeError:
