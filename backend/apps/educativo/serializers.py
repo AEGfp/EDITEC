@@ -18,7 +18,7 @@ class InfanteSerializer(serializers.ModelSerializer):
         if sala is None:
             return ""
         return sala.descripcion
-
+    
     def get_es_propio(self, obj):
         request = self.context.get("request")
         if not request or not request.user.is_authenticated:
@@ -54,6 +54,7 @@ class TutorSerializer(serializers.ModelSerializer):
         return obj.id_persona.user == request.user
 
     def get_email(self, obj):
+        
         try:
             return obj.id_persona.user.email
         except AttributeError:
