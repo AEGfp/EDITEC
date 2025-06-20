@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Infante, Tutor, Turno, Sala, AnhoLectivo, Persona
+from .models import Infante, Tutor, Turno, Sala, AnhoLectivo, Persona, TransferenciaInfante, TransferenciaProfesor
 
 from api.serializer import PersonaSerializer
 
@@ -113,9 +113,16 @@ class AnhoLectivoSerializer(serializers.ModelSerializer):
 
 
 #Tranferencia de sala
+#tranferencia infante
+
+
+
+#tranferir profesor
+# En serializers.py
 class TransferenciaSalaSerializer(serializers.Serializer):
     id_infante = serializers.IntegerField()
     id_nueva_sala = serializers.IntegerField()
+    motivo = serializers.CharField()
 
     def validate(self, data):
         try:
@@ -133,15 +140,28 @@ class TransferenciaSalaSerializer(serializers.Serializer):
     def save(self):
         infante = self.validated_data["infante"]
         nueva_sala = self.validated_data["nueva_sala"]
+        motivo = self.validated_data["motivo"]
+        sala_origen = infante.id_sala  # Puede ser None
+
+        # Registrar historial
+        TransferenciaInfante.objects.create(
+            infante=infante,
+            sala_origen=sala_origen,
+            sala_destino=nueva_sala,
+            motivo=motivo
+        )
+
+        # Actualizar sala del infante
         infante.id_sala = nueva_sala
         infante.save()
         return infante
+    
 
-#tranferir profesor
-# En serializers.py
+    ###
 class TransferenciaProfesorSerializer(serializers.Serializer):
     id_profesor = serializers.IntegerField()
     id_sala_destino = serializers.IntegerField()
+    motivo = serializers.CharField()
 
     def validate(self, data):
         try:
@@ -158,9 +178,24 @@ class TransferenciaProfesorSerializer(serializers.Serializer):
         return data
 
     def save(self):
-        sala = self.validated_data["nueva_sala"]
-        sala.profesor_encargado = self.validated_data["profesor"]
-        sala.save()
-        return sala
+        sala_destino = self.validated_data["nueva_sala"]
+        profesor = self.validated_data["profesor"]
+        motivo = self.validated_data["motivo"]
+
+        # Buscar sala de origen (si la tiene)
+        sala_origen = Sala.objects.filter(profesor_encargado=profesor).first()
+
+        # Guardar historial de transferencia
+        TransferenciaProfesor.objects.create(
+            profesor=profesor,
+            sala_origen=sala_origen,
+            sala_destino=sala_destino,
+            motivo=motivo
+        )
+
+        # Actualizar profesor en sala nueva
+        sala_destino.profesor_encargado = profesor
+        sala_destino.save()
+        return sala_destino
 
 

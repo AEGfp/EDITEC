@@ -9,14 +9,18 @@ function TransferenciaInfantePage() {
   const [salas, setSalas] = useState([]);
   const [infantes, setInfantes] = useState([]);
   const [profesores, setProfesores] = useState([]);
+
   const [formInfante, setFormInfante] = useState({
     id_infante: "",
     id_nueva_sala: "",
+    motivo: "",
   });
   const [formProfesor, setFormProfesor] = useState({
     id_profesor: "",
     id_sala_destino: "",
+    motivo: "",
   });
+
   const [erroresInfante, setErroresInfante] = useState({});
   const [erroresProfesor, setErroresProfesor] = useState({});
   const [mensajeInfante, setMensajeInfante] = useState("");
@@ -46,25 +50,28 @@ function TransferenciaInfantePage() {
   };
 
   const handleChangeProfesor = (e) => {
-    const { name, value } = e.target;
-    setFormProfesor((prev) => ({ ...prev, [name]: value }));
+    setFormProfesor((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     setErroresProfesor({});
     setMensajeProfesor("");
   };
 
   const handleSubmitInfante = async (e) => {
     e.preventDefault();
-    if (!formInfante.id_infante || !formInfante.id_nueva_sala) {
-      setErroresInfante({
-        id_infante: !formInfante.id_infante,
-        id_nueva_sala: !formInfante.id_nueva_sala,
-      });
+    const errores = {
+      id_infante: !formInfante.id_infante,
+      id_nueva_sala: !formInfante.id_nueva_sala,
+      motivo: !formInfante.motivo.trim(),
+    };
+
+    if (Object.values(errores).some(Boolean)) {
+      setErroresInfante(errores);
       return;
     }
 
     try {
       const res = await transferirInfante(formInfante);
       setMensajeInfante(res.data.mensaje || "Transferencia exitosa.");
+      setFormInfante({ id_infante: "", id_nueva_sala: "", motivo: "" });
     } catch (error) {
       console.error("Error al transferir infante:", error);
       setMensajeInfante("Ocurrió un error al transferir el infante.");
@@ -73,17 +80,21 @@ function TransferenciaInfantePage() {
 
   const handleSubmitProfesor = async (e) => {
     e.preventDefault();
-    if (!formProfesor.id_profesor || !formProfesor.id_sala_destino) {
-      setErroresProfesor({
-        id_profesor: !formProfesor.id_profesor,
-        id_sala_destino: !formProfesor.id_sala_destino,
-      });
+    const errores = {
+      id_profesor: !formProfesor.id_profesor,
+      id_sala_destino: !formProfesor.id_sala_destino,
+      motivo: !formProfesor.motivo.trim(),
+    };
+
+    if (Object.values(errores).some(Boolean)) {
+      setErroresProfesor(errores);
       return;
     }
 
     try {
       const res = await transferirProfesor(formProfesor);
       setMensajeProfesor(res.data.mensaje || "Transferencia de profesor exitosa.");
+      setFormProfesor({ id_profesor: "", id_sala_destino: "", motivo: "" });
     } catch (error) {
       console.error("Error al transferir profesor:", error);
       setMensajeProfesor("Ocurrió un error al transferir el profesor.");
@@ -113,7 +124,7 @@ function TransferenciaInfantePage() {
           </select>
           {erroresInfante.id_infante && <CampoRequerido />}
 
-          <h4 className="formulario-elemento">Nueva Sala del Infante</h4>
+          <h4 className="formulario-elemento">Nueva Sala</h4>
           <select
             className="formulario-input"
             name="id_nueva_sala"
@@ -128,6 +139,16 @@ function TransferenciaInfantePage() {
             ))}
           </select>
           {erroresInfante.id_nueva_sala && <CampoRequerido />}
+
+          <h4 className="formulario-elemento">Motivo</h4>
+          <textarea
+            className="formulario-input"
+            name="motivo"
+            value={formInfante.motivo}
+            onChange={handleChangeInfante}
+            placeholder="Ingrese el motivo de la transferencia"
+          />
+          {erroresInfante.motivo && <CampoRequerido />}
 
           <div className="flex justify-center mt-4">
             <button type="submit" className="boton-guardar">Transferir Infante</button>
@@ -148,14 +169,14 @@ function TransferenciaInfantePage() {
           >
             <option value="">Seleccione el profesor</option>
             {profesores.map((prof) => (
-                <option key={prof.persona?.id} value={prof.persona?.id}>
+              <option key={prof.persona?.id} value={prof.persona?.id}>
                 {prof.persona?.nombre} {prof.persona?.apellido}
               </option>
             ))}
           </select>
           {erroresProfesor.id_profesor && <CampoRequerido />}
 
-          <h4 className="formulario-elemento">Nueva Sala del Profesor</h4>
+          <h4 className="formulario-elemento">Nueva Sala</h4>
           <select
             className="formulario-input"
             name="id_sala_destino"
@@ -171,11 +192,34 @@ function TransferenciaInfantePage() {
           </select>
           {erroresProfesor.id_sala_destino && <CampoRequerido />}
 
+          <h4 className="formulario-elemento">Motivo</h4>
+          <textarea
+            className="formulario-input"
+            name="motivo"
+            value={formProfesor.motivo}
+            onChange={handleChangeProfesor}
+            placeholder="Ingrese el motivo de la transferencia"
+          />
+          {erroresProfesor.motivo && <CampoRequerido />}
+
           <div className="flex justify-center mt-4">
             <button type="submit" className="boton-guardar">Transferir Profesor</button>
           </div>
           {mensajeProfesor && <p className="text-green-600 mt-2 text-center">{mensajeProfesor}</p>}
         </form>
+
+        {/* BOTÓN DE REPORTE PDF */}
+    <div className="flex justify-center mt-6">
+    <a
+  href={`${import.meta.env.VITE_API_URL}/api/educativo/reporte-transferencias/?id_periodo=1`}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="bg-blue-600 text-white font-semibold px-4 py-2 rounded hover:bg-blue-700 transition"
+>
+  Generar Reporte de Transferencias
+</a>
+
+</div>
       </div>
     </div>
   );

@@ -1,0 +1,63 @@
+<h1 style="text-align: center; font-family: Arial, sans-serif; color: #2c3e50;">Editec</h1>
+<h2 style="text-align: center; font-family: Arial, sans-serif; color: #3498db;">Reportes de Transferencias</h2>
+<p style="text-align: right; font-family: Arial, sans-serif;">Fecha: {{ fecha }}</p>
+
+<!-- Sección de Transferencias de Infantes -->
+<h3 style="background-color: #f2f2f2; padding: 10px; font-family: Arial, sans-serif; color: #2c3e50; border-left: 5px solid #e74c3c;">Transferencias de Infantes</h3>
+<table border="1" cellspacing="0" cellpadding="5" style="width: 100%; border-collapse: collapse; margin-bottom: 30px; font-family: Arial, sans-serif;">
+  <thead>
+    <tr style="background-color: #e74c3c; color: white;">
+      <th>Nombre</th>
+      <th>Sala Origen</th>
+      <th>Sala Destino</th>
+      <th>Motivo</th>
+      <th>Fecha</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for t in transferencias_infantes %}
+      <tr>
+        <td>{{ t.infante }}</td>
+        <td>{{ t.sala_origen.descripcion }}</td>
+        <td>{{ t.sala_destino.descripcion }}</td>
+        <td>{{ t.motivo }}</td>
+        <td>{{ t.fecha|date:"d/m/Y H:i" }}</td>
+      </tr>
+    {% endfor %}
+    {% if not transferencias_infantes %}
+      <tr>
+        <td colspan="5" style="text-align: center;">No hay transferencias de infantes registradas</td>
+      </tr>
+    {% endif %}
+  </tbody>
+</table>
+
+<!-- Sección de Transferencias de Profesores -->
+<h3 style="background-color: #f2f2f2; padding: 10px; font-family: Arial, sans-serif; color: #2c3e50; border-left: 5px solid #3498db;">Transferencias de Profesores</h3>
+<table border="1" cellspacing="0" cellpadding="5" style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;">
+  <thead>
+    <tr style="background-color: #3498db; color: white;">
+      <th>Nombre</th>
+      <th>Sala Origen</th>
+      <th>Sala Destino</th>
+      <th>Motivo</th>
+      <th>Fecha</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for t in transferencias_profesores %}
+      <tr>
+        <td>{{ t.profesor }}</td>
+        <td>{{ t.sala_origen.descripcion }}</td>
+        <td>{{ t.sala_destino.descripcion }}</td>
+        <td>{{ t.motivo }}</td>
+        <td>{{ t.fecha|date:"d/m/Y H:i" }}</td>
+      </tr>
+    {% endfor %}
+    {% if not transferencias_profesores %}
+      <tr>
+        <td colspan="5" style="text-align: center;">No hay transferencias de profesores registradas</td>
+      </tr>
+    {% endif %}
+  </tbody>
+</table>
