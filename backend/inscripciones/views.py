@@ -16,11 +16,13 @@ from .serializers import (
 from .models import Inscripcion,PeriodoInscripcion
 from Roles.roles import ControlarRoles
 from rest_framework.exceptions import PermissionDenied
+import requests
 from django.utils import timezone
 from django.template.loader import render_to_string
 from django.db import transaction
 from xhtml2pdf import pisa
 import io
+from django.conf import settings
 from django.db.models import Count
 from django.http import HttpResponse
 from django.contrib.auth.models import Group
@@ -41,6 +43,19 @@ def desanidar_data(data):
             result[key] = value
     return result
 
+def verificar_captcha(captcha_token):
+    url = "https://www.google.com/recaptcha/api/siteverify"
+    data = {
+        "secret": settings.RECAPTCHA_SECRET_KEY, 
+        "response": captcha_token,
+    }
+    try:
+        response = requests.post(url, data=data)
+        resultado = response.json()
+        return resultado.get("success", False)
+    except Exception as e:
+        print("Error al verificar el captcha:", e)
+        return False
 
 # Create your views here.
 #!!! Cambiar permisos
@@ -123,6 +138,14 @@ class InscripcionView(viewsets.ModelViewSet):
 @authentication_classes([])
 @permission_classes([AllowAny])
 def crear_inscripcion(request):
+    captcha_token = request.data.get("captcha_token")
+
+    if not captcha_token or not verificar_captcha(captcha_token):
+        return Response(
+            {"detail": "Captcha inválido. Por favor completá el reCAPTCHA correctamente."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     serializer = InscripcionCompletaSerializer(
         data=request.data, context={"request": request}
     )

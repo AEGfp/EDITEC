@@ -29,7 +29,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
+RECAPTCHA_SECRET_KEY="6LeGr2crAAAAAC8N8ddoEtdedlx2DFMalo_fQ4uG"
 # Application definition
 
 INSTALLED_APPS = [
