@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Reporte de Saldos de Proveedores</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 1.5cm;
+    }
+
+    body {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 10px;
+      color: #333;
+      margin: 0;
+    }
+
+    header {
+      border-bottom: 2px solid #444;
+      padding-bottom: 10px;
+      margin-bottom: 25px;
+    }
+
+    h1 {
+      font-size: 18px;
+      margin: 10px 0 5px 0;
+      color: #222;
+    }
+
+    .filtros {
+      font-size: 11px;
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+
+    h2 {
+      font-size: 13px;
+      margin: 10px 0 5px 0;
+      color: #444;
+    }
+
+    .comprobante-info {
+      margin: 10px 0;
+      padding: 4px 0;
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 10px;
+      margin-bottom: 10px;
+    }
+
+    th, td {
+      border: 1px solid #aaa;
+      padding: 5px 6px;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      vertical-align: top;
+    }
+
+    th {
+      background-color: #e3e3e3;
+      color: #111;
+      text-align: left;
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: #f5f5f5;
+    }
+
+    tbody tr:hover {
+      background-color: #ddd;
+    }
+
+    td:nth-child(2),
+    td:nth-child(3),
+    td:nth-child(4) {
+      text-align: right;
+    }
+
+    .subtotal {
+      text-align: right;
+      font-size: 11px;
+      font-weight: bold;
+      color: #222;
+      margin: 8px 0 25px 0;
+    }
+
+    .total-general {
+      text-align: right;
+      font-size: 12px;
+      font-weight: bold;
+      color: #000;
+      margin-top: 40px;
+    }
+
+    .page-break {
+      page-break-before: always;
+    }
+
+    .footer {
+      text-align: right;
+      font-size: 10px;
+      margin-top: 30px;
+    }
+    .text-center {
+    text-align: center;
+   }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1 class="text-center">Reporte de Saldos de Proveedores</h1>
+    <div class="filtros">
+      <strong>Fecha Desde:</strong> {{ fecha_desde }}<br />
+      <strong>Fecha Hasta:</strong> {{ fecha_hasta }}<br />
+      {% if proveedor_filtrado %}
+        <strong>Proveedor:</strong> {{ proveedor_filtrado.nombre_fantasia }}
+        {% else %}
+        <strong>Proveedor:</strong> Todos
+        {% endif %}
+    </div>
+  </header>
+
+  {% for item in proveedores_data %}
+    {% if not forloop.first %}
+      <div class="page-break"></div>
+    {% endif %}
+
+    <h2 class="text-center">Proveedor: {{ item.proveedor.nombre_fantasia }}</h2>
+
+    {% for comp in item.comprobantes %}
+      <div class="comprobante-info">
+        <strong>N° Comprobante:</strong> {{ comp.numero_comprobante }}<br />
+        <strong>Fecha:</strong>
+        {{ comp.fecha|date:"d/m/Y" }}<br />
+        <strong>Tipo:</strong>
+        {{ comp.tipo_comprobante }}<br />
+        <strong>Condición:</strong>
+        {{ comp.condicion }}
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Cuota</th>
+            <th>Débito</th>
+            <th>Crédito</th>
+            <th>Saldo</th>
+            <th>Fecha Pago</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cuota in comp.cuotas %}
+            <tr>
+              <td>{{ cuota.numero_cuota }}</td>
+              <td>{{ cuota.debito|floatformat:"2g" }}</td>
+              <td>{{ cuota.credito|floatformat:"2g" }}</td>
+              <td>{{ cuota.saldo|floatformat:"2g" }}</td>
+              <td>
+                {% if cuota.fecha_pago %}
+                  {{ cuota.fecha_pago|date:"d/m/Y" }}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endfor %}
+
+    <div class="subtotal">Saldo pendiente: {{ item.subtotal|floatformat:"2g" }}</div>
+  {% empty %}
+    <p>No se encontraron datos para los filtros indicados.</p>
+  {% endfor %}
+
+  <div class="total-general">
+    Total General: {{ total_general|floatformat:"2g" }}
+  </div>
+
+  <div class="footer">
+    Página <pdf:pageNumber /> de <pdf:pageCount />
+  </div>
+
+</body>
+</html>
