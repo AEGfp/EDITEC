@@ -7,13 +7,14 @@ export default function CamposUsuario() {
     formState: { errors },
     watch,
   } = useFormContext();
+
   return (
     <>
       <h2 className="formulario-titulo">Datos del Tutor</h2>
       <div className="flex flex-col md:flex-row gap-8 ">
         <div className="flex-1">
           <div className="formulario-elemento">
-            <h3>Nombre de Usuario: </h3>
+            <h3>Nombre de Usuario:</h3>
           </div>
           <input
             type="text"
@@ -22,14 +23,15 @@ export default function CamposUsuario() {
             {...register("username", { required: true })}
           />
           {errors.username && <CampoRequerido />}
+
           <div className="formulario-elemento">
-            <h3>Constraseña: </h3>
+            <h3>Contraseña:</h3>
           </div>
           <input
             type="password"
-            {...register("password", { required: true })}
             placeholder="Contraseña"
             className="formulario-input"
+            {...register("password", { required: true })}
           />
           {errors.password && <CampoRequerido />}
 
@@ -38,12 +40,12 @@ export default function CamposUsuario() {
           </div>
           <input
             type="password"
+            className="formulario-input"
             {...register("contrasenhaConfirmada", {
               required: "Por favor repita la contraseña",
               validate: (value) =>
                 value === watch("password") || "Las contraseñas no coinciden",
             })}
-            className="formulario-input"
           />
           {errors.contrasenhaConfirmada && (
             <p className="mensaje-error">
@@ -52,76 +54,102 @@ export default function CamposUsuario() {
           )}
 
           <div className="formulario-elemento">
-            <h3>Correo electrónico: </h3>
+            <h3>Correo electrónico:</h3>
           </div>
           <input
             type="email"
-            {...register("email", { required: true })}
             placeholder="Correo"
             className="formulario-input"
+            {...register("email", { required: true })}
           />
           {errors.email && <CampoRequerido />}
         </div>
+
         <div className="flex-1">
           <div className="formulario-elemento">
-            <h3>Nombre: </h3>
+            <h3>Nombre:</h3>
           </div>
           <input
             type="text"
-            name="nombre"
-            {...register("nombre", { required: true })}
             placeholder="Nombre"
             className="formulario-input"
+            {...register("nombre", { required: true })}
           />
           {errors.nombre && <CampoRequerido />}
+
           <div className="formulario-elemento">
-            <h3>Apellido: </h3>
+            <h3>Apellido:</h3>
           </div>
           <input
             type="text"
-            name="apellido"
-            {...register("apellido", { required: true })}
             placeholder="Apellido"
             className="formulario-input"
+            {...register("apellido", { required: true })}
           />
           {errors.apellido && <CampoRequerido />}
+
           <div className="formulario-elemento">
-            <h3>Segundo apellido: </h3>
+            <h3>Segundo apellido:</h3>
           </div>
           <input
             type="text"
-            name="segundo_apellido"
-            {...register("segundo_apellido")}
             placeholder="Segundo apellido"
             className="formulario-input"
+            {...register("segundo_apellido")}
           />
 
           <div className="formulario-elemento">
-            <h3>CI: </h3>
+            <h3>CI:</h3>
           </div>
           <input
             type="number"
-            name="ci"
-            {...register("ci", { required: true })}
             placeholder="CI"
             className="formulario-input"
+            {...register("ci", { required: true })}
           />
           {errors.ci && <CampoRequerido />}
+
           <div className="formulario-elemento">
-            <h3>Fecha de nacimiento: </h3>
+            <h3>Fecha de nacimiento:</h3>
           </div>
           <input
             type="date"
-            name="fecha_nacimiento"
-            {...register("fecha_nacimiento", { required: true })}
             placeholder="01/01/1960"
             className="formulario-input"
+            {...register("fecha_nacimiento", {
+              required: "Campo requerido",
+              validate: {
+                noFutura: (value) => {
+                  if (!value) return true;
+                  const fecha = new Date(value);
+                  const hoy = new Date();
+                  hoy.setHours(0, 0, 0, 0);
+                  return fecha <= hoy || "La fecha no puede ser futura";
+                },
+                mayorDeEdad: (value) => {
+                  if (!value) return true;
+                  const fecha = new Date(value);
+                  const hoy = new Date();
+                  const fechaMinima = new Date(
+                    hoy.getFullYear() - 18,
+                    hoy.getMonth(),
+                    hoy.getDate()
+                  );
+                  return fecha <= fechaMinima || "El tutor debe tener al menos 18 años";
+                },
+              },
+            })}
           />
-          {errors.fecha_nacimiento && <CampoRequerido />}
+          {errors.fecha_nacimiento && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.fecha_nacimiento.message}
+            </p>
+          )}
+
           <div className="formulario-elemento">
             <fieldset>
               <legend>
-                <h3>Sexo: </h3>
+                <h3>Sexo:</h3>
               </legend>
               <div>
                 <input
@@ -144,25 +172,16 @@ export default function CamposUsuario() {
             </fieldset>
           </div>
           {errors.sexo && <CampoRequerido />}
+
           <div className="formulario-elemento">
-            <h3>Domicilio: </h3>
+            <h3>Domicilio:</h3>
           </div>
           <input
             type="text"
-            name="domicilio"
-            {...register("domicilio")}
             placeholder="Calle c/ calle, nro de calle, ciudad"
             className="formulario-input"
+            {...register("domicilio")}
           />
-          {/*<button
-        type="submit"
-        className="mt-4 boton-guardar mx-auto block"
-        disabled={loading}
-      >
-        {loading ? "Registrando..." : "Sign in"}
-      </button>
-
-      {errors && <p className="text-red-600 font-bold text-sm">{errors}</p>}*/}
         </div>
       </div>
     </>
