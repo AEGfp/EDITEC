@@ -11,7 +11,7 @@ import {
   crearInscripcionExistente,
 } from "../api/inscripciones.api";
 import MostrarError from "../components/MostrarError";
-
+import ReCAPTCHA from "react-google-recaptcha";
 export default function RealizarInscripcionPage() {
   const methods = useForm({ shouldUnregister: false });
   const {
@@ -25,12 +25,14 @@ export default function RealizarInscripcionPage() {
   const location = useLocation();
   const omitirUsuario = location.state?.omitirUsuario || false;
   const usuarioLocal = JSON.parse(localStorage.getItem("usuario"));
-
+  const [captchaValido, setCaptchaValido] = useState(false);
   const [pestanha, setPestanha] = useState(0);
   const [formulario, setFormulario] = useState({});
+  const [captchaToken, setCaptchaToken] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorBackend, setErrorBackend] = useState(null);
+  const [captchaError, setCaptchaError] = useState(false);
   const navigate = useNavigate();
 
   const siguiente = () => setPestanha((prev) => prev + 1);
@@ -38,6 +40,28 @@ export default function RealizarInscripcionPage() {
 
   const pasos = [];
   if (!omitirUsuario) {
+    pasos.push(
+      <div className="flex flex-col items-center">
+        <p className="mb-2">Por favor, completá el reCAPTCHA para continuar.</p>
+        <ReCAPTCHA
+          sitekey="6LeGr2crAAAAAJh1vlGtQLOFpJCGSX2ufqqxf49q"
+          onChange={(value) => {
+            console.log("Captcha completado:", value);
+            setCaptchaValido(true);
+            setCaptchaToken(value);
+          }}
+          onExpired={() => {
+            setCaptchaValido(false);
+            setCaptchaToken(null);
+          }}
+        />
+        {captchaError && (
+          <p className="mensaje-error mt-2">
+            Por favor, completá el reCAPTCHA para continuar.
+          </p>
+        )}
+      </div>
+    );
     pasos.push(<CamposUsuario />);
   }
   if (usuarioLocal && Array.isArray(usuarioLocal.groups)) {
@@ -58,6 +82,17 @@ export default function RealizarInscripcionPage() {
   );*/
 
   const guardarDatos = async (data) => {
+    if (!omitirUsuario && pestanha === 0 && !captchaValido) {
+      setCaptchaError(true);
+      alert("Por favor, completá el reCAPTCHA para continuar.");
+      return;
+    } else {
+      setCaptchaError(false);
+    }
+    if (!omitirUsuario && pestanha === 0) {
+      siguiente();
+      return;
+    }
     const datosActualizados = { ...formulario, ...data };
     if (
       pestanha ===
@@ -192,7 +227,9 @@ export default function RealizarInscripcionPage() {
       }
 
       agregarCamposFormulario(inscripcion);
-
+      if (!omitirUsuario && captchaToken) {
+        formData.append("captcha_token", captchaToken);
+      }
       console.log(formData);
       for (let pair of formData.entries()) {
         console.log(pair[0], pair[1]);
@@ -235,7 +272,11 @@ export default function RealizarInscripcionPage() {
                 Volver
               </button>
             )}
-            <button type="submit" className="boton-guardar">
+            <button
+              type="submit"
+              className="boton-guardar"
+              disabled={!captchaValido && pestanha === 0}
+            >
               {loading
                 ? "Procesando inscripcion"
                 : pestanha === pasos.length - 1
