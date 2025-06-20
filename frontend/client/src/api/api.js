@@ -17,15 +17,6 @@ Api.interceptors.request.use(
       delete config.headers["Content-Type"];
     }
 
-    const idPeriodo = sessionStorage.getItem("id_periodo");
-    if (idPeriodo) {
-      if (!config.params) {
-        config.params = {};
-      }
-      if (!config.params.id_periodo) {
-        config.params.id_periodo = idPeriodo;
-      }
-    }
     return config;
   },
   (error) => {

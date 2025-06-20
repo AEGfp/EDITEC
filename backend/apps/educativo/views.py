@@ -1,5 +1,5 @@
 from rest_framework import viewsets
-from .models import Infante, Tutor, Turno, Sala, AnhoLectivo, TutorInfante
+from .models import Infante, Tutor, Turno, Sala, AnhoLectivo, TutorInfante, TransferenciaInfante, TransferenciaProfesor
 from .serializers import (
     InfanteSerializer,
     TutorSerializer,
@@ -36,20 +36,22 @@ class InfanteView(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        periodo_id = self.request.query_params.get("id_periodo")
 
-        if user.is_superuser or user.is_staff:
-            return Infante.objects.all()
+        qs = Infante.objects.all()
+        if periodo_id:
+            qs = qs.filter(periodo_inscripcion_id=periodo_id)
 
         grupos = set(user.groups.values_list("name", flat=True))
 
         if grupos == {"tutor"}:
             try:
                 tutor = Tutor.objects.get(id_persona__user=user)
-                return Infante.objects.filter(tutores__tutor=tutor)
+                return qs.filter(tutores__tutor=tutor)
             except Tutor.DoesNotExist:
-                return Infante.objects.none()
+                return qs.none()
 
-        return Infante.objects.all()
+        return qs
 
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update"]:
@@ -65,16 +67,18 @@ class TutorView(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        periodo_id = self.request.query_params.get("id_periodo")
 
-        if user.is_superuser or user.is_staff:
-            return Tutor.objects.all()
+        qs = Tutor.objects.all()
+        if periodo_id:
+            qs = qs.filter(periodo_inscripcion_id=periodo_id)
 
         grupos = set(user.groups.values_list("name", flat=True))
 
         if grupos == {"tutor"}:
-            return Tutor.objects.filter(id_persona__user=user)
+            return qs.filter(id_persona__user=user)
 
-        return Tutor.objects.all()
+        return qs
 
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update"]:
@@ -98,12 +102,24 @@ class SalaView(viewsets.ModelViewSet):
     serializer_class = SalaSerializer
 
 
+    def get_queryset(self):
+        qs = Sala.objects.all()
+        periodo_id = self.request.query_params.get("periodo_id")
+        if periodo_id:
+            qs = qs.filter(periodo_inscripcion_id=periodo_id)
+        return qs
+
+
+
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def salas_publicas(request):
     hora_entrada = request.GET.get("hora_entrada")
     hora_salida = request.GET.get("hora_salida")
+    periodo_id=request.GET.get("periodo_id")
     salas = Sala.objects.all()
+    if periodo_id:
+        salas=salas.filter(periodo_inscripcion_id=periodo_id)
     if hora_entrada and hora_salida:
         salas = salas.filter(
             hora_entrada__lte=hora_entrada, hora_salida__gte=hora_salida
@@ -198,18 +214,16 @@ def calcular_edad(fecha_nac):
     hoy = date.today()
     return hoy.year - fecha_nac.year - ((hoy.month, hoy.day) < (fecha_nac.month, fecha_nac.day))
 
-
-#VISTA PARA REPORTE DE ASIGNACION DE AULAS 
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def reporte_asignacion_aulas(request):
-    salas = Sala.objects.select_related("profesor_encargado").prefetch_related("infante_set__id_persona")
+    salas = Sala.objects.select_related("profesor_encargado").prefetch_related("infantes__id_persona")
 
     data = []
 
     for sala in salas:
         profesor = sala.profesor_encargado
-        infantes = sala.infante_set.all()
+        infantes = sala.infantes.all()
 
         data.append({
             "sala": sala.descripcion,
@@ -233,26 +247,112 @@ def reporte_asignacion_aulas(request):
     return HttpResponse("Error al generar PDF", status=500)
 
 
+@api_view(["GET"])
+def reporte_transferencias_general(request):
+    transferencias = TransferenciaSalaRegistro.objects.select_related('infante__id_persona', 'sala_origen', 'sala_destino')
 
-#vista tranferencia de sala
-class TransferenciaSalaView(APIView):
-    def post(self, request):
-        serializer = TransferenciaSalaSerializer(data=request.data)
-        if serializer.is_valid():
-            infante = serializer.save()
-            return Response({
-                "mensaje": "Transferencia realizada exitosamente.",
-                "infante_id": infante.id,
-                "nueva_sala": infante.id_sala.descripcion
-            }, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+    data = [
+        {
+            "infante": str(t.infante),
+            "ci": t.infante.id_persona.ci,
+            "origen": t.sala_origen.descripcion if t.sala_origen else "N/A",
+            "destino": t.sala_destino.descripcion if t.sala_destino else "N/A",
+            "fecha": t.fecha.strftime("%d/%m/%Y %H:%M"),
+            "motivo": t.motivo
+        }
+        for t in transferencias
+    ]
 
-#tranferencioa de profesor
+    html = render_to_string("reporte_transferencias.html", {
+        "transferencias": data,
+        "fecha": timezone.now().strftime("%d/%m/%Y")
+    })
+    result = io.BytesIO()
+    pdf = pisa.pisaDocument(io.BytesIO(html.encode("utf-8")), result)
+
+    if not pdf.err:
+        return HttpResponse(result.getvalue(), content_type="application/pdf")
+    return HttpResponse("Error al generar PDF", status=500)
+
+
+
+@api_view(["GET"])
+def reporte_transferencias_por_sala(request, sala_id):
+    try:
+        sala = Sala.objects.get(id=sala_id)
+    except Sala.DoesNotExist:
+        return Response({"error": "Sala no encontrada"}, status=404)
+
+    transferencias = TransferenciaSalaRegistro.objects.filter(
+        models.Q(sala_origen=sala) | models.Q(sala_destino=sala)
+    ).select_related("infante__id_persona")
+
+    data = [
+        {
+            "infante": str(t.infante),
+            "ci": t.infante.id_persona.ci,
+            "origen": t.sala_origen.descripcion if t.sala_origen else "N/A",
+            "destino": t.sala_destino.descripcion if t.sala_destino else "N/A",
+            "fecha": t.fecha.strftime("%d/%m/%Y %H:%M"),
+            "motivo": t.motivo
+        }
+        for t in transferencias
+    ]
+
+    html = render_to_string("reporte_transferencias.html", {
+        "sala": sala.descripcion,
+        "transferencias": data,
+        "fecha": timezone.now().strftime("%d/%m/%Y")
+    })
+    result = io.BytesIO()
+    pdf = pisa.pisaDocument(io.BytesIO(html.encode("utf-8")), result)
+
+    if not pdf.err:
+        return HttpResponse(result.getvalue(), content_type="application/pdf")
+    return HttpResponse("Error al generar PDF", status=500)
+
+
+
+#Tranferencias
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def reporte_transferencias(request):
+    transferencias_infantes = TransferenciaInfante.objects.select_related("infante", "sala_origen", "sala_destino", "infante__id_persona")
+    transferencias_profesores = TransferenciaProfesor.objects.select_related("profesor", "sala_origen", "sala_destino")
+
+    context = {
+        "fecha": timezone.now().strftime("%d/%m/%Y"),
+        "transferencias_infantes": transferencias_infantes,
+        "transferencias_profesores": transferencias_profesores,
+    }
+
+    html = render_to_string("reporte_transferencias.html", context)
+    result = io.BytesIO()
+    pdf = pisa.pisaDocument(io.BytesIO(html.encode("utf-8")), result)
+
+    if not pdf.err:
+        return HttpResponse(result.getvalue(), content_type="application/pdf")
+    return HttpResponse("Error al generar PDF", status=500)
+
+
+
+#Tranferencias views.py
+#views.py profesor transferencia
 class TransferenciaProfesorView(APIView):
     def post(self, request):
         serializer = TransferenciaProfesorSerializer(data=request.data)
         if serializer.is_valid():
-            sala_actualizada = serializer.save()
-            return Response({"mensaje": "Profesor transferido con éxito"})
-        return Response(serializer.errors, status=400)
+            serializer.save()
+            return Response({"mensaje": "Transferencia de profesor realizada correctamente."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#views.py tranferencia infante
+
+class TransferenciaInfanteView(APIView):
+    def post(self, request):
+        serializer = TransferenciaSalaSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"mensaje": "Transferencia de infante realizada correctamente."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+

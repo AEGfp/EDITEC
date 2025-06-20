@@ -3,8 +3,10 @@ import { Api } from "./api";
 
 // Ruta relativa al endpoint
 const DIRECCION = "educativo/infantes/";
+const periodo = sessionStorage.getItem("id_periodo");
+const parametro = `?id_periodo=${periodo}`;
 
-export const obtenerInfantes = () => Api.get(DIRECCION);
+export const obtenerInfantes = () => Api.get(`${DIRECCION}${parametro}`);
 
 export const crearInfante = (infante) => {
   console.log("📤 Enviando datos a /api/educativo/infantes/:", infante);

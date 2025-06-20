@@ -1,8 +1,17 @@
 from rest_framework import serializers
-from .models import Infante, Tutor, Turno, Sala, AnhoLectivo, Persona
-
+from .models import Infante, Tutor, Turno, Sala, AnhoLectivo, Persona, TransferenciaInfante, TransferenciaProfesor
+from datetime import datetime, date
 from api.serializer import PersonaSerializer
+from inscripciones.models import PeriodoInscripcion
+from django.db import transaction
 
+
+def obtener_periodo_activo():
+    periodo = PeriodoInscripcion.objects.filter(activo=True).order_by("fecha_inicio").first()
+    if not periodo:
+        raise serializers.ValidationError("No hay un período de inscripción activo actualmente.")
+    print(periodo)
+    return periodo
 
 class InfanteSerializer(serializers.ModelSerializer):
     id_persona = PersonaSerializer(read_only=True)
@@ -11,7 +20,7 @@ class InfanteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Infante
         fields = '__all__'
-        read_only_fields=["sala"]
+        read_only_fields=["sala","nombre_sala","es_propio"]
 
     def get_nombre_sala(self, obj):
         sala = obj.id_sala 
@@ -28,8 +37,35 @@ class InfanteSerializer(serializers.ModelSerializer):
         try:
             tutor = Tutor.objects.get(id_persona__user=user)
             return obj.tutores.filter(tutor=tutor).exists()
-        except:
+        except Tutor.DoesNotExist:
             return False
+    def validate(self, data):
+        nueva_sala = data.get("id_sala") or getattr(self.instance, "id_sala", None)
+        if not nueva_sala:
+            return data  
+
+        ya_estaba_en_sala = (
+            self.instance and self.instance.id_sala_id == nueva_sala.id
+        )
+
+        with transaction.atomic():
+            total_actual = nueva_sala.infantes.select_for_update().count()
+
+
+            if not ya_estaba_en_sala:
+                if (
+                    nueva_sala.limite_infantes is not None and
+                    total_actual >= nueva_sala.limite_infantes
+                ):
+                    raise serializers.ValidationError(
+                        "La sala ya alcanzó el límite de infantes."
+                    )
+
+        return data
+
+    def create(self, validated_data):
+        validated_data["periodo_inscripcion"] = obtener_periodo_activo()
+        return super().create(validated_data)
 
 class InfanteCreateUpdateSerializer(serializers.ModelSerializer):
     id_persona = serializers.PrimaryKeyRelatedField(queryset=Persona.objects.all())
@@ -38,6 +74,33 @@ class InfanteCreateUpdateSerializer(serializers.ModelSerializer):
         model = Infante
         fields = '__all__'
 
+    def validate(self, data):
+        nueva_sala = data.get("id_sala") or getattr(self.instance, "id_sala", None)
+        if not nueva_sala:
+            return data  
+
+        ya_estaba_en_sala = (
+            self.instance and self.instance.id_sala_id == nueva_sala.id
+        )
+
+        with transaction.atomic():
+            total_actual = nueva_sala.infantes.select_for_update().count()
+
+
+            if not ya_estaba_en_sala:
+                if (
+                    nueva_sala.limite_infantes is not None and
+                    total_actual >= nueva_sala.limite_infantes
+                ):
+                    raise serializers.ValidationError(
+                        "La sala ya alcanzó el límite de infantes."
+                    )
+
+        return data
+
+    def create(self, validated_data):
+        validated_data["periodo_inscripcion"] = obtener_periodo_activo()
+        return super().create(validated_data)
 # TUTORES
 class TutorSerializer(serializers.ModelSerializer):
     id_persona = PersonaSerializer(read_only=True)
@@ -60,12 +123,20 @@ class TutorSerializer(serializers.ModelSerializer):
         except AttributeError:
             return None
 
+    def create(self, validated_data):
+        validated_data["periodo_inscripcion"] = obtener_periodo_activo()
+        return super().create(validated_data)
 class TutorCreateUpdateSerializer(serializers.ModelSerializer):
     id_persona = serializers.PrimaryKeyRelatedField(queryset=Persona.objects.all())
 
     class Meta:
         model = Tutor
         fields = '__all__'
+
+    def create(self, validated_data):
+        validated_data["periodo_inscripcion"] = obtener_periodo_activo()
+        print(validated_data)
+        return super().create(validated_data)
 
 
 
@@ -76,25 +147,22 @@ class TurnoSerializer(serializers.ModelSerializer):
 
 
 class SalaSerializer(serializers.ModelSerializer):
-    nombre_profesor=serializers.SerializerMethodField(read_only=True)
-
-    # Esta línea permite incluir el objeto completo de la persona
+    nombre_profesor = serializers.SerializerMethodField(read_only=True)
     profesor_encargado_obj = PersonaSerializer(source="profesor_encargado", read_only=True)
-
     profesor_encargado = serializers.PrimaryKeyRelatedField(
         queryset=Persona.objects.all(),
         required=False
-     )
+    )
+
     class Meta:
         model = Sala
         fields = "__all__"
-        read_only_fields=["nombre_profesor"]
-        
-    
+        read_only_fields = ["nombre_profesor", "periodo_inscripcion"]
+
     def get_nombre_profesor(self, obj):
         persona = obj.profesor_encargado
         if persona is None:
-            return ""  
+            return ""
         return f"{persona.nombre} {persona.apellido}"
 
     def validate_profesor_encargado(self, persona):
@@ -105,6 +173,24 @@ class SalaSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("El usuario no pertenece al grupo 'profesor'.")
         return persona
 
+    def validate(self, data):
+        hora_entrada = data.get('hora_entrada') or getattr(self.instance, 'hora_entrada', None)
+        hora_salida = data.get('hora_salida') or getattr(self.instance, 'hora_salida', None)
+
+        if hora_entrada and hora_salida:
+            if hora_salida <= hora_entrada:
+                raise serializers.ValidationError("La hora de salida debe ser posterior a la hora de entrada.")
+            diferencia_horas = (
+                datetime.combine(date.min, hora_salida) - datetime.combine(date.min, hora_entrada)
+            ).total_seconds() / 3600
+            if diferencia_horas > 5:
+                raise serializers.ValidationError("La diferencia entre hora de entrada y salida no puede ser mayor a 5 horas.")
+        return data
+
+    def create(self, validated_data):
+        validated_data["periodo_inscripcion"] = obtener_periodo_activo()
+        return super().create(validated_data)
+
 
 class AnhoLectivoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -113,9 +199,16 @@ class AnhoLectivoSerializer(serializers.ModelSerializer):
 
 
 #Tranferencia de sala
+#tranferencia infante
+
+
+
+#tranferir profesor
+# En serializers.py
 class TransferenciaSalaSerializer(serializers.Serializer):
     id_infante = serializers.IntegerField()
     id_nueva_sala = serializers.IntegerField()
+    motivo = serializers.CharField()
 
     def validate(self, data):
         try:
@@ -133,15 +226,28 @@ class TransferenciaSalaSerializer(serializers.Serializer):
     def save(self):
         infante = self.validated_data["infante"]
         nueva_sala = self.validated_data["nueva_sala"]
+        motivo = self.validated_data["motivo"]
+        sala_origen = infante.id_sala  # Puede ser None
+
+        # Registrar historial
+        TransferenciaInfante.objects.create(
+            infante=infante,
+            sala_origen=sala_origen,
+            sala_destino=nueva_sala,
+            motivo=motivo
+        )
+
+        # Actualizar sala del infante
         infante.id_sala = nueva_sala
         infante.save()
         return infante
+    
 
-#tranferir profesor
-# En serializers.py
+    ###
 class TransferenciaProfesorSerializer(serializers.Serializer):
     id_profesor = serializers.IntegerField()
     id_sala_destino = serializers.IntegerField()
+    motivo = serializers.CharField()
 
     def validate(self, data):
         try:
@@ -158,9 +264,24 @@ class TransferenciaProfesorSerializer(serializers.Serializer):
         return data
 
     def save(self):
-        sala = self.validated_data["nueva_sala"]
-        sala.profesor_encargado = self.validated_data["profesor"]
-        sala.save()
-        return sala
+        sala_destino = self.validated_data["nueva_sala"]
+        profesor = self.validated_data["profesor"]
+        motivo = self.validated_data["motivo"]
+
+        # Buscar sala de origen (si la tiene)
+        sala_origen = Sala.objects.filter(profesor_encargado=profesor).first()
+
+        # Guardar historial de transferencia
+        TransferenciaProfesor.objects.create(
+            profesor=profesor,
+            sala_origen=sala_origen,
+            sala_destino=sala_destino,
+            motivo=motivo
+        )
+
+        # Actualizar profesor en sala nueva
+        sala_destino.profesor_encargado = profesor
+        sala_destino.save()
+        return sala_destino
 
 
