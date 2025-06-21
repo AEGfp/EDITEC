@@ -11,6 +11,7 @@ def asignar_sala_automatica(fecha_nacimiento, hora_entrada):
     salas_disponibles = Sala.objects.filter(
         meses__gte=edad_meses,
         hora_entrada__lte=hora_entrada,
+        hora_salida__gt=hora_entrada,
     ).order_by('meses')
 
     for sala in salas_disponibles:
