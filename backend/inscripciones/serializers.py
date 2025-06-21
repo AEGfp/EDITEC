@@ -192,10 +192,10 @@ class InscripcionExistenteSerializer(serializers.Serializer):
 
         tutor = Tutor.objects.filter(id_persona=persona).first()
         periodo_actual = obtener_periodo_activo()
-
         with transaction.atomic():
             if tutor:
                 tutor.periodo_inscripcion = periodo_actual
+                
                 if tutor_data:
                     tutor_serializer = TutorCreateUpdateSerializer(
                         tutor, data=tutor_data, partial=True
@@ -213,6 +213,7 @@ class InscripcionExistenteSerializer(serializers.Serializer):
                     raise serializers.ValidationError(
                         "Datos del tutor requeridos para crear uno nuevo"
                     )
+                
                 tutor_data["id_persona"] = persona.id
                 tutor_serializer = TutorCreateUpdateSerializer(data=tutor_data)
                 tutor_serializer.is_valid(raise_exception=True)

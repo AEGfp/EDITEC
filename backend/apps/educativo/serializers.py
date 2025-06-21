@@ -127,7 +127,7 @@ class TutorSerializer(serializers.ModelSerializer):
         validated_data["periodo_inscripcion"] = obtener_periodo_activo()
         return super().create(validated_data)
 class TutorCreateUpdateSerializer(serializers.ModelSerializer):
-    id_persona = serializers.PrimaryKeyRelatedField(queryset=Persona.objects.all())
+    id_persona = serializers.PrimaryKeyRelatedField(queryset=Persona.objects.all(),required=False)
 
     class Meta:
         model = Tutor

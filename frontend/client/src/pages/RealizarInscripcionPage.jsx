@@ -251,7 +251,12 @@ export default function RealizarInscripcionPage() {
         err.response?.data?.detail ||
           "Ha ocurrido un error al completar la inscripción"
       );
-      setErrorBackend(err.response?.data);
+      setErrorBackend(
+        err.response?.data?.detail &&
+          typeof err.response.data.detail === "string"
+          ? err.response.data.detail
+          : "Ha ocurrido un error inesperado. Intenta nuevamente o contactá soporte."
+      );
       setPestanha(0);
       //setFormulario({});
     } finally {
