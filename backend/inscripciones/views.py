@@ -102,20 +102,31 @@ class InscripcionView(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'])
     def limpiar_rechazadas(self, request):
-        #probar 24 0 19
-        inscripciones_rechazadas = Inscripcion.objects.filter(estado="rechazada",periodo_inscripcion=24)
-        inscripciones_totales = Inscripcion.objects.filter(periodo_inscripcion=24)
-        contador = 0
-        print(inscripciones_totales)
-        for insc in inscripciones_rechazadas:
-            print(insc)
-            # try:
-            #     limpiar_inscripcion_rechazada(insc)
-            contador += 1
-            # except Exception as e:
-            #     continue  # opcionalmente loggear errores
+        id_periodo = request.query_params.get("id_periodo")
 
-        return Response({"detail": f"Se limpiaron {contador} inscripciones rechazadas."})
+        if not id_periodo:
+            return Response({"detail": "Debe proporcionar el 'id_periodo'."}, status=400)
+
+        try:
+            periodo = PeriodoInscripcion.objects.get(pk=id_periodo)
+        except PeriodoInscripcion.DoesNotExist:
+            return Response({"detail": "Periodo no encontrado."}, status=404)
+
+        inscripciones_rechazadas = Inscripcion.objects.filter(estado="rechazada", periodo_inscripcion=periodo)
+        contador = 0
+        errores = []
+
+        for insc in inscripciones_rechazadas:
+            try:
+                limpiar_inscripcion_rechazada(insc)
+                contador += 1
+            except Exception as e:
+                errores.append(str(insc.pk))
+
+        return Response({
+            "detail": f"Se limpiaron {contador} inscripciones rechazadas del periodo {periodo.id}.",
+            "errores": errores if errores else "Sin errores."
+        })
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -351,8 +362,8 @@ def generar_reporte_inscripciones(request):
 
 @transaction.atomic
 def limpiar_inscripcion_rechazada(inscripcion):
-    if inscripcion.estado != 'rechazada':
-        raise ValueError("Solo se pueden limpiar inscripciones rechazadas")
+    if inscripcion.estado == 'aprobada':
+        raise ValueError("No se pueden eliminar inscripciones aprobadas.")
 
     tutor = inscripcion.id_tutor
     infante = inscripcion.id_infante
@@ -381,19 +392,19 @@ def limpiar_inscripcion_rechazada(inscripcion):
         # 6. Eliminar tutor
         tutor.delete()
 
-        # 7. Eliminar persona del tutor (esto borra automáticamente el user por la señal)
-        persona_tutor.delete()
-
         if usuario:
-            # 8. Quitar grupo "tutor"
+            # 7. Quitar grupo "tutor"
             try:
                 grupo_tutor = Group.objects.get(name="tutor")
                 usuario.groups.remove(grupo_tutor)
             except Group.DoesNotExist:
                 pass
 
-            # 9. Si no tiene más grupos, eliminar usuario (si no se eliminó ya)
+            # 8. Si no tiene más grupos, eliminar usuario
             if usuario.groups.count() == 0 and User.objects.filter(pk=usuario.pk).exists():
                 usuario.delete()
+        else:
+            # 9. Solo eliminar persona_tutor si no tiene usuario
+            persona_tutor.delete()
 
 
