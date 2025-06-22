@@ -189,6 +189,7 @@ class InscripcionExistenteSerializer(serializers.Serializer):
         persona = user.persona
         infante_data = validated_data["infante_data"]
         hora_entrada = validated_data["hora_entrada"]
+        persona_data_infante = validated_data["persona_data_infante"]
 
         tutor = Tutor.objects.filter(id_persona=persona).first()
         periodo_actual = obtener_periodo_activo()
@@ -222,9 +223,19 @@ class InscripcionExistenteSerializer(serializers.Serializer):
                 if not user.groups.filter(name="tutor").exists():
                     user.groups.add(Group.objects.get(name="tutor"))
 
-            persona_infante_serializer = PersonaSerializer(data=validated_data["persona_data_infante"])
-            persona_infante_serializer.is_valid(raise_exception=True)
-            persona_infante = persona_infante_serializer.save()
+            ci=persona_data_infante.get("ci")
+            persona_infante=Persona.objects.filter(ci=ci).first()
+            
+            if persona_infante:
+                persona_infante_serializer = PersonaSerializer(
+                    persona_infante, data=persona_data_infante, partial=True
+                )
+                persona_infante_serializer.is_valid(raise_exception=True)
+                persona_infante = persona_infante_serializer.save()
+            else:
+                persona_infante_serializer = PersonaSerializer(data=validated_data["persona_data_infante"])
+                persona_infante_serializer.is_valid(raise_exception=True)
+                persona_infante = persona_infante_serializer.save()
 
             sala = asignar_sala_automatica(
                 persona_infante.fecha_nacimiento,
@@ -235,13 +246,19 @@ class InscripcionExistenteSerializer(serializers.Serializer):
                     "No se encontró una sala adecuada para el infante según la edad y horario seleccionado."
                 )
 
-            infante_data["id_persona"] = persona_infante.id
-            infante_data["id_sala"] = sala.id
-            infante_data["periodo_inscripcion"] = obtener_periodo_activo().id
+            infante=Infante.objects.filter(id_persona=persona_infante).first()
+            if infante:
+                infante.id_sala=sala
+                infante.periodo_inscripcion = periodo_actual
+                infante.save()
+            else:
+                infante_data["id_persona"] = persona_infante.id
+                infante_data["id_sala"] = sala.id
+                infante_data["periodo_inscripcion"] = obtener_periodo_activo().id
 
-            infante_serializer = InfanteCreateUpdateSerializer(data=infante_data)
-            infante_serializer.is_valid(raise_exception=True)
-            infante = infante_serializer.save()
+                infante_serializer = InfanteCreateUpdateSerializer(data=infante_data)
+                infante_serializer.is_valid(raise_exception=True)
+                infante = infante_serializer.save()
 
             for nombre_campo, archivo in request.FILES.items():
                 if nombre_campo.startswith("archivo_"):

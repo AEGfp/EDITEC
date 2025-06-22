@@ -22,6 +22,7 @@ from django.db.models import Count
 import io
 from xhtml2pdf import pisa
 from apps.educativo.models import Tutor, Infante
+from django.db.models import Q
 # View para tipos de informe
 @permission_classes([AllowAny])
 class TipoInformeView(viewsets.ModelViewSet):
@@ -42,25 +43,41 @@ class IndicadorView(viewsets.ModelViewSet):
 @permission_classes([ControlarRoles])
 class InformeView(viewsets.ModelViewSet):
     serializer_class = InformeSerializer
-    roles_permitidos=["director","profesor","tutor"]
+    roles_permitidos = ["director", "profesor", "tutor"]
     queryset = Informe.objects.all()
 
     def get_queryset(self):
         user = self.request.user
-
-        if user.is_superuser or user.is_staff:
-            return Informe.objects.all()
-
+        periodo_id = self.request.query_params.get("id_periodo")
+        persona = getattr(user, "persona", None)
         grupos = set(user.groups.values_list("name", flat=True))
 
-        if grupos == {"tutor"}:
-            try:
-                tutor = Tutor.objects.get(id_persona__user=user)
-                return Informe.objects.filter(id_infante__tutores__tutor=tutor)
-            except Tutor.DoesNotExist:
-                return Informe.objects.none()
+        queryset = Informe.objects.all()
 
-        return Informe.objects.all()
+        if periodo_id:
+            queryset = queryset.filter(id_infante__periodo_inscripcion_id=periodo_id)
+
+        # Acceso total
+        if "director" in grupos or "administrador" in grupos:
+            return queryset
+
+        filtros = Q()
+
+        # Profesor: infantes en salas a su cargo
+        if "profesor" in grupos and persona:
+            filtros |= Q(id_infante__id_sala__profesor_encargado=persona)
+
+        # Tutor: infantes vinculados como tutor
+        if "tutor" in grupos:
+            try:
+                tutor = Tutor.objects.get(id_persona=persona)
+                filtros |= Q(id_infante__tutores__tutor=tutor)
+            except Tutor.DoesNotExist:
+                pass
+
+        return queryset.filter(filtros).distinct()
+
+
 
 # View para tabla intermedia informe indicadores
 @permission_classes([AllowAny])
