@@ -63,24 +63,26 @@ class NotificacionCreateView(APIView):
     def post(self, request):
         data = request.data.copy()
 
-        # Extraer y castear M2M manualmente
+        # Extraer y castear M2M antes de validar
         salas_destinatarias_ids = [int(i) for i in data.pop('salas_destinatarias', [])]
-        salas_excluidas_ids = [int(i) for i in data.pop('salas_excluidas', [])]  # ✅ ya estaba bien aquí
+        salas_excluidas_ids = [int(i) for i in data.pop('salas_excluidas', [])]
+
+        # 🔐 Validación previa lógica antes de serializar
+        enviar_a_todos = data.get("enviar_a_todos", False)
+        if not enviar_a_todos and not salas_destinatarias_ids and not salas_excluidas_ids:
+            return Response({
+                "salas_destinatarias": ["Debe seleccionar al menos una sala destinataria o excluir alguna sala."]
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = NotificacionSerializer(data=data)
         if serializer.is_valid():
             notificacion = serializer.save()
-
             notificacion.salas_destinatarias.set(salas_destinatarias_ids)
-            notificacion.salas_excluidas.set(salas_excluidas_ids)  # ✅ corregido aquí
-
-            logger.info(f"🚫 Salas excluidas guardadas: {list(notificacion.salas_excluidas.values_list('id', flat=True))}")  # ✅
-            logger.info(f"✅ Salas destinatarias guardadas: {list(notificacion.salas_destinatarias.values_list('id', flat=True))}")
+            notificacion.salas_excluidas.set(salas_excluidas_ids)
 
             enviar_notificacion_por_correo(notificacion)
             return Response(NotificacionSerializer(notificacion).data, status=status.HTTP_201_CREATED)
 
-        logger.error("Error al crear notificación: %s", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

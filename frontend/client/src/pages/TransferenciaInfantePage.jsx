@@ -23,8 +23,8 @@ function TransferenciaInfantePage() {
 
   const [erroresInfante, setErroresInfante] = useState({});
   const [erroresProfesor, setErroresProfesor] = useState({});
-  const [mensajeInfante, setMensajeInfante] = useState("");
-  const [mensajeProfesor, setMensajeProfesor] = useState("");
+  const [mensajeInfante, setMensajeInfante] = useState(null); // { tipo, texto }
+  const [mensajeProfesor, setMensajeProfesor] = useState(null);
 
   useEffect(() => {
     async function cargarDatos() {
@@ -46,13 +46,13 @@ function TransferenciaInfantePage() {
   const handleChangeInfante = (e) => {
     setFormInfante((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     setErroresInfante({});
-    setMensajeInfante("");
+    setMensajeInfante(null);
   };
 
   const handleChangeProfesor = (e) => {
     setFormProfesor((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     setErroresProfesor({});
-    setMensajeProfesor("");
+    setMensajeProfesor(null);
   };
 
   const handleSubmitInfante = async (e) => {
@@ -70,11 +70,16 @@ function TransferenciaInfantePage() {
 
     try {
       const res = await transferirInfante(formInfante);
-      setMensajeInfante(res.data.mensaje || "Transferencia exitosa.");
+      setMensajeInfante({ tipo: "exito", texto: res.data.mensaje || "Transferencia exitosa." });
       setFormInfante({ id_infante: "", id_nueva_sala: "", motivo: "" });
     } catch (error) {
       console.error("Error al transferir infante:", error);
-      setMensajeInfante("Ocurrió un error al transferir el infante.");
+      const mensaje =
+        error.response?.data?.non_field_errors?.[0] ||
+        error.response?.data?.detail ||
+        Object.values(error.response?.data || {}).flat()[0] ||
+        "Ocurrió un error al transferir el infante.";
+      setMensajeInfante({ tipo: "error", texto: mensaje });
     }
   };
 
@@ -93,11 +98,16 @@ function TransferenciaInfantePage() {
 
     try {
       const res = await transferirProfesor(formProfesor);
-      setMensajeProfesor(res.data.mensaje || "Transferencia de profesor exitosa.");
+      setMensajeProfesor({ tipo: "exito", texto: res.data.mensaje || "Transferencia de profesor exitosa." });
       setFormProfesor({ id_profesor: "", id_sala_destino: "", motivo: "" });
     } catch (error) {
       console.error("Error al transferir profesor:", error);
-      setMensajeProfesor("Ocurrió un error al transferir el profesor.");
+      const mensaje =
+        error.response?.data?.non_field_errors?.[0] ||
+        error.response?.data?.detail ||
+        Object.values(error.response?.data || {}).flat()[0] ||
+        "Ocurrió un error al transferir el profesor.";
+      setMensajeProfesor({ tipo: "error", texto: mensaje });
     }
   };
 
@@ -153,7 +163,16 @@ function TransferenciaInfantePage() {
           <div className="flex justify-center mt-4">
             <button type="submit" className="boton-guardar">Transferir Infante</button>
           </div>
-          {mensajeInfante && <p className="text-green-600 mt-2 text-center">{mensajeInfante}</p>}
+
+          {mensajeInfante && (
+            <p
+              className={`mt-2 text-center ${
+                mensajeInfante.tipo === "exito" ? "text-green-600" : "text-red-600"
+              }`}
+            >
+              {mensajeInfante.texto}
+            </p>
+          )}
         </form>
 
         <hr className="my-6 border-t" />
@@ -205,21 +224,29 @@ function TransferenciaInfantePage() {
           <div className="flex justify-center mt-4">
             <button type="submit" className="boton-guardar">Transferir Profesor</button>
           </div>
-          {mensajeProfesor && <p className="text-green-600 mt-2 text-center">{mensajeProfesor}</p>}
+
+          {mensajeProfesor && (
+            <p
+              className={`mt-2 text-center ${
+                mensajeProfesor.tipo === "exito" ? "text-green-600" : "text-red-600"
+              }`}
+            >
+              {mensajeProfesor.texto}
+            </p>
+          )}
         </form>
 
         {/* BOTÓN DE REPORTE PDF */}
-    <div className="flex justify-center mt-6">
-    <a
-  href={`${import.meta.env.VITE_API_URL}/api/educativo/reporte-transferencias/?id_periodo=1`}
-  target="_blank"
-  rel="noopener noreferrer"
-  className="bg-blue-600 text-white font-semibold px-4 py-2 rounded hover:bg-blue-700 transition"
->
-  Generar Reporte de Transferencias
-</a>
-
-</div>
+        <div className="flex justify-center mt-6">
+          <a
+            href={`${import.meta.env.VITE_API_URL}/api/educativo/reporte-transferencias/?id_periodo=1`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-blue-600 text-white font-semibold px-4 py-2 rounded hover:bg-blue-700 transition"
+          >
+            Generar Reporte de Transferencias
+          </a>
+        </div>
       </div>
     </div>
   );
