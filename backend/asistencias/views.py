@@ -46,13 +46,15 @@ class InfantesAsignadosConAsistenciaView(APIView):
     def get(self, request):
         usuario = request.user
         persona = getattr(usuario, "persona", None)
+        ahora=localtime().time()
+
         if not persona:
             return Response({"error": "El usuario no tiene una persona asociada"}, status=400)
 
         if usuario.groups.filter(name="director").exists():
             infantes = Infante.objects.all()
         else:
-            salas = Sala.objects.filter(profesor_encargado=persona)
+            salas = Sala.objects.filter(profesor_encargado=persona, hora_entrada__lte=ahora, hora_salida__gte=ahora)
             infantes = Infante.objects.filter(id_sala__in=salas)
 
 

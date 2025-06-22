@@ -121,6 +121,16 @@ export default function InfantesList() {
         paginationComponentOptions={paginationComponentOptions}
         highlightOnHover
         customStyles={estiloTablas}
+        conditionalRowStyles={[
+          {
+            when: (row) => row.es_propio === true,
+            style: {
+              backgroundColor: "#EFF6FF",
+              color: "#1E40AF",
+              fontWeight: "600",
+            },
+          },
+        ]}
       />
     </div>
   );
