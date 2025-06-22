@@ -52,10 +52,10 @@ class InfantesAsignadosConAsistenciaView(APIView):
             return Response({"error": "El usuario no tiene una persona asociada"}, status=400)
 
         if usuario.groups.filter(name="director").exists():
-            infantes = Infante.objects.filter(periodo_inscripcion=periodo_id)
+            infantes = Infante.objects.filter(periodo_inscripcion=periodo_id,activo=True)
         else:
             salas = Sala.objects.filter(profesor_encargado=persona, hora_entrada__lte=ahora, hora_salida__gte=ahora,periodo_inscripcion=periodo_id)
-            infantes = Infante.objects.filter(id_sala__in=salas,periodo_inscripcion=periodo_id)
+            infantes = Infante.objects.filter(id_sala__in=salas,periodo_inscripcion=periodo_id,activo=True)
 
 
         serializer = InfanteConAsistenciaSerializer(infantes, many=True)

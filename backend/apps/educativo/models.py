@@ -20,7 +20,7 @@ class Infante(models.Model):
         null=True, blank=True,
         on_delete=models.PROTECT
     )
-
+    activo= models.BooleanField(default=False)
     def clean(self):
         if self.id_sala and not self.id_sala.puede_agregar_infante():
             raise ValidationError("No se puede agregar más infantes a esta sala porque se alcanzó el límite.")
@@ -50,6 +50,7 @@ class Tutor(models.Model):
         null=True, blank=True,
         on_delete=models.PROTECT
     )    
+    activo= models.BooleanField(default=False)
     def __str__(self):
         return str(self.id_persona)
 

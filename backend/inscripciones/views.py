@@ -100,8 +100,12 @@ class InscripcionView(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['post'])
-    def limpiar_rechazadas(self, request):
+    @action(detail=False, methods=['post'], url_path="limpiar-inscripciones")
+    def limpiar_inscripciones(self, request):
+        user = request.user
+        if not user.groups.filter(name__in=["administrador", "director"]).exists():
+            return Response({"detail": "No tiene permiso para ejecutar esta acción."}, status=403)
+
         id_periodo = request.query_params.get("id_periodo")
 
         if not id_periodo:
@@ -112,7 +116,7 @@ class InscripcionView(viewsets.ModelViewSet):
         except PeriodoInscripcion.DoesNotExist:
             return Response({"detail": "Periodo no encontrado."}, status=404)
 
-        inscripciones_rechazadas = Inscripcion.objects.filter(estado="rechazada", periodo_inscripcion=periodo)
+        inscripciones_rechazadas = Inscripcion.objects.filter(estado__in=["rechazada", "pendiente"], periodo_inscripcion=periodo)
         contador = 0
         errores = []
 
@@ -139,11 +143,31 @@ class InscripcionView(viewsets.ModelViewSet):
                     "No tienes permiso para cambiar el estado de una inscripción."
                 )
 
+            nuevo_estado = data["estado"]
+            infante = instance.id_infante
+            tutor = instance.id_tutor
+
+            instance.estado = nuevo_estado
             instance.usuario_auditoria = user
             instance.fecha_revision = timezone.now()
             instance.save()
-        return super().update(request, *args, **kwargs)
 
+            if nuevo_estado == "aprobada":
+                infante.activo = True
+                tutor.activo = True
+            elif nuevo_estado == "rechazada":
+                infante.activo = Inscripcion.objects.filter(
+                    id_infante=infante, estado="aprobada"
+                ).exclude(pk=instance.pk).exists()
+
+                tutor.activo = TutorInfante.objects.filter(
+                    tutor=tutor, infante__activo=True
+                ).exclude(infante=infante).exists()
+
+            infante.save()
+            tutor.save()
+
+        return super().update(request, *args, **kwargs)
 
 @api_view(["POST"])
 @authentication_classes([])
@@ -371,40 +395,29 @@ def limpiar_inscripcion_rechazada(inscripcion):
     persona_tutor = tutor.id_persona
     usuario = persona_tutor.user  
 
-    # 1. Eliminar archivos del infante
     Archivos.objects.filter(persona=persona_infante).delete()
-
-    # 2. Eliminar relación tutor-infante
     TutorInfante.objects.filter(tutor=tutor, infante=infante).delete()
-
-    # 3. Eliminar inscripción
     inscripcion.delete()
 
-    # 4. Eliminar infante y su persona
     infante.delete()
-    persona_infante.delete()  # esto NO borra persona_tutor
+    persona_infante.delete()  
 
-    # 5. Verificar si el tutor tiene otros infantes o inscripciones
     tiene_otro_infante = TutorInfante.objects.filter(tutor=tutor).exists()
     tiene_otras_inscripciones = Inscripcion.objects.filter(id_tutor=tutor).exists()
 
     if not tiene_otro_infante and not tiene_otras_inscripciones:
-        # 6. Eliminar tutor
         tutor.delete()
 
         if usuario:
-            # 7. Quitar grupo "tutor"
             try:
                 grupo_tutor = Group.objects.get(name="tutor")
                 usuario.groups.remove(grupo_tutor)
             except Group.DoesNotExist:
                 pass
 
-            # 8. Si no tiene más grupos, eliminar usuario
             if usuario.groups.count() == 0 and User.objects.filter(pk=usuario.pk).exists():
                 usuario.delete()
         else:
-            # 9. Solo eliminar persona_tutor si no tiene usuario
             persona_tutor.delete()
 
 
