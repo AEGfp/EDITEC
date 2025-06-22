@@ -155,7 +155,7 @@ export default [
     entidad: "parametros", //tabla con la que interactúa
     permiso: "lectura", //permisos minimos
     nombre: "Parametros Cobros", //Nombre del elemento en el Sidebar
-    /*subrutas: [
+    subrutas: [
       {
         path: "/crear-parametro",
         componente: ParametrosFormPage,
@@ -163,7 +163,7 @@ export default [
         permiso: "escritura",
         //nombre: "Crear Permisos",
       },
-    ],*/
+    ],
   },
   {
     path: "/parametros/:id",
