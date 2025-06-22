@@ -96,18 +96,23 @@ function NotificacionesFormPage() {
 
   const onSubmit = async (data) => {
     try {
-      setErroresBackend({});
-
-      const destinatarias = salasSeleccionadas.map((s) => Number(s.value));
-      const excluidas = salasExcluidas.map((s) => Number(s.value));
-
+      setErroresBackend({}); // Limpia errores anteriores
+  
+      const destinatarias = Array.isArray(salasSeleccionadas)
+        ? salasSeleccionadas.map((s) => Number(s.value))
+        : [];
+  
+      const excluidas = Array.isArray(salasExcluidas)
+        ? salasExcluidas.map((s) => Number(s.value))
+        : [];
+  
       if (!data.enviar_a_todos && destinatarias.length === 0 && excluidas.length === 0) {
         setErroresBackend({
           salas_destinatarias: ["Debe seleccionar al menos una sala destinataria o excluir alguna sala."],
         });
         return;
       }
-
+  
       const payload = {
         ...data,
         contenido: data.mensaje,
@@ -117,13 +122,14 @@ function NotificacionesFormPage() {
         salas_excluidas: excluidas,
         enviar_a_todos: data.enviar_a_todos || false,
       };
-
+  
       if (params.id) {
         await actualizarNotificacion(params.id, payload);
       } else {
+        console.log("Payload enviado:", payload);
         await crearNotificacion(payload);
       }
-
+  
       navigate(pagina);
     } catch (error) {
       console.error("Error al guardar la notificación", error);
@@ -132,6 +138,7 @@ function NotificacionesFormPage() {
       }
     }
   };
+  
 
   const habilitarEdicion = () => setEditable(true);
 
@@ -174,9 +181,19 @@ function NotificacionesFormPage() {
             <input
               type="date"
               className="formulario-input"
-              {...register("fecha", { required: true })}
+              {...register("fecha", {
+                required: "La fecha es obligatoria.",
+                validate: (value) => {
+                  const hoy = new Date();
+                  const seleccionada = new Date(value);
+                  // Normalizar ambos a medianoche para evitar errores por hora
+                  hoy.setHours(0, 0, 0, 0);
+                  seleccionada.setHours(0, 0, 0, 0);
+                  return seleccionada >= hoy || "Ingrese una fecha válida igual o superior a la actual.";
+                },
+              })}
             />
-            {errors.fecha && <CampoRequerido />}
+            {errors.fecha && <p className="text-red-500 text-sm">{errors.fecha.message}</p>}
             {erroresBackend.fecha && <p className="text-red-500 text-sm">{erroresBackend.fecha[0]}</p>}
 
             <h4 className="formulario-elemento">Hora</h4>

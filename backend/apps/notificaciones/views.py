@@ -7,15 +7,18 @@ from .serializers import NotificacionSerializer
 from apps.educativo.models import Tutor, Infante, TutorInfante, Sala
 from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView
 import logging
+from pprint import pprint
+import ast
 
 logger = logging.getLogger(__name__)
 
 def enviar_notificacion_por_correo(notificacion):
     salas_dest = notificacion.salas_destinatarias.all()
-    salas_excluidas = notificacion.salas_excluidas.all()  # ✅ corregido aquí
+    salas_excluidas = notificacion.salas_excluidas.all()
 
     ids_dest = set(salas_dest.values_list("id", flat=True))
     ids_excluir = set(salas_excluidas.values_list("id", flat=True))
+
     if ids_dest:
         ids_finales = ids_dest - ids_excluir
     else:
@@ -33,8 +36,6 @@ def enviar_notificacion_por_correo(notificacion):
     tutores = Tutor.objects.filter(
         id__in=tutor_ids
     ).select_related("id_persona__user").distinct()
-
-    logger.info(f"Tutores encontrados: {tutores.count()}")
 
     mensajes = []
     for tutor in tutores:
@@ -61,33 +62,55 @@ def enviar_notificacion_por_correo(notificacion):
 
 class NotificacionCreateView(APIView):
     def post(self, request):
+        return self._guardar_notificacion(request)
+
+    def _guardar_notificacion(self, request, instance=None):
         data = request.data.copy()
 
-        # Extraer y castear M2M antes de validar
-        salas_destinatarias_ids = [int(i) for i in data.pop('salas_destinatarias', [])]
-        salas_excluidas_ids = [int(i) for i in data.pop('salas_excluidas', [])]
+        logger.info("📥 request.data recibido:")
+        pprint(data)
 
-        # 🔐 Validación previa lógica antes de serializar
+        def parse_lista(valor):
+            if isinstance(valor, list):
+                return [int(i) for i in valor]
+            if isinstance(valor, str):
+                try:
+                    return [int(i) for i in ast.literal_eval(valor)]
+                except Exception:
+                    return []
+            return []
+
+        salas_destinatarias_ids = parse_lista(data.pop('salas_destinatarias', []))
+        salas_excluidas_ids = parse_lista(data.pop('salas_excluidas', []))
+
+        logger.info(f"🧪 salas_destinatarias_ids: {salas_destinatarias_ids} ({type(salas_destinatarias_ids)})")
+        logger.info(f"🧪 salas_excluidas_ids: {salas_excluidas_ids} ({type(salas_excluidas_ids)})")
+
         enviar_a_todos = data.get("enviar_a_todos", False)
         if not enviar_a_todos and not salas_destinatarias_ids and not salas_excluidas_ids:
             return Response({
                 "salas_destinatarias": ["Debe seleccionar al menos una sala destinataria o excluir alguna sala."]
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = NotificacionSerializer(data=data)
+        serializer = NotificacionSerializer(instance=instance, data=data, partial=bool(instance))
         if serializer.is_valid():
             notificacion = serializer.save()
+
+            # Asociar M2M
             notificacion.salas_destinatarias.set(salas_destinatarias_ids)
             notificacion.salas_excluidas.set(salas_excluidas_ids)
 
-            enviar_notificacion_por_correo(notificacion)
-            return Response(NotificacionSerializer(notificacion).data, status=status.HTTP_201_CREATED)
+            if instance is None:
+                enviar_notificacion_por_correo(notificacion)
 
+            return Response(NotificacionSerializer(notificacion).data, status=status.HTTP_200_OK if instance else status.HTTP_201_CREATED)
+
+        logger.error("❌ Errores de validación:")
+        pprint(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
 class NotificacionListView(ListAPIView):
-    queryset = Notificacion.objects.all().order_by('-fecha', '-hora')  # cambie
+    queryset = Notificacion.objects.all().order_by('-fecha', '-hora')
     serializer_class = NotificacionSerializer
 
 class NotificacionDetailView(RetrieveUpdateDestroyAPIView):
@@ -96,10 +119,5 @@ class NotificacionDetailView(RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data)
-        if serializer.is_valid():
-            self.perform_update(serializer)
-            return Response(serializer.data)
-
-        logger.error("Error al actualizar notificación %s: %s", instance.id, serializer.errors)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        create_view = NotificacionCreateView()
+        return create_view._guardar_notificacion(request, instance=instance)

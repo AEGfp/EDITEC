@@ -24,14 +24,14 @@ export default function NotificacionesList() {
 
         const arrayColumnas = [
           {
-            name: "Título",
+            name: "Tipo-Notificacion",
             selector: (fila) => fila.titulo,
             sortable: true,
             wrap: true,
           },
           {
             name: "Mensaje",
-            selector: (fila) => fila.mensaje,
+            selector: (fila) => fila.contenido,
             wrap: true,
           },
           {
@@ -118,18 +118,30 @@ export default function NotificacionesList() {
       <div className="p-2 flex flex-row justify-between">
         <input
           type="text"
-          placeholder="Buscar..."
+          placeholder="Buscar por mensaje"
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
           className="border border-gray-300 rounded px-3 py-1 w-full max-w-xs"
         />
         {puedeEscribir && (
           <button
-            className="boton-guardar items-end"
-            onClick={() => navigate("/notificaciones-crear")}
-          >
-            Agregar...
-          </button>
+  className="boton-guardar items-end flex items-center gap-2"
+  onClick={() => navigate("/notificaciones-crear")}
+>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="h-5 w-5"
+    viewBox="0 0 20 20"
+    fill="currentColor"
+  >
+    <path
+      fillRule="evenodd"
+      d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+      clipRule="evenodd"
+    />
+  </svg>
+  Agregar
+</button>
         )}
       </div>
 
