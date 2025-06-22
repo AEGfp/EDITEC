@@ -4,7 +4,7 @@ from apps.educativo.models import Sala
 class Notificacion(models.Model):
     titulo = models.CharField(max_length=255)
     contenido = models.TextField()
-    fecha = models.DateField()  # <--- este
+    fecha = models.DateField()
     hora = models.TimeField()
     evento = models.CharField(
         max_length=100,
@@ -18,8 +18,12 @@ class Notificacion(models.Model):
     salas_excluidas = models.ManyToManyField(Sala, related_name="notificaciones_excluidas", blank=True)
     activa = models.BooleanField(default=True)
 
+    # ✅ Este campo nuevo:
+    enviar_a_todos = models.BooleanField(default=False)
+
     def __str__(self):
-        
         return self.titulo
+
+
     
     

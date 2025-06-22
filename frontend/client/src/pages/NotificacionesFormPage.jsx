@@ -23,10 +23,13 @@ function NotificacionesFormPage() {
   } = useForm();
 
   const eventoSeleccionado = watch("evento");
+  const enviarATodos = watch("enviar_a_todos");
+
   const [editable, setEditable] = useState(false);
   const [salas, setSalas] = useState([]);
   const [salasSeleccionadas, setSalasSeleccionadas] = useState([]);
   const [salasExcluidas, setSalasExcluidas] = useState([]);
+  const [erroresBackend, setErroresBackend] = useState({});
 
   const navigate = useNavigate();
   const params = useParams();
@@ -35,7 +38,6 @@ function NotificacionesFormPage() {
 
   const opcionesSalas = salas.map((s) => ({ value: s.id, label: s.descripcion }));
 
-  // Autocompletar título según evento
   useEffect(() => {
     if (!editable) return;
 
@@ -59,8 +61,8 @@ function NotificacionesFormPage() {
 
           setValue("titulo", data.titulo);
           setValue("mensaje", data.contenido);
-          setValue("fecha", data.fecha || ""); // ✅ CAMPO CORREGIDO
-          setValue("hora", data.hora || "");   // ✅ CAMPO CORREGIDO
+          setValue("fecha", data.fecha || "");
+          setValue("hora", data.hora || "");
           setValue("evento", data.evento || "");
           setValue("enviar_a_todos", data.enviar_a_todos || false);
 
@@ -76,7 +78,6 @@ function NotificacionesFormPage() {
 
           setSalasSeleccionadas(seleccionadas);
           setSalasExcluidas(excluidas);
-
           setValue("salas_destinatarias", seleccionadas.map((s) => s.value));
           setValue("salas_excluidas", excluidas.map((s) => s.value));
 
@@ -95,13 +96,26 @@ function NotificacionesFormPage() {
 
   const onSubmit = async (data) => {
     try {
+      setErroresBackend({}); // Limpiar errores anteriores
+
+      const destinatarias = salasSeleccionadas.map((s) => s.value);
+      const excluidas = salasExcluidas.map((s) => s.value);
+
+      // Validar solo si no es "enviar a todos"
+      if (!data.enviar_a_todos && destinatarias.length === 0 && excluidas.length === 0) {
+        setErroresBackend({
+          salas_destinatarias: ["Debe seleccionar al menos una sala destinataria o excluir alguna sala."],
+        });
+        return;
+      }
+
       const payload = {
         ...data,
         contenido: data.mensaje,
-        fecha: data.fecha, // ✅ CAMPO CORRECTO
-        hora: data.hora,   // ✅ CAMPO CORRECTO
-        salas_destinatarias: salasSeleccionadas.map((s) => s.value),
-        salas_excluidas: salasExcluidas.map((s) => s.value),
+        fecha: data.fecha,
+        hora: data.hora,
+        salas_destinatarias: destinatarias,
+        salas_excluidas: excluidas,
         enviar_a_todos: data.enviar_a_todos || false,
       };
 
@@ -114,6 +128,9 @@ function NotificacionesFormPage() {
       navigate(pagina);
     } catch (error) {
       console.error("Error al guardar la notificación", error);
+      if (error.response && error.response.data) {
+        setErroresBackend(error.response.data);
+      }
     }
   };
 
@@ -155,11 +172,20 @@ function NotificacionesFormPage() {
             {errors.mensaje && <CampoRequerido />}
 
             <h4 className="formulario-elemento">Fecha</h4>
-            <input type="date" className="formulario-input" {...register("fecha", { required: true })} />
+            <input
+              type="date"
+              className="formulario-input"
+              {...register("fecha", { required: true })}
+            />
             {errors.fecha && <CampoRequerido />}
+            {erroresBackend.fecha && <p className="text-red-500 text-sm">{erroresBackend.fecha[0]}</p>}
 
             <h4 className="formulario-elemento">Hora</h4>
-            <input type="time" className="formulario-input" {...register("hora", { required: true })} />
+            <input
+              type="time"
+              className="formulario-input"
+              {...register("hora", { required: true })}
+            />
             {errors.hora && <CampoRequerido />}
 
             <h4 className="formulario-elemento">Enviar a todos los tutores</h4>
@@ -178,6 +204,9 @@ function NotificacionesFormPage() {
                 setValue("salas_destinatarias", selected.map((s) => s.value));
               }}
             />
+            {erroresBackend.salas_destinatarias && (
+              <p className="text-red-500 text-sm">{erroresBackend.salas_destinatarias[0]}</p>
+            )}
 
             <h4 className="formulario-elemento">Excluir (Salas)</h4>
             <Select

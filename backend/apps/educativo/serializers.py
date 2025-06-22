@@ -4,6 +4,9 @@ from datetime import datetime, date
 from api.serializer import PersonaSerializer
 from inscripciones.models import PeriodoInscripcion
 from django.db import transaction
+from datetime import date
+import traceback
+
 
 
 def obtener_periodo_activo():
@@ -198,13 +201,13 @@ class AnhoLectivoSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-#Tranferencia de sala
-#tranferencia infante
 
 
 
-#tranferir profesor
+
+#transferir sala
 # En serializers.py
+'''
 class TransferenciaSalaSerializer(serializers.Serializer):
     id_infante = serializers.IntegerField()
     id_nueva_sala = serializers.IntegerField()
@@ -240,10 +243,84 @@ class TransferenciaSalaSerializer(serializers.Serializer):
         # Actualizar sala del infante
         infante.id_sala = nueva_sala
         infante.save()
-        return infante
+        return infante 
     
+'''
 
-    ###
+#Nueva transferenciaSalaSerializer para validaciones, cantidad que se puede en una sala 
+#y meses del infante que debe pertenecer a dicha sala
+class TransferenciaSalaSerializer(serializers.Serializer):
+    id_infante = serializers.IntegerField()
+    id_nueva_sala = serializers.IntegerField()
+    motivo = serializers.CharField()
+
+    def validate(self, data):
+        try:
+            infante = Infante.objects.select_related('id_persona').get(pk=data['id_infante'])
+        except Infante.DoesNotExist:
+            raise serializers.ValidationError("El infante no existe.")
+
+        try:
+            nueva_sala = Sala.objects.get(pk=data['id_nueva_sala'])
+        except Sala.DoesNotExist:
+            raise serializers.ValidationError("La sala no existe.")
+        
+        # Verificar si ya está en la misma sala
+        if infante.id_sala_id == nueva_sala.id:
+           raise serializers.ValidationError("Este infante ya está asignado a esta sala.")
+
+        # Validar capacidad
+        if nueva_sala.infantes.count() >= nueva_sala.limite_infantes:
+            raise serializers.ValidationError("La sala ya alcanzó su capacidad máxima.")
+
+        # Validar edad del infante en meses
+        fecha_nac = infante.id_persona.fecha_nacimiento
+        hoy = date.today()
+        edad_meses = (hoy.year - fecha_nac.year) * 12 + (hoy.month - fecha_nac.month)
+        if hoy.day < fecha_nac.day:
+            edad_meses -= 1
+
+        if nueva_sala.meses and edad_meses > nueva_sala.meses:
+            raise serializers.ValidationError(
+                f"El infante tiene {edad_meses} meses y supera el límite de {nueva_sala.meses} meses permitido para esta sala."
+            )
+
+        # Guardar referencias para el método save()
+        data['infante'] = infante
+        data['nueva_sala'] = nueva_sala
+        return data
+
+    def save(self):
+        try:
+            infante = self.validated_data["infante"]
+            nueva_sala = self.validated_data["nueva_sala"]
+            motivo = self.validated_data["motivo"]
+            sala_origen = infante.id_sala  # puede ser None
+
+            # Registrar transferencia
+            TransferenciaInfante.objects.create(
+                infante=infante,
+                sala_origen=sala_origen,
+                sala_destino=nueva_sala,
+                motivo=motivo
+            )
+
+            # Actualizar asignación de sala
+            infante.id_sala = nueva_sala
+            infante.save()
+            return infante
+
+        except Exception as e:
+            print("🔥 Error en transferencia de infante:", e)
+            traceback.print_exc()
+            raise serializers.ValidationError("Error inesperado en el servidor al guardar la transferencia.")
+
+
+
+
+
+    ###transferir profesor
+
 class TransferenciaProfesorSerializer(serializers.Serializer):
     id_profesor = serializers.IntegerField()
     id_sala_destino = serializers.IntegerField()
@@ -256,32 +333,46 @@ class TransferenciaProfesorSerializer(serializers.Serializer):
             raise serializers.ValidationError("El profesor no existe.")
 
         try:
-            data['nueva_sala'] = Sala.objects.get(pk=data['id_sala_destino'])
+            nueva_sala = Sala.objects.get(pk=data['id_sala_destino'])
         except Sala.DoesNotExist:
             raise serializers.ValidationError("La sala no existe.")
 
+        # ✅ Validar si ya está asignado como encargado en la sala destino
+        if nueva_sala.profesor_encargado_id == persona.id:
+            raise serializers.ValidationError("Este profesor ya está asignado a esta sala.")
+
+        data['nueva_sala'] = nueva_sala
         data['profesor'] = persona
         return data
 
     def save(self):
-        sala_destino = self.validated_data["nueva_sala"]
         profesor = self.validated_data["profesor"]
+        nueva_sala = self.validated_data["nueva_sala"]
         motivo = self.validated_data["motivo"]
 
-        # Buscar sala de origen (si la tiene)
+        # Buscar sala origen, si existe
         sala_origen = Sala.objects.filter(profesor_encargado=profesor).first()
 
-        # Guardar historial de transferencia
+        # Registrar historial de transferencia
         TransferenciaProfesor.objects.create(
             profesor=profesor,
             sala_origen=sala_origen,
-            sala_destino=sala_destino,
+            sala_destino=nueva_sala,
             motivo=motivo
         )
 
-        # Actualizar profesor en sala nueva
-        sala_destino.profesor_encargado = profesor
-        sala_destino.save()
-        return sala_destino
+        # Asignar profesor a la nueva sala
+        nueva_sala.profesor_encargado = profesor
+        nueva_sala.save()
+        return nueva_sala
+
+
+
+ 
+
+
+
+
+
 
 
