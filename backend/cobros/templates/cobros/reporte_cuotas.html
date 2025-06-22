@@ -1,0 +1,72 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Helvetica, sans-serif; font-size: 11px; }
+        h1, h2 { text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #333; padding: 6px; text-align: center; }
+        th { background-color: #f2f2f2; }
+        .resumen { margin-top: 30px; width: 60%; margin-left: auto; margin-right: auto; }
+        .resumen td { text-align: right; }
+    </style>
+    <title>Resumen de Cobros</title>
+</head>
+<body>
+    <h1>Resumen de Cobros - {{ infante }}</h1>
+    <p style="text-align: center;">Fecha del reporte: {{ fecha_actual|date:"d/m/Y" }}</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Año</th>
+                <th>Mes</th>
+                <th>Vencimiento</th>
+                <th>Cuota</th>
+                <th>Mora Calculada</th>
+                <th>Total a Cobrar</th>
+                <th>Pagada</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in resumen %}
+            <tr>
+                <td>{{ item.anho }}</td>
+                <td>{{ item.mes }}</td>
+                <td>{{ item.fecha_vencimiento|date:"d/m/Y" }}</td>
+                <td>{{ item.total_cuota|floatformat:0|intcomma }}</td>
+                <td>{{ item.monto_mora_calculada|floatformat:0|intcomma }}</td>
+                <td>{{ item.total_pagado|floatformat:0|intcomma }}</td>
+                <td>{% if item.pagada %}Sí{% else %}No{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Resumen General</h2>
+    <table class="resumen">
+        <tr>
+            <td><strong>Total Cuotas Emitidas:</strong></td>
+            <td>{{ total_cuota|floatformat:0|intcomma }} Gs</td>
+        </tr>
+        <tr>
+            <td><strong>Total Mora Estimada al Día de Hoy:</strong></td>
+            <td>{{ total_mora_calculada|floatformat:0|intcomma }} Gs</td>
+        </tr>
+        <tr>
+            <td><strong>Total a Cobrar (cuotas + mora):</strong></td>
+            <td>{{ total_pagado|floatformat:0|intcomma }} Gs</td>
+        </tr>
+        <tr>
+            <td><strong>Cuotas Pagadas:</strong></td>
+            <td>{{ cuotas_pagadas }}</td>
+        </tr>
+        <tr>
+            <td><strong>Cuotas Pendientes:</strong></td>
+            <td>{{ cuotas_pendientes }}</td>
+        </tr>
+    </table>
+</body>
+</html>

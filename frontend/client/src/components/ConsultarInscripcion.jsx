@@ -62,7 +62,9 @@ export default function ConsultarInscripcion() {
   async function manejarAceptar(id) {
     setProcesando(true);
     try {
+      
       const res = await aceptarInscripcion(id);
+      alert("Cuotas generadas e inscripción aprobada");
       console.log("Inscripción aceptada");
       navigate("/inscripciones/");
     } catch (error) {
@@ -109,8 +111,9 @@ export default function ConsultarInscripcion() {
           <button
             disabled={procesando}
             className="boton-guardar px-8 py-3 text-lg"
-            onClick={() => {  generarCuota(inscripcion);
-                              manejarAceptar(inscripcion.id);}}
+            onClick={() => {
+                            manejarAceptar(inscripcion.id);
+                            generarCuota(inscripcion);}}
           >
             Aprobar
           </button>
