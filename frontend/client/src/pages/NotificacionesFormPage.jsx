@@ -78,8 +78,8 @@ function NotificacionesFormPage() {
 
           setSalasSeleccionadas(seleccionadas);
           setSalasExcluidas(excluidas);
-          setValue("salas_destinatarias", seleccionadas.map((s) => s.value));
-          setValue("salas_excluidas", excluidas.map((s) => s.value));
+          setValue("salas_destinatarias", seleccionadas.map((s) => Number(s.value)));
+          setValue("salas_excluidas", excluidas.map((s) => Number(s.value)));
 
           setEditable(false);
         } else {
@@ -96,12 +96,11 @@ function NotificacionesFormPage() {
 
   const onSubmit = async (data) => {
     try {
-      setErroresBackend({}); // Limpiar errores anteriores
+      setErroresBackend({});
 
-      const destinatarias = salasSeleccionadas.map((s) => s.value);
-      const excluidas = salasExcluidas.map((s) => s.value);
+      const destinatarias = salasSeleccionadas.map((s) => Number(s.value));
+      const excluidas = salasExcluidas.map((s) => Number(s.value));
 
-      // Validar solo si no es "enviar a todos"
       if (!data.enviar_a_todos && destinatarias.length === 0 && excluidas.length === 0) {
         setErroresBackend({
           salas_destinatarias: ["Debe seleccionar al menos una sala destinataria o excluir alguna sala."],
@@ -201,7 +200,7 @@ function NotificacionesFormPage() {
               styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
               onChange={(selected) => {
                 setSalasSeleccionadas(selected);
-                setValue("salas_destinatarias", selected.map((s) => s.value));
+                setValue("salas_destinatarias", selected.map((s) => Number(s.value)));
               }}
             />
             {erroresBackend.salas_destinatarias && (
@@ -218,7 +217,7 @@ function NotificacionesFormPage() {
               styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
               onChange={(selected) => {
                 setSalasExcluidas(selected);
-                setValue("salas_excluidas", selected.map((s) => s.value));
+                setValue("salas_excluidas", selected.map((s) => Number(s.value)));
               }}
             />
           </fieldset>
