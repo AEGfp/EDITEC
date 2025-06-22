@@ -1,41 +1,41 @@
 from rest_framework import serializers
 from .models import Notificacion
-from datetime import date
+from datetime import date, datetime
+import json
 
 class NotificacionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notificacion
         fields = '__all__'
 
-def validate(self, data):
-    errores = {}
+    def validate(self, data):
+        errores = {}
 
-    titulo = self.initial_data.get("titulo", "").strip()
-    contenido = self.initial_data.get("contenido", "").strip()
-    evento = self.initial_data.get("evento")
-    enviar_a_todos = self.initial_data.get("enviar_a_todos", False)
-    salas_destinatarias = self.initial_data.get("salas_destinatarias", [])
-    salas_excluidas = self.initial_data.get("salas_excluidas", [])
+        titulo = data.get("titulo", "").strip()
+        contenido = data.get("contenido", "").strip()
+        evento = data.get("evento")
+        enviar_a_todos = data.get("enviar_a_todos", False)
 
-    if not titulo:
-        errores['titulo'] = 'El título no puede estar vacío.'
+        salas_destinatarias = data.get("salas_destinatarias", [])
+        salas_excluidas = data.get("salas_excluidas", [])
 
-    if not contenido:
-        errores['contenido'] = 'El mensaje no puede estar vacío.'
+        # Validaciones
+        if not titulo:
+            errores['titulo'] = 'El título no puede estar vacío.'
 
-    if 'fecha' in data and data['fecha'] < date.today():
-        errores['fecha'] = 'La fecha no puede ser anterior a hoy.'
+        if not contenido:
+            errores['contenido'] = 'El mensaje no puede estar vacío.'
 
-    if not evento:
-        errores['evento'] = 'Debe seleccionar un evento.'
+        fecha = data.get("fecha")
+        if not fecha:
+            errores['fecha'] = 'Fecha inválida.'
+        elif fecha < date.today():
+            errores['fecha'] = 'La fecha no puede ser anterior a hoy.'
 
-    # 🔁 ahora esta validación sí se dispara correctamente
-    if not enviar_a_todos and not salas_destinatarias and not salas_excluidas:
-        errores['salas_destinatarias'] = (
-            'Debe seleccionar al menos una sala destinataria o excluir alguna sala.'
-        )
+        if not evento:
+            errores['evento'] = 'Debe seleccionar un evento.'
 
-    if errores:
-        raise serializers.ValidationError(errores)
+        if errores:
+            raise serializers.ValidationError(errores)
 
-    return data
+        return data
