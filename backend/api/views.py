@@ -113,7 +113,7 @@ class FuncionariosView(APIView):
         if grupo_param:
             usuarios = User.objects.filter(groups__name=grupo_param).distinct()
         else:
-            roles_funcionarios = ["profesor", "administrador"]
+            roles_funcionarios = ["profesor", "administrador","director"]
             usuarios = User.objects.filter(groups__name__in=roles_funcionarios).distinct()
 
         serializer = UserSerializer(usuarios, many=True)

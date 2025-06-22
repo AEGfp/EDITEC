@@ -24,11 +24,8 @@ from rest_framework import status
 from rest_framework.views import APIView  
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
-
-
-
-
-
+from django.db.models import Q
+from rest_framework import serializers
 
 class InfanteView(viewsets.ModelViewSet):
     queryset = Infante.objects.all()
@@ -36,22 +33,32 @@ class InfanteView(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        persona = getattr(user, "persona", None)
         periodo_id = self.request.query_params.get("id_periodo")
 
+        grupos = set(user.groups.values_list("name", flat=True))
         qs = Infante.objects.all()
         if periodo_id:
             qs = qs.filter(periodo_inscripcion_id=periodo_id)
 
-        grupos = set(user.groups.values_list("name", flat=True))
+        if "director" in grupos or "administrador" in grupos:
+            return qs
 
-        if grupos == {"tutor"}:
+        filtro = Infante.objects.none()
+
+        if "profesor" in grupos and persona:
+            salas = Sala.objects.filter(profesor_encargado=persona)
+            filtro = filtro | qs.filter(id_sala__in=salas)
+
+        if "tutor" in grupos:
             try:
-                tutor = Tutor.objects.get(id_persona__user=user)
-                return qs.filter(tutores__tutor=tutor)
+                tutor = Tutor.objects.get(id_persona=persona)
+                filtro = filtro | qs.filter(tutores__tutor=tutor)
             except Tutor.DoesNotExist:
-                return qs.none()
+                pass
 
-        return qs
+        return filtro.distinct()
+
 
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update"]:
@@ -64,21 +71,41 @@ class InfanteView(viewsets.ModelViewSet):
 
 class TutorView(viewsets.ModelViewSet):
     queryset = Tutor.objects.all()
+    es_el_usuario = serializers.SerializerMethodField()
 
     def get_queryset(self):
         user = self.request.user
+        persona = getattr(user, "persona", None)
         periodo_id = self.request.query_params.get("id_periodo")
 
+        grupos = set(user.groups.values_list("name", flat=True))
         qs = Tutor.objects.all()
+
         if periodo_id:
             qs = qs.filter(periodo_inscripcion_id=periodo_id)
 
-        grupos = set(user.groups.values_list("name", flat=True))
+        if "director" in grupos or "administrador" in grupos:
+            return qs
 
-        if grupos == {"tutor"}:
-            return qs.filter(id_persona__user=user)
+        filtros = Q()
 
-        return qs
+        if "tutor" in grupos and persona:
+            filtros |= Q(id_persona=persona)
+
+        if "profesor" in grupos and persona:
+            salas_profesor = Sala.objects.filter(profesor_encargado=persona)
+            infantes = Infante.objects.filter(id_sala__in=salas_profesor)
+            tutores_ids = TutorInfante.objects.filter(infante__in=infantes).values_list("tutor_id", flat=True)
+            filtros |= Q(id__in=tutores_ids)
+
+
+        return qs.filter(filtros).distinct()
+
+    def get_es_el_usuario(self, obj):
+        request = self.context.get("request")
+        if not request or not hasattr(request.user, "persona"):
+            return False
+        return obj.id_persona == request.user.persona
 
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update"]:
@@ -100,7 +127,6 @@ class TurnoView(viewsets.ModelViewSet):
 class SalaView(viewsets.ModelViewSet):
     queryset = Sala.objects.all()
     serializer_class = SalaSerializer
-
 
     def get_queryset(self):
         qs = Sala.objects.all()
