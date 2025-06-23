@@ -6,7 +6,7 @@ const periodo = sessionStorage.getItem("id_periodo");
 const parametro = `?id_periodo=${periodo}`;
 
 export const obtenerTodasAsistencias = () => {
-  return Api.get(DIRECCION);
+  return Api.get(`${DIRECCION}${parametro}`);
 };
 
 export const crearAsistencia = (infante) => {
@@ -14,11 +14,11 @@ export const crearAsistencia = (infante) => {
 };
 
 export const obtenerAsistencia = (id) => {
-  return Api.get(`${DIRECCION}${id}/`);
+  return Api.get(`${DIRECCION}${id}/${parametro}`);
 };
 
 export const actualizarAsistencia = (id, datos) => {
-  return Api.put(`${DIRECCION}${id}/`, datos);
+  return Api.patch(`${DIRECCION}${id}/`, datos);
 };
 
 export const marcarPresente = (id_infante) => {
@@ -44,6 +44,7 @@ export const crearReporteAsistencia = ({
   fecha_hasta,
   estado,
   id_infante,
+  id_periodo = sessionStorage.getItem("id_periodo"),
 } = {}) =>
   Api.get("reporte-asistencias/", {
     params: {
@@ -51,6 +52,7 @@ export const crearReporteAsistencia = ({
       fecha_desde,
       fecha_hasta,
       id_infante,
+      id_periodo,
     },
     responseType: "blob",
   });

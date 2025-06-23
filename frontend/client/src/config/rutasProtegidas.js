@@ -37,6 +37,8 @@ import PeriodosPage from "../pages/PeriodosPage";
 import PeriodosFormPage from "../pages/PeriodosFormPage";
 import { CobroCuotasFormPage } from "../pages/CobroCuotasFormPage";
 import { CobroCuotasPage } from "../pages/CobroCuotasPage";
+import AsistenciasHistorial from "../pages/AsistenciasHistorial";
+import AsistenciaDetallePage from "../pages/AsistenciasDetallePage";
 
 export default [
   {
@@ -51,16 +53,21 @@ export default [
     entidad: "asistencias", //tabla con la que interactúa
     permiso: "lectura", //permisos minimos
     nombre: "Asistencias", //Nombre del elemento en el Sidebar
-    /*    subrutas: [
-      {
-        path: "/crear-comprobante",
-        componente: ComprobantesFormPage,
-        entidad: "comprobantes",
-        permiso: "escritura",
-        nombre: "Crear Comprobante",
-      },
-    ],*/
   },
+  {
+    path: "/asistencias-historial",
+    componente: AsistenciasHistorial,
+    entidad: "asistenciasHistorial",
+    permiso: "lectura",
+    nombre: "Historial",
+  },
+  {
+    path: "asistencias-historial/:id",
+    componente: AsistenciaDetallePage,
+    entidad: "asistenciasHistorial",
+    permiso: "escritura",
+  },
+
   {
     path: "/empresas", //url
     componente: EmpresasPage, //.jsx
@@ -196,27 +203,27 @@ export default [
     permiso: "lectura",
   },
   {
-  path: "/cobros-cuotas",
-  componente: CobroCuotasPage,
-  entidad: "cajasCobros",
-  permiso: "lectura",
-  nombre: "Cobros de Cuotas",
-  subrutas: [
-    {
-      path: "/cobros-cuotas/crear",
-      componente: CobroCuotasFormPage,
-      entidad: "cajasCobros",
-      permiso: "escritura",
-      nombre: "Registrar Cobro",
-    },
-  ],
-},
-{
-  path: "/cobros-cuotas/crear/:id",
-  componente: CobroCuotasFormPage,
-  entidad: "cajasCobros",
-  permiso: "lectura",
-},
+    path: "/cobros-cuotas",
+    componente: CobroCuotasPage,
+    entidad: "cajasCobros",
+    permiso: "lectura",
+    nombre: "Cobros de Cuotas",
+    subrutas: [
+      {
+        path: "/cobros-cuotas/crear",
+        componente: CobroCuotasFormPage,
+        entidad: "cajasCobros",
+        permiso: "escritura",
+        nombre: "Registrar Cobro",
+      },
+    ],
+  },
+  {
+    path: "/cobros-cuotas/crear/:id",
+    componente: CobroCuotasFormPage,
+    entidad: "cajasCobros",
+    permiso: "lectura",
+  },
 
   {
     path: "/salas",

@@ -14,6 +14,10 @@ const permisosRoles = {
     lectura: ["director", "profesor"],
     escritura: ["director", "profesor"],
   },
+  asistenciasHistorial: {
+    lectura: ["director", "profesor", "tutor"],
+    escritura: ["director", "profesor"],
+  },
   locales: {
     lectura: ["director", "administrador"],
     escritura: ["director"],
@@ -23,16 +27,16 @@ const permisosRoles = {
     escritura: ["tutor"],
   },
   cuotas: {
-    lectura: ["director", "profesor","tutor"],
-    escritura: ["director","administrador"],
+    lectura: ["director", "profesor", "tutor"],
+    escritura: ["director", "administrador"],
   },
   cajasCobros: {
     lectura: ["director", "administrador"],
-    escritura: ["director","administrador"],
+    escritura: ["director", "administrador"],
   },
   parametros: {
-    lectura: ["director","administrador"],
-    escritura: ["director","administrador"],
+    lectura: ["director", "administrador"],
+    escritura: ["director", "administrador"],
   },
   salas: {
     lectura: ["director", "administrador"],

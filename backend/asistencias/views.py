@@ -15,22 +15,58 @@ from django.template.loader import render_to_string
 from django.db.models import Count
 import io
 from xhtml2pdf import pisa
-
+from apps.educativo.models import Tutor
+from rest_framework import status
 # Create your views here.
 #! Cambiar permisos
-#@authentication_classes([JWTAuthentication])
-#@permission_classes([ControlarRoles])
-@permission_classes([AllowAny])
+@authentication_classes([JWTAuthentication])
+@permission_classes([ControlarRoles])
+#@permission_classes([AllowAny])
 class AsistenciaView(viewsets.ModelViewSet):
-   # roles_permitidos=["director","administrador","profesor"]
+    roles_permitidos=["director","profesor","tutor"]
     queryset=Asistencia.objects.all()
     serializer_class=AsistenciaSerializer
 
-    @action(detail=True, methods=["post"], url_path="marcar-salida", permission_classes=[AllowAny])
+    def get_queryset(self):
+        user = self.request.user
+        persona = getattr(user, "persona", None)
+        grupos = set(user.groups.values_list("name", flat=True))
+        periodo_id = self.request.query_params.get("id_periodo")
+
+        qs = Asistencia.objects.select_related("id_infante")
+
+        if periodo_id:
+            qs = qs.filter(id_infante__periodo_inscripcion=periodo_id)
+
+        if "director" in grupos:
+            return qs
+
+        infantes_ids = set()
+
+        if "profesor" in grupos and persona:
+            salas = Sala.objects.filter(profesor_encargado=persona)
+            ids_profesor = Infante.objects.filter(
+                id_sala__in=salas, periodo_inscripcion=periodo_id
+            ).values_list("id", flat=True)
+            infantes_ids.update(ids_profesor)
+
+        if "tutor" in grupos and persona:
+            try:
+                tutor = Tutor.objects.get(id_persona=persona)
+                ids_tutor = Infante.objects.filter(
+                    tutores__tutor=tutor, periodo_inscripcion=periodo_id
+                ).values_list("id", flat=True)
+                infantes_ids.update(ids_tutor)
+            except Tutor.DoesNotExist:
+                pass
+
+        return qs.filter(id_infante_id__in=infantes_ids).distinct()
+    
+    @action(detail=True, methods=["post"], url_path="marcar-salida" )
     def marcar_salida(self, request, pk=None):
         usuario = request.user
         try:
-            asistencia = self.get_object()  # ya obtiene por `pk`
+            asistencia = self.get_object() 
         except Asistencia.DoesNotExist:
             return Response({"error": "No se encontró la asistencia"}, status=404)
 
@@ -41,22 +77,34 @@ class AsistenciaView(viewsets.ModelViewSet):
         serializer = self.get_serializer(asistencia)
         return Response(serializer.data, status=200)
 
-@permission_classes([AllowAny])  
+
+
+@permission_classes([ControlarRoles])  
 class InfantesAsignadosConAsistenciaView(APIView):
+    roles_permitidos = ["director", "profesor"]    
     def get(self, request):
         usuario = request.user
         persona = getattr(usuario, "persona", None)
-        ahora=localtime().time()
-        periodo_id=request.query_params.get("id_periodo", None)
+        ahora = localtime().time()
+        periodo_id = request.query_params.get("id_periodo", None)
+
         if not persona:
             return Response({"error": "El usuario no tiene una persona asociada"}, status=400)
 
-        if usuario.groups.filter(name="director").exists():
-            infantes = Infante.objects.filter(periodo_inscripcion=periodo_id,activo=True)
-        else:
-            salas = Sala.objects.filter(profesor_encargado=persona, hora_entrada__lte=ahora, hora_salida__gte=ahora,periodo_inscripcion=periodo_id)
-            infantes = Infante.objects.filter(id_sala__in=salas,periodo_inscripcion=periodo_id,activo=True)
+        salas = Sala.objects.filter(
+            hora_entrada__lte=ahora,
+            hora_salida__gte=ahora,
+            periodo_inscripcion=periodo_id
+        )
 
+        if not usuario.groups.filter(name="director").exists():
+            salas = salas.filter(profesor_encargado=persona)
+
+        infantes = Infante.objects.filter(
+            id_sala__in=salas,
+            periodo_inscripcion=periodo_id,
+            activo=True
+        )
 
         serializer = InfanteConAsistenciaSerializer(infantes, many=True)
         return Response(serializer.data)
@@ -70,8 +118,12 @@ def calcular_edad(fecha_nac):
     return edad if edad >= 0 else None
 
 @api_view(["GET"])
-@permission_classes([AllowAny])
 def generar_reporte_asistencias(request):
+    #! revisar que sea su hijo
+    usuario = request.user
+    if not usuario.is_authenticated or not usuario.groups.filter(name__in=["director","profesor","tutor"]).exists():
+        return Response({"detail": "No autorizado"}, status=status.HTTP_403_FORBIDDEN) 
+
     fecha_desde = request.GET.get("fecha_desde")
     fecha_hasta = request.GET.get("fecha_hasta")
     id_infante = request.GET.get("id_infante")
