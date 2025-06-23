@@ -1,5 +1,6 @@
-import { ListaCajaCuotasTable } from "../components/ListaCajaCuotasTable";
+
+import { ListaCajaCobrosTable } from "../components/ListaCajaCobrosTable";
 
 export function CobroCuotasPage() {
-  return <ListaCajaCuotasTable></ListaCajaCuotasTable>;
+  return <ListaCajaCobrosTable></ListaCajaCobrosTable>;
 }
