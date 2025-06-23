@@ -3,7 +3,11 @@ import DataTable from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
 import { estiloTablas } from "../assets/estiloTablas";
 import tienePermiso from "../utils/tienePermiso";
-import { obtenerInscripcionesActuales } from "../api/inscripciones.api";
+import {
+  eliminarInscripcion,
+  limpiarInscripciones,
+  obtenerInscripcionesActuales,
+} from "../api/inscripciones.api";
 import ReporteInscripcionesPage from "../pages/ReporteInscripcionesPage";
 
 export default function ListaInscripciones({ periodo }) {
@@ -91,6 +95,15 @@ export default function ListaInscripciones({ periodo }) {
     return text.charAt(0).toUpperCase() + text.slice(1);
   }
 
+  async function manejarEliminar() {
+    try {
+      const res = await limpiarInscripciones();
+      console.log("Inscripciones eliminadas");
+      navigate("/inscripciones/");
+    } catch (error) {
+      console.log("Error al intentar eliminar las inscripciones", error);
+    }
+  }
   return (
     <div>
       <h1 className="text-2xl font-semibold p-2 pl-3">Inscripciones</h1>
@@ -107,6 +120,14 @@ export default function ListaInscripciones({ periodo }) {
         <div className="flex gap-2">
           <ReporteInscripcionesPage />
           <ReporteInscripcionesPage estado="rechazada" />
+          <button
+            className="boton-eliminar"
+            onClick={() => {
+              manejarEliminar();
+            }}
+          >
+            Eliminar inscripciones rechazadas
+          </button>
         </div>
       </div>
 

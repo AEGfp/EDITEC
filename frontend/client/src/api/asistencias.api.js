@@ -2,6 +2,8 @@ import { Api } from "./api";
 
 //Cambiar según la url del backend
 const DIRECCION = "asistencias/";
+const periodo = sessionStorage.getItem("id_periodo");
+const parametro = `?id_periodo=${periodo}`;
 
 export const obtenerTodasAsistencias = () => {
   return Api.get(DIRECCION);
@@ -41,17 +43,17 @@ export const crearReporteAsistencia = ({
   fecha_desde,
   fecha_hasta,
   estado,
-  id_infante,  
+  id_infante,
 } = {}) =>
   Api.get("reporte-asistencias/", {
     params: {
       estado,
       fecha_desde,
       fecha_hasta,
-      id_infante,  
+      id_infante,
     },
     responseType: "blob",
   });
 
-
-export const obtenerInfantesAsignados = () => Api.get("infantes-asignados");
+export const obtenerInfantesAsignados = () =>
+  Api.get(`infantes-asignados/${parametro}`);

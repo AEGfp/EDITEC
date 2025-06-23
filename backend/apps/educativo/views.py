@@ -36,10 +36,10 @@ class InfanteView(viewsets.ModelViewSet):
         persona = getattr(user, "persona", None)
         grupos = set(user.groups.values_list("name", flat=True))
 
-        qs = Infante.objects.all()
-        filtro = Infante.objects.none()
-
         periodo_id = self.request.query_params.get("id_periodo")
+
+        qs = Infante.objects.all()
+
         if periodo_id:
             try:
                 periodo_id_int = int(periodo_id)
@@ -48,20 +48,23 @@ class InfanteView(viewsets.ModelViewSet):
                 pass
 
         if "director" in grupos or "administrador" in grupos:
-            return qs
+            return qs.filter(activo=True)
+
+        infantes_qs = Infante.objects.none()
 
         if "profesor" in grupos and persona:
             salas = Sala.objects.filter(profesor_encargado=persona)
-            filtro = filtro | qs.filter(id_sala__in=salas)
+            infantes_qs = infantes_qs | qs.filter(activo=True, id_sala__in=salas)
 
         if "tutor" in grupos and persona:
             try:
                 tutor = Tutor.objects.get(id_persona=persona)
-                filtro = filtro | qs.filter(tutores__tutor=tutor)
+                infantes_qs = infantes_qs | qs.filter(tutores__tutor=tutor)
             except Tutor.DoesNotExist:
                 pass
 
-        return filtro.distinct()
+        return infantes_qs.distinct()
+
 
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update"]:
@@ -77,6 +80,12 @@ class TutorView(viewsets.ModelViewSet):
     queryset = Tutor.objects.all()
     es_el_usuario = serializers.SerializerMethodField()
 
+from django.db.models import Q
+
+class TutorView(viewsets.ModelViewSet):
+    queryset = Tutor.objects.all()
+    es_el_usuario = serializers.SerializerMethodField()
+
     def get_queryset(self):
         user = self.request.user
         persona = getattr(user, "persona", None)
@@ -85,33 +94,32 @@ class TutorView(viewsets.ModelViewSet):
         qs = Tutor.objects.all()
         periodo_id = self.request.query_params.get("id_periodo")
 
-        # Aplicar filtro por periodo si viene bien
         if periodo_id:
             try:
                 periodo_id_int = int(periodo_id)
-                qs = qs.filter(periodo_inscripcion_id=periodo_id_int)
+                qs = qs.filter(tutorados__infante__periodo_inscripcion_id=periodo_id_int)
             except (ValueError, TypeError):
-                pass  # Ignoramos errores de conversión
+                pass
 
-        # Director o admin ven todos
         if "director" in grupos or "administrador" in grupos:
-            return qs
+            return qs.filter(activo=True).distinct()
 
-        # Filtro base vacío (para ir sumando con OR)
         filtros = Q()
 
-        # Si es tutor, solo ve su propio registro
         if "tutor" in grupos and persona:
             filtros |= Q(id_persona=persona)
 
-        # Si es profesor, puede ver tutores de infantes en sus salas
         if "profesor" in grupos and persona:
             salas_profesor = Sala.objects.filter(profesor_encargado=persona)
-            infantes = Infante.objects.filter(id_sala__in=salas_profesor)
-            tutores_ids = TutorInfante.objects.filter(infante__in=infantes).values_list("tutor_id", flat=True)
+            infantes_activos = Infante.objects.filter(id_sala__in=salas_profesor, activo=True)
+            tutores_ids = TutorInfante.objects.filter(
+                infante__in=infantes_activos
+            ).values_list("tutor_id", flat=True)
             filtros |= Q(id__in=tutores_ids)
 
         return qs.filter(filtros).distinct()
+
+
 
 
     def get_es_el_usuario(self, obj):

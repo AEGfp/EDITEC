@@ -3,6 +3,8 @@ import { Api } from "./api";
 
 // Ruta relativa del recurso
 const DIRECCION = "inscripciones/";
+const periodo = sessionStorage.getItem("id_periodo");
+const parametro = `?id_periodo=${periodo}`;
 
 export const obtenerInscripciones = () => Api.get(DIRECCION);
 export const obtenerInscripcionesActuales = (periodo) =>
@@ -12,6 +14,8 @@ export const obtenerInscripcionesActuales = (periodo) =>
     },
   });
 
+export const limpiarInscripciones = () =>
+  Api.post(`${DIRECCION}limpiar_rechazadas/${parametro}`);
 export const crearInscripcion = (inscripcion, config = {}) =>
   Api.post("inscripciones-crear/", inscripcion, config);
 export const crearInscripcionExistente = (inscripcion, config = {}) =>
