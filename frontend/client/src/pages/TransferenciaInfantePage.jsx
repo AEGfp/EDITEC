@@ -23,7 +23,7 @@ function TransferenciaInfantePage() {
 
   const [erroresInfante, setErroresInfante] = useState({});
   const [erroresProfesor, setErroresProfesor] = useState({});
-  const [mensajeInfante, setMensajeInfante] = useState(null); // { tipo, texto }
+  const [mensajeInfante, setMensajeInfante] = useState(null);
   const [mensajeProfesor, setMensajeProfesor] = useState(null);
 
   useEffect(() => {
@@ -239,7 +239,7 @@ function TransferenciaInfantePage() {
         {/* BOTÓN DE REPORTE PDF */}
         <div className="flex justify-center mt-6">
           <a
-            href={`${import.meta.env.VITE_API_URL}/api/educativo/reporte-transferencias/?id_periodo=1`}
+            href={`${import.meta.env.VITE_API_URL}/api/educativo/reporte-transferencias/?periodo_id=1`}
             target="_blank"
             rel="noopener noreferrer"
             className="bg-blue-600 text-white font-semibold px-4 py-2 rounded hover:bg-blue-700 transition"

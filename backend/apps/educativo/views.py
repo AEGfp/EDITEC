@@ -10,6 +10,7 @@ from .serializers import (
     TutorCreateUpdateSerializer,
     TransferenciaSalaSerializer,
     TransferenciaProfesorSerializer,
+    
 )
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -261,6 +262,7 @@ def calcular_edad(fecha_nac):
     hoy = date.today()
     return hoy.year - fecha_nac.year - ((hoy.month, hoy.day) < (fecha_nac.month, fecha_nac.day))
 
+'''
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def reporte_asignacion_aulas(request):
@@ -292,26 +294,38 @@ def reporte_asignacion_aulas(request):
     if not pdf.err:
         return HttpResponse(result.getvalue(), content_type="application/pdf")
     return HttpResponse("Error al generar PDF", status=500)
-
-
+'''
+#Vista para salas con periodo
 @api_view(["GET"])
-def reporte_transferencias_general(request):
-    transferencias = TransferenciaSalaRegistro.objects.select_related('infante__id_persona', 'sala_origen', 'sala_destino')
+@permission_classes([AllowAny])
+def reporte_asignacion_aulas(request):
+    periodo_id = request.GET.get("periodo_id")
 
-    data = [
-        {
-            "infante": str(t.infante),
-            "ci": t.infante.id_persona.ci,
-            "origen": t.sala_origen.descripcion if t.sala_origen else "N/A",
-            "destino": t.sala_destino.descripcion if t.sala_destino else "N/A",
-            "fecha": t.fecha.strftime("%d/%m/%Y %H:%M"),
-            "motivo": t.motivo
-        }
-        for t in transferencias
-    ]
+    salas = Sala.objects.select_related("profesor_encargado").prefetch_related("infantes__id_persona")
 
-    html = render_to_string("reporte_transferencias.html", {
-        "transferencias": data,
+    if periodo_id and periodo_id.isdigit():
+        salas = salas.filter(periodo_inscripcion_id=int(periodo_id))
+
+    data = []
+    for sala in salas:
+        profesor = sala.profesor_encargado
+        infantes = sala.infantes.all()
+
+        data.append({
+            "sala": sala.descripcion,
+            "profesor": f"{profesor.nombre} {profesor.apellido}" if profesor else "Sin profesor asignado",
+            "infantes": [
+                {
+                    "nombre": f"{i.id_persona.nombre} {i.id_persona.apellido}",
+                    "ci": i.id_persona.ci,
+                    "fecha_nacimiento": i.id_persona.fecha_nacimiento.strftime("%d/%m/%Y"),
+                }
+                for i in infantes
+            ]
+        })
+
+    html = render_to_string("reporte_asignacion_aulas.html", {
+        "salas": data,
         "fecha": timezone.now().strftime("%d/%m/%Y")
     })
     result = io.BytesIO()
@@ -322,7 +336,44 @@ def reporte_transferencias_general(request):
     return HttpResponse("Error al generar PDF", status=500)
 
 
+##REPORTE DE TRANSFERENCIAS POR PERIODO
 
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def reporte_transferencias_general(request):
+    periodo_id = request.GET.get("periodo_id")
+
+    transferencias_infantes = TransferenciaInfante.objects.select_related(
+        "infante__id_persona", "sala_origen", "sala_destino"
+    )
+    transferencias_profesores = TransferenciaProfesor.objects.select_related(
+        "profesor", "sala_origen", "sala_destino"  # corregido aquí
+    )
+
+    if periodo_id and periodo_id.isdigit():
+        transferencias_infantes = transferencias_infantes.filter(
+            infante__periodo_inscripcion_id=int(periodo_id)
+        )
+        transferencias_profesores = transferencias_profesores.filter(
+            sala_origen__periodo_inscripcion_id=int(periodo_id)
+        )
+
+    html = render_to_string("reporte_transferencias.html", {
+        "fecha": timezone.now().strftime("%d/%m/%Y"),
+        "transferencias_infantes": transferencias_infantes,
+        "transferencias_profesores": transferencias_profesores,
+    })
+
+    result = io.BytesIO()
+    pdf = pisa.pisaDocument(io.BytesIO(html.encode("utf-8")), result)
+
+    if not pdf.err:
+        return HttpResponse(result.getvalue(), content_type="application/pdf")
+    return HttpResponse("Error al generar PDF", status=500)
+
+
+'''
+#reporte_transferencias_por_sala modificada para incluir filtro por periodo_id
 @api_view(["GET"])
 def reporte_transferencias_por_sala(request, sala_id):
     try:
@@ -330,9 +381,14 @@ def reporte_transferencias_por_sala(request, sala_id):
     except Sala.DoesNotExist:
         return Response({"error": "Sala no encontrada"}, status=404)
 
+    periodo_id = request.GET.get("periodo_id")
+
     transferencias = TransferenciaSalaRegistro.objects.filter(
         models.Q(sala_origen=sala) | models.Q(sala_destino=sala)
     ).select_related("infante__id_persona")
+
+    if periodo_id and periodo_id.isdigit():
+        transferencias = transferencias.filter(infante__periodo_inscripcion_id=periodo_id)
 
     data = [
         {
@@ -357,31 +413,12 @@ def reporte_transferencias_por_sala(request, sala_id):
     if not pdf.err:
         return HttpResponse(result.getvalue(), content_type="application/pdf")
     return HttpResponse("Error al generar PDF", status=500)
+'''
+
 
 
 
 #Tranferencias
-@api_view(["GET"])
-@permission_classes([AllowAny])
-def reporte_transferencias(request):
-    transferencias_infantes = TransferenciaInfante.objects.select_related("infante", "sala_origen", "sala_destino", "infante__id_persona")
-    transferencias_profesores = TransferenciaProfesor.objects.select_related("profesor", "sala_origen", "sala_destino")
-
-    context = {
-        "fecha": timezone.now().strftime("%d/%m/%Y"),
-        "transferencias_infantes": transferencias_infantes,
-        "transferencias_profesores": transferencias_profesores,
-    }
-
-    html = render_to_string("reporte_transferencias.html", context)
-    result = io.BytesIO()
-    pdf = pisa.pisaDocument(io.BytesIO(html.encode("utf-8")), result)
-
-    if not pdf.err:
-        return HttpResponse(result.getvalue(), content_type="application/pdf")
-    return HttpResponse("Error al generar PDF", status=500)
-
-
 
 #Tranferencias views.py
 #views.py profesor transferencia

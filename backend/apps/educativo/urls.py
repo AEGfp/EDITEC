@@ -13,7 +13,8 @@ from .views import (
    reporte_asignacion_aulas,
     TransferenciaInfanteView,
     TransferenciaProfesorView,
-    reporte_transferencias
+ #   reporte_transferencias_por_sala,
+    reporte_transferencias_general,
 )
 
 router = DefaultRouter()
@@ -32,7 +33,8 @@ urlpatterns = [
     path("transferir-infante/", TransferenciaInfanteView.as_view(), name="transferir-infante"),
     path("transferir-profesor/", TransferenciaProfesorView.as_view(), name="transferir-profesor"),
     path("reporte-asignacion-aulas/", reporte_asignacion_aulas, name="reporte_asignacion_aulas"),
-    path("reporte-transferencias/", reporte_transferencias, name="reporte-transferencias"),
+  #  path("reporte-transferencias/<int:sala_id>/", reporte_transferencias_por_sala, name="reporte_transferencias_por_sala"),
+    path("reporte-transferencias/", reporte_transferencias_general, name="reporte_transferencias_general"), 
 
 
 ]
