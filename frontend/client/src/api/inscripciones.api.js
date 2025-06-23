@@ -15,7 +15,7 @@ export const obtenerInscripcionesActuales = (periodo) =>
   });
 
 export const limpiarInscripciones = () =>
-  Api.post(`${DIRECCION}limpiar_rechazadas/${parametro}`);
+  Api.post(`${DIRECCION}limpiar-inscripciones/${parametro}`);
 export const crearInscripcion = (inscripcion, config = {}) =>
   Api.post("inscripciones-crear/", inscripcion, config);
 export const crearInscripcionExistente = (inscripcion, config = {}) =>

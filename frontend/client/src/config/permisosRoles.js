@@ -5,38 +5,17 @@ const permisosRoles = {
     lectura: ["director", "profesor"],
     escritura: ["director"],
   },*/
-  empresas: {
-    //permisos
-    lectura: ["director", "administrador"],
-    escritura: ["director", "administrador"],
-  },
   asistencias: {
     lectura: ["director", "profesor"],
     escritura: ["director", "profesor"],
-  },
-  asistenciasHistorial: {
-    lectura: ["director", "profesor", "tutor"],
-    escritura: ["director", "profesor"],
-  },
-  locales: {
-    lectura: ["director", "administrador"],
-    escritura: ["director"],
   },
   infantes: {
     lectura: ["director", "profesor", "tutor"],
     escritura: ["tutor"],
   },
-  cuotas: {
+  asistenciasHistorial: {
     lectura: ["director", "profesor", "tutor"],
-    escritura: ["director", "administrador"],
-  },
-  cajasCobros: {
-    lectura: ["director", "administrador"],
-    escritura: ["director", "administrador"],
-  },
-  parametros: {
-    lectura: ["director", "administrador"],
-    escritura: ["director", "administrador"],
+    escritura: ["director", "profesor"],
   },
   salas: {
     lectura: ["director", "administrador"],
@@ -50,6 +29,10 @@ const permisosRoles = {
     lectura: ["director", "profesor", "tutor"],
     escritura: ["tutor"],
   },
+  informes: {
+    lectura: ["director", "profesor", "tutor"],
+    escritura: ["director", "profesor"],
+  },
   periodos: {
     lectura: ["director", "administrador"],
     escritura: ["director", "administrador"],
@@ -58,14 +41,36 @@ const permisosRoles = {
     lectura: ["director", "administrador"],
     escritura: ["director", "administrador"],
   },
-  notificaciones: {
-    lectura: ["director", "administrador"],
-    escritura: ["director", "administrador"],
-  },
   funcionarios: {
     lectura: ["director", "administrador"],
     escritura: ["director", "administrador"],
   },
+  empresas: {
+    //permisos
+    lectura: ["director", "administrador"],
+    escritura: ["director", "administrador"],
+  },
+  locales: {
+    lectura: ["director", "administrador"],
+    escritura: ["director"],
+  },
+  cuotas: {
+    lectura: ["director", "profesor", "tutor"],
+    escritura: ["director", "administrador"],
+  },
+  cajasCobros: {
+    lectura: ["director", "administrador"],
+    escritura: ["director", "administrador"],
+  },
+  parametros: {
+    lectura: ["director", "administrador"],
+    escritura: ["director", "administrador"],
+  },
+  notificaciones: {
+    lectura: ["director", "administrador"],
+    escritura: ["director", "administrador"],
+  },
+
   proveedores: {
     lectura: ["director", "administrador"],
     escritura: ["director", "administrador"],
@@ -86,10 +91,7 @@ const permisosRoles = {
     lectura: ["director", "administrador"],
     escritura: ["director", "administrador"],
   },
-  informes: {
-    lectura: ["director", "profesor", "tutor"],
-    escritura: ["director", "profesor"],
-  },
+
   transferencias: {
     lectura: ["director"],
     escritura: ["director"],

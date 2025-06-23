@@ -101,6 +101,7 @@ export default function GestionarPeriodos({
             Cerrar período
           </button>
         </div>
+
         {mensaje && (
           <p className="text-sm text-red-600 mt-2 font-medium">{mensaje}</p>
         )}

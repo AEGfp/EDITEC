@@ -1,11 +1,17 @@
 import { crearReporteAsistencia } from "../api/asistencias.api";
 
-export default function ReporteAsistencia({ infante }) {
+export default function ReporteAsistencia({ infante, fechaDesde, fechaHasta }) {
   async function generarReporte() {
     try {
       const params = {};
       if (infante) {
         params.id_infante = infante;
+      }
+      if (fechaDesde) {
+        params.fecha_desde = fechaDesde;
+      }
+      if (fechaHasta) {
+        params.fecha_hasta = fechaHasta;
       }
       const res = await crearReporteAsistencia(params);
       console.log(res.data);

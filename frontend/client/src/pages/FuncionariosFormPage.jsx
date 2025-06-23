@@ -179,7 +179,7 @@ export default function FuncionarioFormPage() {
                     />
                     Administrador
                   </label>
-                  <label>
+                  {/*<label>
                     <input
                       type="checkbox"
                       value="director"
@@ -187,7 +187,7 @@ export default function FuncionarioFormPage() {
                       disabled={!editable}
                     />
                     Director
-                  </label>
+                  </label>*/}
                 </div>
                 {errors.groups && (
                   <span className="mensaje-error">{errors.groups.message}</span>

@@ -120,16 +120,18 @@ export default function AsistenciasHistorial() {
       <h1 className="text-2xl font-semibold p-2 pl-3">
         Historial de asistencias
       </h1>
-      <div className="p-2 flex flex-wrap items-center justify-between gap-4">
-        <input
-          type="text"
-          placeholder="Buscar..."
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-1 max-w-xs w-full sm:w-auto"
-        />
-        <div className="flex flex-wrap gap-2 items-center">
-          <label>
+      <div className="p-2 flex flex-wrap justify-between items-center gap-4">
+        {/* Filtros a la izquierda */}
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            type="text"
+            placeholder="Buscar..."
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            className="border border-gray-300 rounded px-3 py-1 max-w-xs w-full sm:w-auto"
+          />
+
+          <label className="flex items-center">
             Desde:
             <input
               type="date"
@@ -138,7 +140,8 @@ export default function AsistenciasHistorial() {
               className="ml-1 border border-gray-300 rounded px-2 py-1"
             />
           </label>
-          <label>
+
+          <label className="flex items-center">
             Hasta:
             <input
               type="date"
@@ -150,7 +153,7 @@ export default function AsistenciasHistorial() {
         </div>
 
         <div className="flex gap-2">
-          <ReporteAsistencia />
+          <ReporteAsistencia fechaDesde={fechaDesde} fechaHasta={fechaHasta} />
         </div>
       </div>
       <DataTable

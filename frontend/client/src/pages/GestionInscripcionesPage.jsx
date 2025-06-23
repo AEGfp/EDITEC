@@ -5,12 +5,15 @@ import {
   obtenerPeriodoActivo,
   obtenerUltimoPeriodo,
 } from "../api/periodos.api";
+import { limpiarInscripciones } from "../api/inscripciones.api";
+import { useNavigate } from "react-router-dom";
 
 export default function GestionarInscripcionesPage() {
   const [periodo, setPeriodo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [mensaje, setMensaje] = useState("");
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const navigate = useNavigate();
 
   const cargarPeriodo = async () => {
     setLoading(true);
@@ -53,9 +56,22 @@ export default function GestionarInscripcionesPage() {
     }
   };
 
+  async function manejarEliminar() {
+    try {
+      const res = await limpiarInscripciones();
+      console.log("Inscripciones eliminadas");
+      navigate("/inscripciones/");
+    } catch (error) {
+      console.log("Error al intentar eliminar las inscripciones", error);
+      alert("No se pudo eliminar las inscripciones rechazadas y pendientes.");
+    }
+  }
+
   const ahora = new Date();
   const fechaFin = periodo ? new Date(periodo.fecha_fin) : null;
   const hayPeriodoActivo = periodo?.activo === true && fechaFin > ahora;
+  const mostrarBotonEliminar =
+    !hayPeriodoActivo && periodo && new Date(periodo.fecha_inicio) < ahora;
 
   const mensajeDinamico = () => {
     if (!periodo) return "No hay períodos de inscripción disponibles.";
@@ -88,11 +104,22 @@ export default function GestionarInscripcionesPage() {
         />
       )}
 
-      {mensaje || mensajeDinamico() ? (
-        <div className="my-4 text-yellow-700 bg-yellow-100 border border-yellow-300 rounded px-4 py-2">
-          {mensaje || mensajeDinamico()}
+      {(mensaje || mensajeDinamico()) && (
+        <div className="my-4 text-yellow-700 bg-yellow-100 border border-yellow-300 rounded px-4 py-2 flex justify-between items-center">
+          <span>{mensaje || mensajeDinamico()}</span>
+
+          {mostrarBotonEliminar && (
+            <button
+              className="boton-eliminar"
+              onClick={() => {
+                manejarEliminar();
+              }}
+            >
+              Eliminar inscripciones rechazadas y pendientes
+            </button>
+          )}
         </div>
-      ) : null}
+      )}
 
       {periodo ? (
         <ListaInscripciones periodo={periodo} />

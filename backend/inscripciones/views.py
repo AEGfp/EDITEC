@@ -103,6 +103,7 @@ class InscripcionView(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'], url_path="limpiar-inscripciones")
     def limpiar_inscripciones(self, request):
         user = request.user
+        print("Usuario:", user)
         if not user.groups.filter(name__in=["administrador", "director"]).exists():
             return Response({"detail": "No tiene permiso para ejecutar esta acción."}, status=403)
 
@@ -125,7 +126,10 @@ class InscripcionView(viewsets.ModelViewSet):
                 limpiar_inscripcion_rechazada(insc)
                 contador += 1
             except Exception as e:
-                errores.append(str(insc.pk))
+                return Response(
+                    {"error": f"Ocurrió un error al limpiar la inscripción: {str(e)}"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
 
         return Response({
             "detail": f"Se limpiaron {contador} inscripciones rechazadas del periodo {periodo.id}.",
@@ -388,20 +392,21 @@ def generar_reporte_inscripciones(request):
 def limpiar_inscripcion_rechazada(inscripcion):
     if inscripcion.estado == 'aprobada':
         raise ValueError("No se pueden eliminar inscripciones aprobadas.")
-
+    print("Limpiando inscripción:", inscripcion.id)
     tutor = inscripcion.id_tutor
     infante = inscripcion.id_infante
     persona_infante = infante.id_persona
     persona_tutor = tutor.id_persona
     usuario = persona_tutor.user  
-
     Archivos.objects.filter(persona=persona_infante).delete()
-    TutorInfante.objects.filter(tutor=tutor, infante=infante).delete()
-    inscripcion.delete()
 
+    TutorInfante.objects.filter(tutor=tutor, infante=infante).delete()
+
+    inscripcion.delete()
+    print("Inscripción eliminada:", inscripcion.id)
     infante.delete()
     persona_infante.delete()  
-
+    print("Infante y persona eliminados:", infante.id, persona_infante.id)
     tiene_otro_infante = TutorInfante.objects.filter(tutor=tutor).exists()
     tiene_otras_inscripciones = Inscripcion.objects.filter(id_tutor=tutor).exists()
 

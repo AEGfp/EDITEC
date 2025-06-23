@@ -67,7 +67,193 @@ export default [
     entidad: "asistenciasHistorial",
     permiso: "escritura",
   },
+  {
+    path: "/infantes",
+    componente: InfantesList,
+    entidad: "infantes",
+    permiso: "lectura",
+    nombre: "Infantes",
+    /* subrutas: [
+      {
+        path: "/infantes-crear",
+        componente: InfanteForm,
+        entidad: "infantes",
+        permiso: "escritura",
+        nombre: "Añadir infante",
+      },
+    ],*/
+  },
+  {
+    path: "/infantes/:id",
+    componente: InfanteForm,
+    entidad: "infantes",
+    permiso: "lectura",
+  },
+  {
+    path: "/tutores",
+    componente: TutoresList,
+    entidad: "tutores",
+    permiso: "lectura",
+    nombre: "Tutores",
+    /* subrutas: [
+      {
+        path: "/tutores-crear",
+        componente: TutoresFormPage,
+        entidad: "tutores",
+        permiso: "escritura",
+        nombre: "Añadir turores",
+      },
+    ],*/
+  },
+  {
+    path: "/informes", //url
+    componente: InformesPage, //.jsx
+    entidad: "informes", //tabla con la que interactúa
+    permiso: "lectura", //permisos minimos
+    nombre: "Informes", //Nombre del elemento en el Sidebar
+    subrutas: [
+      {
+        path: "/crear-informe",
+        componente: InformesFormPage,
+        entidad: "informes",
+        permiso: "escritura",
+        nombre: "Crear informe",
+      },
+    ],
+  },
+  {
+    path: "/tutores/:id",
+    componente: TutoresFormPage,
+    entidad: "tutores",
+    permiso: "lectura",
+  },
 
+  {
+    path: "/inscripciones",
+    componente: GestionInscripcionesPage,
+    entidad: "inscripciones",
+    permiso: "lectura",
+    nombre: "Inscripciones",
+  },
+  {
+    path: "/inscripciones/:id",
+    componente: InscripcionesFormPage,
+    entidad: "inscripciones",
+    permiso: "lectura",
+  },
+  {
+    path: "/periodos", //url
+    componente: PeriodosPage, //.jsx
+    entidad: "periodos", //tabla con la que interactúa
+    permiso: "lectura", //permisos minimos
+    nombre: "Periodos", //Nombre del elemento en el Sidebar
+    subrutas: [
+      {
+        path: "/periodos-crear",
+        componente: PeriodosFormPage,
+        entidad: "periodos",
+        permiso: "escritura",
+        nombre: "Crear Periodos",
+      },
+    ],
+  },
+  {
+    path: "/periodos/:id",
+    componente: PeriodosFormPage,
+    entidad: "periodos",
+    permiso: "lectura",
+  },
+  {
+    path: "/salas",
+    componente: SalasList,
+    entidad: "salas",
+    permiso: "lectura",
+    nombre: "Salas",
+    subrutas: [
+      {
+        path: "/salas-crear",
+        componente: SalasFormPage,
+        entidad: "salas",
+        permiso: "escritura",
+        nombre: "Crear salas",
+      },
+    ],
+  },
+  {
+    path: "/salas/:id", // <-- ESTA LÍNEA AGREGA LA EDICIÓN
+    componente: SalasFormPage,
+    entidad: "salas",
+    permiso: "lectura",
+  },
+  /*
+  {
+    path: "/turnos",
+    componente: TurnosList,
+    entidad: "turnos",
+    permiso: "lectura",
+    nombre: "Turnos",
+    subrutas: [
+      {
+        path: "/turnos-crear",
+        componente: TurnosFormPage,
+        entidad: "escritura",
+        permiso: "escritura",
+        nombre: "Crear turnos",
+      },
+    ],
+  },
+  {
+    path: "/turnos/:id",
+    componente: TurnosFormPage,
+    entidad: "turnos",
+    permiso: "lectura",
+  },
+*/
+
+  /* {
+    path: "/permisos", //url
+    componente: PermisosPage, //.jsx
+    entidad: "permisos", //tabla con la que interactúa
+    permiso: "lectura", //permisos minimos
+    nombre: "Permisos", //Nombre del elemento en el Sidebar
+    subrutas: [
+      {
+        path: "/permisos-crear",
+        componente: PermisosFormPage,
+        entidad: "permisos",
+        permiso: "escritura",
+        nombre: "Crear Permisos",
+      },
+    ],
+  },
+  {
+    path: "/permisos/:id",
+    componente: PermisosFormPage,
+    entidad: "permisos",
+    permiso: "lectura",
+  },*/
+  {
+    path: "/funcionarios",
+    componente: FuncionariosPage,
+    nombre: "Funcionarios",
+    entidad: "funcionarios",
+    permiso: "lectura",
+    subrutas: [
+      {
+        path: "/funcionarios-crear",
+        componente: FuncionariosFormPage,
+        entidad: "funcionarios",
+        permiso: "escritura",
+        nombre: "Añadir funcionario",
+      },
+    ],
+  },
+  {
+    path: "/funcionarios/:id",
+    componente: FuncionariosFormPage,
+    entidad: "funcionarios",
+    permiso: "lectura",
+  },
   {
     path: "/empresas", //url
     componente: EmpresasPage, //.jsx
@@ -112,65 +298,19 @@ export default [
     entidad: "locales",
     permiso: "lectura",
   },
-  /* {
-    path: "/permisos", //url
-    componente: PermisosPage, //.jsx
-    entidad: "permisos", //tabla con la que interactúa
-    permiso: "lectura", //permisos minimos
-    nombre: "Permisos", //Nombre del elemento en el Sidebar
-    subrutas: [
-      {
-        path: "/permisos-crear",
-        componente: PermisosFormPage,
-        entidad: "permisos",
-        permiso: "escritura",
-        nombre: "Crear Permisos",
-      },
-    ],
-  },
-  {
-    path: "/permisos/:id",
-    componente: PermisosFormPage,
-    entidad: "permisos",
-    permiso: "lectura",
-  },*/
-  {
-    path: "/infantes",
-    componente: InfantesList,
-    entidad: "infantes",
-    permiso: "lectura",
-    nombre: "Infantes",
-    /* subrutas: [
-      {
-        path: "/infantes-crear",
-        componente: InfanteForm,
-        entidad: "infantes",
-        permiso: "escritura",
-        nombre: "Añadir infante",
-      },
-    ],*/
-  },
-
-  {
-    path: "/infantes/:id",
-    componente: InfanteForm,
-    entidad: "infantes",
-    permiso: "lectura",
-  },
-
   {
     path: "/parametros", //url
     componente: ParametrosPage, //.jsx
     entidad: "parametros", //tabla con la que interactúa
     permiso: "lectura", //permisos minimos
-    nombre: "Parametros Cobros", //Nombre del elemento en el Sidebar
+    nombre: "Parámetros Cobros", //Nombre del elemento en el Sidebar
     subrutas: [
       {
         path: "/crear-parametro",
         componente: ParametrosFormPage,
         entidad: "parametros",
         permiso: "escritura",
-        //nombre: "Crear Permisos",
+        nombre: "Crear parámetro",
       },
     ],
   },
@@ -226,87 +366,6 @@ export default [
   },
 
   {
-    path: "/salas",
-    componente: SalasList,
-    entidad: "salas",
-    permiso: "lectura",
-    nombre: "Salas",
-    subrutas: [
-      {
-        path: "/salas-crear",
-        componente: SalasFormPage,
-        entidad: "salas",
-        permiso: "escritura",
-        nombre: "Crear salas",
-      },
-    ],
-  },
-  {
-    path: "/salas/:id", // <-- ESTA LÍNEA AGREGA LA EDICIÓN
-    componente: SalasFormPage,
-    entidad: "salas",
-    permiso: "lectura",
-  },
-  /*
-  {
-    path: "/turnos",
-    componente: TurnosList,
-    entidad: "turnos",
-    permiso: "lectura",
-    nombre: "Turnos",
-    subrutas: [
-      {
-        path: "/turnos-crear",
-        componente: TurnosFormPage,
-        entidad: "escritura",
-        permiso: "escritura",
-        nombre: "Crear turnos",
-      },
-    ],
-  },
-  {
-    path: "/turnos/:id",
-    componente: TurnosFormPage,
-    entidad: "turnos",
-    permiso: "lectura",
-  },
-*/
-  {
-    path: "/tutores",
-    componente: TutoresList,
-    entidad: "tutores",
-    permiso: "lectura",
-    nombre: "Tutores",
-    /* subrutas: [
-      {
-        path: "/tutores-crear",
-        componente: TutoresFormPage,
-        entidad: "tutores",
-        permiso: "escritura",
-        nombre: "Añadir turores",
-      },
-    ],*/
-  },
-  {
-    path: "/tutores/:id",
-    componente: TutoresFormPage,
-    entidad: "tutores",
-    permiso: "lectura",
-  },
-  {
-    path: "/inscripciones",
-    componente: GestionInscripcionesPage,
-    entidad: "inscripciones",
-    permiso: "lectura",
-    nombre: "Inscripciones",
-  },
-  {
-    path: "/inscripciones/:id",
-    componente: InscripcionesFormPage,
-    entidad: "inscripciones",
-    permiso: "lectura",
-  },
-  {
     path: "/notificaciones",
     componente: NotificacionesList,
     nombre: "Notificaciones",
@@ -328,28 +387,7 @@ export default [
     entidad: "notificaciones",
     permiso: "lectura",
   },
-  {
-    path: "/funcionarios",
-    componente: FuncionariosPage,
-    nombre: "Funcionarios",
-    entidad: "funcionarios",
-    permiso: "lectura",
-    subrutas: [
-      {
-        path: "/funcionarios-crear",
-        componente: FuncionariosFormPage,
-        entidad: "funcionarios",
-        permiso: "escritura",
-        nombre: "Añadir funcionario",
-      },
-    ],
-  },
-  {
-    path: "/funcionarios/:id",
-    componente: FuncionariosFormPage,
-    entidad: "funcionarios",
-    permiso: "lectura",
-  },
+
   {
     path: "/proveedores", //url
     componente: ProveedoresPage, //.jsx
@@ -438,22 +476,7 @@ export default [
     entidad: "cajasPagos",
     permiso: "lectura",
   },
-  {
-    path: "/informes", //url
-    componente: InformesPage, //.jsx
-    entidad: "informes", //tabla con la que interactúa
-    permiso: "lectura", //permisos minimos
-    nombre: "Informes", //Nombre del elemento en el Sidebar
-    subrutas: [
-      {
-        path: "/crear-informe",
-        componente: InformesFormPage,
-        entidad: "informes",
-        permiso: "escritura",
-        nombre: "Crear informe",
-      },
-    ],
-  },
+
   /*{
     path: "/informes/:id",
     componente: InformesFormPage,
@@ -465,27 +488,5 @@ export default [
     componente: TransferenciaInfantePage,
     publico: true,
     nombre: "Transferencia",
-  },
-  {
-    path: "/periodos", //url
-    componente: PeriodosPage, //.jsx
-    entidad: "periodos", //tabla con la que interactúa
-    permiso: "lectura", //permisos minimos
-    nombre: "Periodos", //Nombre del elemento en el Sidebar
-    subrutas: [
-      {
-        path: "/periodos-crear",
-        componente: PeriodosFormPage,
-        entidad: "periodos",
-        permiso: "escritura",
-        nombre: "Crear Periodos",
-      },
-    ],
-  },
-  {
-    path: "/periodos/:id",
-    componente: PeriodosFormPage,
-    entidad: "periodos",
-    permiso: "lectura",
   },
 ];

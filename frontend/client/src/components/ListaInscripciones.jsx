@@ -119,15 +119,7 @@ export default function ListaInscripciones({ periodo }) {
 
         <div className="flex gap-2">
           <ReporteInscripcionesPage />
-          <ReporteInscripcionesPage estado="rechazada" />
-          <button
-            className="boton-eliminar"
-            onClick={() => {
-              manejarEliminar();
-            }}
-          >
-            Eliminar inscripciones rechazadas
-          </button>
+          {/*<ReporteInscripcionesPage estado="rechazada" />*/}
         </div>
       </div>
 
