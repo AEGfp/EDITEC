@@ -27,7 +27,7 @@ from django.db.models import Count
 from django.http import HttpResponse
 from django.contrib.auth.models import Group
 from api.models import Persona,User
-from apps.educativo.models import Infante,Tutor, TutorInfante
+from apps.educativo.models import Infante,Tutor, TutorInfante,Sala
 from archivos.models import Archivos
 
 
@@ -297,12 +297,21 @@ class PeriodoInscripcionViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def puede_inscribirse(self, request):
         ahora = timezone.now()
-        puede = PeriodoInscripcion.objects.filter(
+        periodo = PeriodoInscripcion.objects.filter(
             fecha_inicio__lte=ahora,
             fecha_fin__gte=ahora,
             activo=True
-        ).exists()
-        return Response({"puede_inscribirse": puede})
+        ).first()
+
+        if not periodo:
+            return Response({"puede_inscribirse": False})
+
+        salas_existentes = Sala.objects.filter(periodo_inscripcion=periodo).exists()
+
+        return Response({
+            "puede_inscribirse": salas_existentes
+        })
+
 
 
 
