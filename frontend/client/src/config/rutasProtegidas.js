@@ -35,6 +35,8 @@ import { ParametrosFormPage } from "../pages/ParametrosFormPage";
 import { ParametrosPage } from "../pages/ParametrosPage";
 import PeriodosPage from "../pages/PeriodosPage";
 import PeriodosFormPage from "../pages/PeriodosFormPage";
+import { CobroCuotasFormPage } from "../pages/CobroCuotasFormPage";
+import { CobroCuotasPage } from "../pages/CobroCuotasPage";
 
 export default [
   {
@@ -193,6 +195,28 @@ export default [
     entidad: "cuotas",
     permiso: "lectura",
   },
+  {
+  path: "/cobros-cuotas",
+  componente: CobroCuotasPage,
+  entidad: "cajasCobros",
+  permiso: "lectura",
+  nombre: "Cobros de Cuotas",
+  subrutas: [
+    {
+      path: "/cobros-cuotas/crear",
+      componente: CobroCuotasFormPage,
+      entidad: "cajasCobros",
+      permiso: "escritura",
+      nombre: "Registrar Cobro",
+    },
+  ],
+},
+{
+  path: "/cobros-cuotas/crear/:id",
+  componente: CobroCuotasFormPage,
+  entidad: "cajasCobros",
+  permiso: "lectura",
+},
 
   {
     path: "/salas",

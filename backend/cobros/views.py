@@ -30,8 +30,10 @@ from Roles.roles import (
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import ParametrosCobros, SaldoCuotas, CobroCuotaInfante
+from .models import ParametrosCobros, SaldoCuotas, CobroCuotaInfante, EstadoCuota
 from .serializers import ParametrosCobrosSerializer, SaldoCuotasSerializer, CobroCuotaInfanteSerializer
+from apps.educativo.models import Infante
+from apps.educativo.serializers import InfanteSerializer
 from inscripciones.models import PeriodoInscripcion, Inscripcion
 from datetime import date, timedelta
 from calendar import monthrange
@@ -41,6 +43,7 @@ from django.db import IntegrityError
 from decimal import Decimal
 from django.utils import timezone
 from dateutil.parser import parse
+import logging
 
 from django.template.loader import get_template, render_to_string
 from xhtml2pdf import pisa
@@ -113,13 +116,13 @@ class SaldoCuotasView(viewsets.ModelViewSet):
             queryset = queryset.filter(estado=estado)
 
         return queryset
-
+@permission_classes([AllowAny])
 class CobroCuotaInfanteView(viewsets.ModelViewSet):
     queryset = CobroCuotaInfante.objects.all()
     serializer_class = CobroCuotaInfanteSerializer
 
     def get_queryset(self):
-        return CobroCuotaInfante.objects.select_related('cuota', 'usuario_registro')
+        return CobroCuotaInfante.objects.select_related('cuota', 'usuario')
 
 
 
@@ -284,6 +287,54 @@ class CuotasPorInfanteView(viewsets.ModelViewSet):
     def get_queryset(self):
         infante = self.kwargs['id_infante']
         return SaldoCuotas.objects.filter(id_infante = infante)
+@permission_classes([AllowAny])
+class ListarInfantesView(viewsets.ViewSet):
+    def list(self, request):
+        infantes = Infante.objects.all()
+        serializer = InfanteSerializer(infantes, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+    
+@permission_classes([AllowAny])
+class CuotasPorInfanteView(viewsets.ModelViewSet):
+    serializer_class = SaldoCuotasSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        infante_id = self.kwargs['id_infante']
+        # Actualizar estados de las cuotas
+        cuotas = SaldoCuotas.objects.filter(id_infante_id=infante_id)
+        for cuota in cuotas:
+            cuota.actualizar_estado()
+        # Filtrar solo cuotas PENDIENTE o VENCIDA
+        return SaldoCuotas.objects.filter(
+            id_infante_id=infante_id,
+            estado__in=['PENDIENTE', 'VENCIDA']
+        ).select_related('id_infante__id_persona', 'periodo')  
+    
+
+logger = logging.getLogger(__name__)
+@permission_classes([AllowAny])
+
+class CobroCuotaView(viewsets.ModelViewSet):
+    queryset = CobroCuotaInfante.objects.all()
+    serializer_class = CobroCuotaInfanteSerializer
+
+    def create(self, request, *args, **kwargs):
+        try:
+            serializer = self.get_serializer(data=request.data, context={'request': request})
+            if serializer.is_valid():
+                cobro = serializer.save()
+                return Response({
+                    "message": "Cuota cobrada exitosamente",
+                    "cobro": serializer.data
+                }, status=status.HTTP_201_CREATED)
+            logger.error(f"Errores de validación: {serializer.errors}")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.error(f"Error en la vista al crear cobro: {str(e)}")
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 '''

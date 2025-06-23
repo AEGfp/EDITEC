@@ -1,19 +1,18 @@
-﻿import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
-import Select from 'react-select';
-import {
-  obtenerInfantes,
-  obtenerCuota, // Usaremos obtenerCuota para las cuotas por infante
-  registrarCobroCuota,
-  obtenerDetalleCuota,
-} from '../api/saldocuotas.api';
+﻿import { useForm } from "react-hook-form";
+import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 import tienePermiso from "../utils/tienePermiso";
 import CampoRequerido from "../components/CampoRequerido";
 import ValidarNumero from "../components/ValidarNumero";
-import moment from 'moment';
+import { obtenerInfantes } from "../api/infantes.api";
+import {
+  obtenerCajaCobro,
+  crearCajaCobro,
+  actualizarCajaCobro,
+  eliminarCajaCobro,
+} from "../api/cobrocuotas.api";
 
-export function CobrosCuotasFormPage() {
+export function CobroCuotasFormPage() {
   const {
     register,
     handleSubmit,
@@ -21,266 +20,245 @@ export function CobrosCuotasFormPage() {
     setValue,
     reset,
     watch,
-    getValues,
-  } = useForm();
-
-  const [editable, setEditable] = useState(true);
-  const [infantes, setInfantes] = useState([]);
-  const [selectedInfante, setSelectedInfante] = useState(null);
-  const [cuotas, setCuotas] = useState([]);
-  const [selectedCuota, setSelectedCuota] = useState(null);
-  const [cuotaDetails, setCuotaDetails] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const navigate = useNavigate();
-  const pagina = '/cajas-cobros';
-  //const params = useParams();
-
-  const puedeEscribir = tienePermiso('cajasCobros', 'escritura');
-
-  // Cargar infantes
-  useEffect(() => {
-    async function cargarInfantes() {
-      //try {
-        const { data } = await obtenerInfantes();
-        setInfantes(data.map((inf) => ({
-          value: inf.id,
-          label: inf.nombre,
-        })));
-      //} catch (err) {
-      //  setError('Error al cargar los infantes');
-      //}
-    }
-    if (puedeEscribir) {
-      cargarInfantes();
-    }
-  }, [puedeEscribir]);
-
-  // Cargar cuotas al seleccionar un infante
-  useEffect(() => {
-    async function cargarCuotas() {
-      if (selectedInfante) {
-        try {
-          const { data } = await obtenerCuota(selectedInfante.value);
-          const cuotasPendientes = data.filter((cuota) => !cuota.estado);
-          setCuotas(
-            cuotasPendientes.map((cuota) => ({
-              value: cuota.id,
-              label: `Cuota ${cuota.nro_cuota} (${cuota.mes}/${cuota.anho}) - Saldo: ${cuota.saldo}`,
-            }))
-          );
-        } catch (err) {
-          setError('Error al cargar las cuotas');
-        }
-      } else {
-        setCuotas([]);
-        setSelectedCuota(null);
-      }
-    }
-    cargarCuotas();
-  }, [selectedInfante]);
-
-  // Cargar detalles de la cuota y actualizar según la fecha de cobro
-  useEffect(() => {
-    async function cargarDetallesCuota() {
-      if (selectedCuota) {
-        try {
-          const fechaCobro = getValues('fecha_cobro') || moment().format('YYYY-MM-DD');
-          const { data } = await obtenerDetalleCuota(selectedCuota.value, { fecha_cobro: fechaCobro });
-          setCuotaDetails(data);
-          setValue('monto_cobrado', data.monto_total);
-        } catch (err) {
-          setError('Error al cargar detalles de la cuota');
-        }
-      } else {
-        setCuotaDetails(null);
-        setValue('monto_cobrado', '');
-      }
-    }
-    cargarDetallesCuota();
-  }, [selectedCuota, getValues, setValue]);
-
-  const onSubmit = handleSubmit(async (data) => {
-    if (!selectedInfante) {
-      setError('Debe seleccionar un infante');
-      return;
-    }
-    if (!selectedCuota) {
-      setError('Debe seleccionar una cuota');
-      return;
-    }
-    setIsModalOpen(true);
+    trigger,
+  } = useForm({
+    defaultValues: {
+      fecha_cobro: new Date().toISOString().slice(0, 10),
+      monto_cobrado: 0,
+      metodo_pago: "EFECTIVO",
+      observacion: "",
+      infante_id: "",
+      cuota_id: "",
+    },
   });
 
-  const handleConfirmarCobro = async () => {
-    setIsLoading(true);
-    setError('');
-    setSuccess('');
+  const [infantes, setInfantes] = useState([]);
+  const [cuotas, setCuotas] = useState([]);
+  const [montoTotal, setMontoTotal] = useState(0);
+  const [idCuota, setIdCuota] = useState(null);
+  const [editable, setEditable] = useState(true);
+
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const pagina = "/cobros-cuotas";
+
+  const infanteIdValue = watch("infante_id") || "";
+  const cuotaIdValue = watch("cuota_id") || "";
+
+  useEffect(() => {
+    async function cargarInfantes() {
+      const res = await obtenerInfantes();
+      setInfantes(res.data);
+    }
+    cargarInfantes();
+  }, []);
+
+  useEffect(() => {
+    if (infanteIdValue) {
+      fetch(`http://localhost:8000/api/cuotas/infante/${infanteIdValue}/`)
+        .then((res) => res.json())
+        .then((data) => {
+          setCuotas(data);
+          setValue("cuota_id", "");
+          setMontoTotal(0);
+          setIdCuota(null);
+        })
+        .catch((e) => console.error("Error al cargar cuotas:", e));
+    } else {
+      setCuotas([]);
+      setValue("cuota_id", "");
+      setMontoTotal(0);
+      setIdCuota(null);
+    }
+  }, [infanteIdValue, setValue]);
+
+  useEffect(() => {
+    async function cargarCobro() {
+      if (id) {
+        const { data } = await obtenerCajaCobro(id);
+        setValue("fecha_cobro", data.fecha_cobro);
+        setValue("monto_cobrado", parseFloat(data.monto_cobrado));
+        setValue("metodo_pago", data.metodo_pago);
+        setValue("observacion", data.observacion || "");
+        setValue("infante_id", data.cuota.id_infante.id.toString());
+        setValue("cuota_id", data.cuota_id.toString());
+
+        const resCuotas = await fetch(`http://localhost:8000/api/cuotas/infante/${data.cuota.id_infante.id}/`);
+        const dataCuotas = await resCuotas.json();
+        setCuotas(dataCuotas);
+
+        const cuota = dataCuotas.find((c) => c.id.toString() === data.cuota_id.toString());
+        if (cuota) {
+          const monto = parseFloat(cuota.monto_total || cuota.monto_cuota || 0);
+          setMontoTotal(monto);
+          setIdCuota(cuota.id);
+        }
+        setEditable(false);
+      } else {
+        reset({
+          fecha_cobro: new Date().toISOString().slice(0, 10),
+          monto_cobrado: 0,
+          metodo_pago: "EFECTIVO",
+          observacion: "",
+          infante_id: "",
+          cuota_id: "",
+        });
+        setEditable(true);
+        setCuotas([]);
+        setMontoTotal(0);
+        setIdCuota(null);
+      }
+    }
+    cargarCobro();
+  }, [id, reset, setValue]);
+
+  const handleCuotaChange = (cuotaId) => {
+    const cuota = cuotas.find((c) => c.id.toString() === cuotaId);
+    if (cuota) {
+      const mora = parseFloat(cuota.monto_mora || 0);
+      const monto = parseFloat(cuota.monto_cuota || 0) + mora;
+      setValue("monto_cobrado", monto, { shouldValidate: true });
+      setMontoTotal(monto);
+      setIdCuota(cuota.id);
+    } else {
+      setValue("monto_cobrado", 0);
+      setMontoTotal(0);
+      setIdCuota(null);
+    }
+    trigger("monto_cobrado");
+  };
+
+  const onSubmit = handleSubmit(async (data) => {
+    if (!idCuota) {
+      alert("Debe seleccionar una cuota válida.");
+      return;
+    }
+
+    const finalData = {
+      cuota_id: parseInt(data.cuota_id),
+      monto_cobrado: parseFloat(data.monto_cobrado),
+      metodo_pago: data.metodo_pago,
+      observacion: data.observacion?.trim() || "",
+    };
 
     try {
-      await registrarCobroCuota({
-        cuota_id: selectedCuota.value,
-        monto_cobrado: getValues('monto_cobrado'),
-        fecha_cobro: getValues('fecha_cobro'),
-        observacion: getValues('observacion'),
-      });
-      setSuccess('Cobro registrado con éxito');
-      setIsModalOpen(false);
-      setSelectedInfante(null);
-      setSelectedCuota(null);
-      setCuotaDetails(null);
-      setValue('monto_cobrado', '');
-      setValue('fecha_cobro', moment().format('YYYY-MM-DD'));
-      setValue('observacion', '');
-      setCuotas([]);
-    } catch (err) {
-      setError(err.response?.data?.error || 'Error al registrar el cobro');
-    } finally {
-      setIsLoading(false);
+      if (id) {
+        await actualizarCajaCobro(id, finalData);
+      } else {
+        await crearCajaCobro(finalData);
+      }
+      navigate(pagina);
+    } catch (error) {
+      console.error("Error al guardar el cobro:", error.response?.data || error.message);
+      alert("Error al guardar el cobro: " + (error.response?.data?.error || error.message));
+    }
+  });
+
+  const puedeEscribir = tienePermiso("cajasCobros", "escritura");
+
+  const descartarCobro = async () => {
+    const confirmar = window.confirm("¿Deseas eliminar este cobro?");
+    if (confirmar) {
+      await eliminarCajaCobro(id);
+      navigate(pagina);
     }
   };
 
   return (
     <div className="formulario">
       <div className="formulario-dentro">
-        <h1 className="formulario-titulo">Registrar Cobro de Cuota</h1>
-
-        {error && <div className="bg-red-500 text-white p-2 rounded mb-4">{error}</div>}
-        {success && <div className="bg-green-500 text-white p-2 rounded mb-4">{success}</div>}
-
-        <form onSubmit={onSubmit} id="registrar-cobro">
-          <fieldset disabled={!editable || !puedeEscribir}>
+        <h1 className="formulario-titulo">Cobro de Cuota</h1>
+        <form onSubmit={onSubmit} id="cobro-cuota">
+          <fieldset disabled={!editable}>
             <h4 className="formulario-elemento">Infante</h4>
-            <Select
-              options={infantes}
-              value={selectedInfante}
-              onChange={(option) => {
-                setSelectedInfante(option);
-                setSelectedCuota(null);
-                setCuotaDetails(null);
-                setError('');
-              }}
-              placeholder="Seleccione un infante..."
-              className="mb-4"
-              isDisabled={!puedeEscribir}
-            />
-            {errors.infante && <CampoRequerido />}
+            <select
+              className="formulario-input"
+              {...register("infante_id", { required: true })}
+            >
+              <option value="">Seleccione un infante</option>
+              {infantes.map((infante) => (
+                <option key={infante.id} value={infante.id.toString()}>
+                  {infante.id_persona
+                    ? `${infante.id_persona.nombre} ${infante.id_persona.apellido}`
+                    : "Sin nombre"}
+                </option>
+              ))}
+            </select>
+            {errors.infante_id && <CampoRequerido />}
 
             <h4 className="formulario-elemento">Cuota</h4>
-            <Select
-              options={cuotas}
-              value={selectedCuota}
-              onChange={(option) => {
-                setSelectedCuota(option);
-                setError('');
-              }}
-              placeholder="Seleccione una cuota..."
-              className="mb-4"
-              isDisabled={!puedeEscribir || !selectedInfante}
-            />
-            {errors.cuota && <CampoRequerido />}
-
-            {cuotaDetails && (
-              <div className="mb-4">
-                <h4 className="formulario-elemento">Detalles de la Cuota</h4>
-                <p>Monto de la Cuota: {cuotaDetails.monto_cuota}</p>
-                <p>Mora Estimada: {cuotaDetails.mora_estimada}</p>
-                <p><strong>Monto Total a Pagar: {cuotaDetails.monto_total}</strong></p>
-              </div>
-            )}
-
-            <h4 className="formulario-elemento">Fecha de Cobro</h4>
-            <input
-              type="date"
-              defaultValue={moment().format('YYYY-MM-DD')}
-              max={moment().format('YYYY-MM-DD')} // Evitar fechas futuras
+            <select
               className="formulario-input"
-              {...register('fecha_cobro', {
-                required: true,
-                validate: (value) => {
-                  if (moment(value).isAfter(moment())) {
-                    return 'La fecha de cobro no puede ser futura';
-                  }
-                  return true;
-                },
-              })}
+              value={cuotaIdValue}
               onChange={(e) => {
-                setValue('fecha_cobro', e.target.value);
-                // Recargar detalles de cuota con nueva fecha
-                if (selectedCuota) {
-                  obtenerDetalleCuota(selectedCuota.value, { fecha_cobro: e.target.value }).then(({ data }) => {
-                    setCuotaDetails(data);
-                    setValue('monto_cobrado', data.monto_total);
-                  });
-                }
+                setValue("cuota_id", e.target.value);
+                handleCuotaChange(e.target.value);
               }}
-            />
-            {errors.fecha_cobro && <p className="text-red-500">{errors.fecha_cobro.message || 'Campo requerido'}</p>}
+            >
+              <option value="">Seleccione una cuota</option>
+              {cuotas.map((cuota) => (
+                <option
+                  key={cuota.id}
+                  value={cuota.id}
+                  style={{ color: cuota.estado === "PAGADA" ? "gray" : "black" }}
+                >
+                  Cuota {cuota.nro_cuota} – Gs{cuota.monto_cuota + (cuota.monto_mora || 0)} ({cuota.estado})
+                </option>
+              ))}
+            </select>
+            {errors.cuota_id && <CampoRequerido />}
 
             <h4 className="formulario-elemento">Monto a Cobrar</h4>
             <input
               type="number"
-              step="0.01"
-              value={cuotaDetails?.monto_total || ''}
               className="formulario-input"
               readOnly
-              {...register('monto_cobrado', {
+              {...register("monto_cobrado", {
                 required: true,
-                min: 0.01,
+                /*validate: (value) =>
+                  value == montoTotal ||
+                  `El monto debe ser exactamente Gs${montoTotal}`,*/
               })}
             />
-            {errors.monto_cobrado && <CampoRequerido />}
+            {errors.monto_cobrado?.type === "required" && <CampoRequerido />}
+            {errors.monto_cobrado?.message && (
+              <span className="mensaje-error">{errors.monto_cobrado.message}</span>
+            )}
+            <p className="text-sm text-gray-500">Monto total: Gs{montoTotal}</p>
 
-            <h4 className="formulario-elemento">Observaciones</h4>
+            <h4 className="formulario-elemento">Método de Pago</h4>
+            <select className="formulario-input" {...register("metodo_pago", { required: true })}>
+              <option value="EFECTIVO">Efectivo</option>
+              <option value="TRANSFERENCIA">Transferencia</option>
+              <option value="TARJETA">Tarjeta</option>
+            </select>
+            {errors.metodo_pago && <CampoRequerido />}
+
+            <h4 className="formulario-elemento">Observación</h4>
             <textarea
-              placeholder="Ingrese observaciones (opcional)..."
               className="formulario-input"
-              {...register('observacion')}
-            />
+              {...register("observacion", {
+                maxLength: 200,
+                onBlur: (e) => {
+                  if (e.target.value === "") setValue("observacion", "");
+                },
+              })}
+            ></textarea>
           </fieldset>
         </form>
 
         <div className="botones-grupo">
           {puedeEscribir && editable && (
-            <button
-              type="submit"
-              form="registrar-cobro"
-              className="boton-guardar"
-              disabled={isLoading || !selectedCuota}
-            >
-              Registrar Cobro
+            <button type="submit" form="cobro-cuota" className="boton-guardar">
+              Guardar
+            </button>
+          )}
+          {id && puedeEscribir && !editable && (
+            <button onClick={descartarCobro} className="boton-eliminar">
+              Eliminar
             </button>
           )}
         </div>
-
-        {isModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-xl">
-              <h2 className="text-xl font-semibold mb-4">Confirmar Cobro</h2>
-              <p className="mb-6">
-                ¿Está seguro de registrar un cobro de {cuotaDetails?.monto_total} para la cuota {selectedCuota?.label} del infante {selectedInfante?.label}?
-              </p>
-              <div className="flex justify-end gap-4">
-                <button
-                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
-                  onClick={() => setIsModalOpen(false)}
-                  disabled={isLoading}
-                >
-                  Cancelar
-                </button>
-                <button
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400"
-                  onClick={handleConfirmarCobro}
-                  disabled={isLoading}
-                >
-                  Confirmar
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

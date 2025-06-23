@@ -15,7 +15,6 @@ const permisosRoles = {
     escritura: ["director", "profesor"],
   },
   locales: {
-    //permisos
     lectura: ["director", "administrador"],
     escritura: ["director"],
   },
@@ -24,12 +23,16 @@ const permisosRoles = {
     escritura: ["tutor"],
   },
   cuotas: {
-    lectura: ["director", "profesor"],
-    escritura: ["director"],
+    lectura: ["director", "profesor","tutor"],
+    escritura: ["director","administrador"],
+  },
+  cajasCobros: {
+    lectura: ["director", "administrador"],
+    escritura: ["director","administrador"],
   },
   parametros: {
-    lectura: ["director", "profesor"],
-    escritura: ["director"],
+    lectura: ["director","administrador"],
+    escritura: ["director","administrador"],
   },
   salas: {
     lectura: ["director", "administrador"],
@@ -60,38 +63,24 @@ const permisosRoles = {
     escritura: ["director", "administrador"],
   },
   proveedores: {
-    //permisos
-    lectura: ["director", "profesor"],
-    escritura: ["director"],
+    lectura: ["director", "administrador"],
+    escritura: ["director", "administrador"],
   },
   comprobantes: {
-    //permisos
-    lectura: ["director", "profesor"],
-    escritura: ["director"],
+    lectura: ["director", "administrador"],
+    escritura: ["director", "administrador"],
   },
   saldos: {
-    //permisos
-    lectura: ["director", "profesor"],
-    escritura: ["director"],
+    lectura: ["director", "administrador"],
+    escritura: ["director", "administrador"],
   },
   proveedores: {
-    //permisos
-    lectura: ["director", "profesor"],
-    escritura: ["director"],
-  },
-  comprobantes: {
-    //permisos
-    lectura: ["director", "profesor"],
-    escritura: ["director"],
-  },
-  saldos: {
-    //permisos
-    lectura: ["director", "profesor"],
-    escritura: ["director"],
+    lectura: ["director", "administrador"],
+    escritura: ["director", "administrador"],
   },
   cajasPagos: {
-    lectura: ["director", "profesor"],
-    escritura: ["director"],
+    lectura: ["director", "administrador"],
+    escritura: ["director", "administrador"],
   },
   informes: {
     lectura: ["director", "profesor", "tutor"],

@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { obtenerTodasCajasCobros } from "../api/saldocuotas.api";
+import { obtenerTodasCajasCobros } from "../api/cobrocuotas.api";
 import DataTable from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
 import { estiloTablas } from "../assets/estiloTablas";
 import tienePermiso from "../utils/tienePermiso";
 
-export function ListaCajaCuotasTable() {
+export function ListaCajaCobrosTable() {
   const navigate = useNavigate();
   const [cajas, setCajas] = useState([]);
   const [columnas, setColumnas] = useState([]);
@@ -14,69 +14,78 @@ export function ListaCajaCuotasTable() {
   const puedeEscribir = tienePermiso("cajasCobros", "escritura");
 
   useEffect(() => {
-    //Cambiar el nombre de la función
     async function loadCajas() {
       try {
-        //Cambiar la API para las demás páginas
         const res = await obtenerTodasCajasCobros();
-
- //       setCajas(res.data); //!agg
-//        setLoading(false); //!agg
-
         if (res.data.length > 0) {
-          const keys = Object.keys(res.data[0]);
+          // Columnas específicas para CobroCuotaInfante
+          const columnasDefinidas = [
+            {
+              name: "Cuota ID",
+              selector: (fila) => fila.cuota_id,
+              sortable: true,
+            },
+            {
+              name: "Monto Cobrado",
+              selector: (fila) => fila.monto_cobrado,
+              sortable: true,
+              style: {
+                textAlign: 'right',
+              },
+              cell: (fila) => `Gs ${fila.monto_cobrado.toLocaleString()}`,
+            },
+            {
+              name: "Método de Pago",
+              selector: (fila) => fila.metodo_pago,
+              sortable: true,
+            },
+            {
+              name: "Fecha Cobro",
+              selector: (fila) => fila.fecha_cobro,
+              sortable: true,
+              cell: (fila) => new Date(fila.fecha_cobro).toLocaleDateString('es-ES'),
+            },
+            {
+              name: "Observación",
+              selector: (fila) => fila.observacion || '',
+              sortable: true,
+            },
+          ];
 
-          //!!! Desactivar si se quiere mostrar el id
-          const columnasFiltradas = keys.filter((key) => key !== "id");
-
-          //Esta lógica puede variar un poco según las columnas que tengan
-          // que mostrar
-          const arrayColumnas = columnasFiltradas.map((columna) => ({
-            name: columna.charAt(0).toUpperCase() + columna.slice(1),
-            selector: (fila) => fila[columna],
-            sortable: true,
-            cell: (fila) =>
-              typeof fila[columna] === "boolean"
-                ? fila[columna]
-                  ? "Sí"
-                  : "No"
-                : fila[columna],
-          }));
-
-          agregarBotonDetalles(arrayColumnas);
-          setColumnas(arrayColumnas);
-          //Cambiar el nombre de la función
+          agregarBotonDetalles(columnasDefinidas);
+          setColumnas(columnasDefinidas);
           setCajas(res.data);
-          setLoading(false);
         }
+        setLoading(false);
       } catch (err) {
-        console.error(err);
+        console.error("Error al cargar cobros:", err);
         setLoading(false);
       }
     }
-    //Cambiar el nombre de la función
     loadCajas();
   }, []);
 
   function handleRowClick(fila) {
-    navigate(`/cajas-cobros/${fila.id}`);
+    navigate(`/cobros-cuotas/crear/${fila.id}`);
   }
 
   function agregarElemento() {
-    navigate(`/crear-caja-cobro/`);
+    navigate(`/cobros-cuotas/crear/`);
   }
 
   function agregarBotonDetalles(arrayColumnas) {
     arrayColumnas.push({
       name: "",
       selector: (fila) => fila,
-      right: true,
+      style: {
+        textAlign: 'right', // Alinea el botón a la derecha
+      },
       cell: (fila) => (
         <button
           className="boton-detalles"
           onClick={(e) => {
             e.stopPropagation();
-            handleRowClick(fila); // Llama a la función de descarga
+            handleRowClick(fila);
           }}
         >
           Detalles
@@ -85,12 +94,11 @@ export function ListaCajaCuotasTable() {
     });
   }
 
-  //Cambiar el nombre de 'permiso' según la página
   const elementosFiltrados = cajas.filter((caja) =>
     columnas.some((columna) => {
       const elem = columna.selector(caja);
       return elem?.toString().toLowerCase().includes(busqueda.toLowerCase());
-    })  
+    })
   );
 
   const paginationComponentOptions = {
@@ -102,10 +110,8 @@ export function ListaCajaCuotasTable() {
 
   return (
     <div>
-      {/*Cambiar el nombre de la página
-      y de data={--nombre---} según la página*/}
       <h1 className="align-baseline text-2xl font-semibold p-2 pl-3">
-        Cajas Cobros
+        Cobros de Cuotas
       </h1>
       <div className="p-2 flex flex-row justify-between">
         <input
@@ -113,11 +119,11 @@ export function ListaCajaCuotasTable() {
           placeholder="Buscar..."
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
-          className=" border border-gray-300 rounded px-3 py-1 w-full max-w-xs"
+          className="border border-gray-300 rounded px-3 py-1 w-full max-w-xs"
         />
         {puedeEscribir && (
           <button className="boton-guardar items-end" onClick={agregarElemento}>
-            Cobrar cuota...
+            Agregar...
           </button>
         )}
       </div>
@@ -129,7 +135,7 @@ export function ListaCajaCuotasTable() {
         paginationComponentOptions={paginationComponentOptions}
         highlightOnHover
         customStyles={estiloTablas}
-      ></DataTable>
+      />
     </div>
   );
 }

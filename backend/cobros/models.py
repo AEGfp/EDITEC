@@ -4,6 +4,8 @@ from calendar import monthrange
 from django.utils import timezone
 from apps.educativo.models import Infante
 from inscripciones.models import PeriodoInscripcion
+from django.core.exceptions import ValidationError
+import logging
 
 #ANTERIOR
 # Clase que corresponde a la entidad de Parámetros
@@ -113,8 +115,6 @@ class SaldoCuotas(models.Model):
     @property
     def monto_mora(self):
         """Calcula la mora dinámicamente según la fecha actual y los parámetros."""
-        if self.estado == EstadoCuota.PAGADA:
-            return 0
         params = ParametrosCobros.objects.filter(periodo=self.periodo, estado=True).first()
         if not params:
             return 0
@@ -156,6 +156,7 @@ class SaldoCuotas(models.Model):
         return f"Cobro de {self.monto_cobrado} para cuota {self.cuota}"
 '''
 
+logger = logging.getLogger(__name__)
 #NUEVO
 class MetodoPago(models.TextChoices):
     EFECTIVO = "EFECTIVO", "Efectivo"
@@ -178,13 +179,19 @@ class CobroCuotaInfante(models.Model):
         ]
 
     def save(self, *args, **kwargs):
-        """Valida que el cobro sea igual al monto total de la cuota y actualiza el estado de la cuota."""
-        if self.monto_cobrado != self.cuota.monto_total:
-            raise ValueError("El monto cobrado debe ser igual al monto total de la cuota (cuota + mora).")
-        if self.cuota.estado == EstadoCuota.PAGADA:
-            raise ValueError("La cuota ya está pagada.")
-        super().save(*args, **kwargs)
-        # Actualiza la cuota
-        self.cuota.estado = EstadoCuota.PAGADA
-        self.cuota.fecha_pago = self.fecha_cobro
-        self.cuota.save()
+        try:
+            if not self.cuota:
+                raise ValidationError("El campo cuota es obligatorio.")
+            if self.monto_cobrado != self.cuota.monto_total:
+                raise ValidationError(
+                    f"El monto cobrado ({self.monto_cobrado}) debe ser igual al monto total de la cuota ({self.cuota.monto_total})."
+                )
+            if self.cuota.estado == EstadoCuota.PAGADA:
+                raise ValidationError("La cuota ya está pagada.")
+            super().save(*args, **kwargs)
+        except ValidationError as e:
+            logger.error(f"Error de validación al guardar CobroCuotaInfante: {str(e)}")
+            raise
+        except Exception as e:
+            logger.error(f"Error inesperado al guardar CobroCuotaInfante: {str(e)}")
+            raise

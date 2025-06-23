@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { obtenerTodasCajasCobros } from "../api/saldocuotas.api";
+import { obtenerTodasCajasCobros } from "../api/cobrocuotas.api";
 import ListaElementos from "./ListaElementos";
 
-export function ListaCajasCuotas() {
+export function ListaCajasCobros() {
   const [cajas, setCajas] = useState([]);
 
   useEffect(() => {
@@ -23,6 +23,6 @@ export function ListaCajasCuotas() {
   return cajas.length > 0 ? (
     <ListaElementos lista={cajas} />
   ) : (
-    <p>Aun no existen cajas registradas para cobros de cuotas</p>
+    <p>Aun no existen cajas registradas para Cobros</p>
   );
 }

@@ -1,11 +1,14 @@
 from rest_framework import serializers
-from .models import ParametrosCobros, SaldoCuotas, CobroCuotaInfante
+from .models import ParametrosCobros, SaldoCuotas, CobroCuotaInfante, EstadoCuota
 from inscripciones.models import PeriodoInscripcion
 from inscripciones.serializers import PeriodoInscripcionSerializer
 from apps.educativo.models import Infante
 from apps.educativo.serializers import InfanteSerializer
 from datetime import date
 from django.utils import timezone
+import logging
+from django.utils import timezone
+from django.db import transaction, IntegrityError
 
 # Serializador de parámetros
 '''class ParametrosCobrosSerializer(serializers.ModelSerializer):
@@ -74,34 +77,56 @@ class SaldoCuotasSerializer(serializers.ModelSerializer):
             return 0
         return (today - obj.fecha_vencimiento).days
 
+logger = logging.getLogger(__name__)
+
 class CobroCuotaInfanteSerializer(serializers.ModelSerializer):
-    cuota = SaldoCuotasSerializer(read_only=True)
+    cuota = serializers.SerializerMethodField(read_only=True)
     cuota_id = serializers.PrimaryKeyRelatedField(
         queryset=SaldoCuotas.objects.all(), source='cuota', write_only=True
     )
-    usuario_registro = serializers.StringRelatedField(read_only=True)
+    usuario = serializers.StringRelatedField(read_only=True, allow_null=True)
+    fecha_cobro = serializers.DateField(default=timezone.now().date)
 
     class Meta:
         model = CobroCuotaInfante
         fields = [
             'id', 'cuota', 'cuota_id', 'fecha_cobro', 'monto_cobrado',
-            'metodo_pago', 'usuario_registro', 'observacion',
+            'metodo_pago', 'usuario', 'observacion',
             'creado_en', 'actualizado_en'
         ]
-        read_only_fields = ['creado_en', 'actualizado_en', 'usuario_registro']
+        read_only_fields = ['creado_en', 'actualizado_en', 'usuario']
+
+    def get_cuota(self, obj):
+        from .serializers import SaldoCuotasSerializer
+        return SaldoCuotasSerializer(obj.cuota).data if obj.cuota else None
 
     def validate(self, data):
-        """Valida que el monto_cobrado sea igual al monto_total de la cuota."""
-        cuota = data['cuota']
-        if data['monto_cobrado'] != cuota.monto_total:
+        cuota = data.get('cuota')
+        monto_cobrado = data.get('monto_cobrado')
+        logger.info(f"Validando datos: cuota_id={cuota.id if cuota else None}, monto_cobrado={monto_cobrado}")
+        if not cuota:
+            raise serializers.ValidationError("Debe proporcionar un cuota_id válido.")
+        if monto_cobrado != cuota.monto_total:
             raise serializers.ValidationError(
-                f"El monto cobrado ({data['monto_cobrado']}) debe ser igual al monto total ({cuota.monto_total})."
+                f"El monto cobrado ({monto_cobrado}) debe ser igual al monto total ({cuota.monto_total})."
             )
-        if cuota.estado == 'PAGADA':
+        if cuota.estado == EstadoCuota.PAGADA:
             raise serializers.ValidationError("La cuota ya está pagada.")
         return data
 
     def create(self, validated_data):
-        """Asigna el usuario autenticado como usuario_registro."""
-        validated_data['usuario_registro'] = self.context['request'].user
-        return super().create(validated_data)
+        try:
+            with transaction.atomic():
+                logger.info(f"Creando cobro con datos: {validated_data}")
+                cobro = super().create(validated_data)
+                cobro.cuota.estado = EstadoCuota.PAGADA
+                cobro.cuota.fecha_pago = cobro.fecha_cobro
+                cobro.cuota.save(update_fields=['estado', 'fecha_pago'])
+                logger.info(f"Cobro creado: ID {cobro.id}, Cuota ID {cobro.cuota_id}")
+                return cobro
+        except IntegrityError as e:
+            logger.error(f"Error de unicidad: {str(e)}")
+            raise serializers.ValidationError("Ya existe un cobro para esta cuota.")
+        except Exception as e:
+            logger.error(f"Error al crear CobroCuotaInfante: {str(e)}")
+            raise
