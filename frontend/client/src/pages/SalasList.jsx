@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import DataTable from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
-import { obtenerSalas } from "../api/salas.api";
+import { obtenerSalas, eliminarSala } from "../api/salas.api";
 import { estiloTablas } from "../assets/estiloTablas";
 import tienePermiso from "../utils/tienePermiso";
 
@@ -80,7 +80,6 @@ export default function ListaSalasTable() {
       ),
     });
   }
-  
 
   const elementosFiltrados = salas.filter((sala) =>
     columnas.some((columna) => {
@@ -102,12 +101,16 @@ export default function ListaSalasTable() {
         Salas
       </h1>
       <div className="p-2 flex flex-row justify-between">
-      <button
-  className="boton-guardar ml-2"
-  onClick={() => window.open("http://localhost:8000/api/educativo/reporte-asignacion-aulas/", "_blank")}
->
-  Generar Reporte
-</button>
+        <button
+          className="boton-guardar ml-2"
+          onClick={() => {
+            const periodo = sessionStorage.getItem("id_periodo");
+            const url = `http://localhost:8000/api/educativo/reporte-asignacion-aulas/?periodo_id=${periodo}`;
+            window.open(url, "_blank");
+          }}
+        >
+          Generar Reporte
+        </button>
 
         <input
           type="text"

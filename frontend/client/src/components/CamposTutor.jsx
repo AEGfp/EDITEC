@@ -53,7 +53,6 @@ export default function CamposTutor() {
             {...register("telefono_trabajo", { required: true })}
           />
 
-          {errors.telefono_trabajo && <CampoRequerido />}
           <h4 className="formulario-elemento">Nombre de la Empresa</h4>
           <input
             type="text"
