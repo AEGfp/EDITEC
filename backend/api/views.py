@@ -1,5 +1,11 @@
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import Group,User 
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.utils.http import urlsafe_base64_encode
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_str
+from django.utils.encoding import force_bytes
 from rest_framework import viewsets, status
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.views import APIView
@@ -20,13 +26,10 @@ from .serializer import (
 )
 from .models import Permiso, Persona  # , PerfilUsuario
 from Roles.roles import (
-    EsDirector,
-    EsProfesor,
-    EsAdministrador,
-    EsTutor,
     ControlarRoles,
 )
-
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 
 # Create your views here.
 class LoginView(APIView):
@@ -139,6 +142,53 @@ class PerfilUsuarioView(viewsets.ModelViewSet):
     serializer_class = PerfilUsuarioSerializer
     queryset = PerfilUsuario.objects.all()
 """
+@permission_classes([AllowAny])
+class SolicitarResetContrasena(APIView):
+    def post(self, request):
+        email = request.data.get("email")
+        if email:
+            try:
+                user = User.objects.get(email=email)
+                token = default_token_generator.make_token(user)
+                uid = urlsafe_base64_encode(force_bytes(user.pk))
+                reset_url = f"http://localhost:5173/cambiar-contrasenha/{uid}/{token}"
+                send_mail(
+                    "Restablecer tu contraseña",
+                    f"Usa este enlace para restablecer tu contraseña: {reset_url}",
+                    "noreply.editec@gmail.com",
+                    [email],
+                )
+            except User.DoesNotExist:
+                pass
+
+        return Response({"message": "Si el correo está registrado, recibirás un enlace para restablecer tu contraseña."})
+
+
+@permission_classes([AllowAny])
+class ResetPasswordView(APIView):
+    def post(self, request, uidb64, token):
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return Response({"error": "Enlace inválido o usuario no encontrado."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not default_token_generator.check_token(user, token):
+            return Response({"error": "El enlace ha expirado o no es válido."}, status=status.HTTP_400_BAD_REQUEST)
+
+        nueva_contrasena = request.data.get("password")
+        if not nueva_contrasena:
+            return Response({"error": "La nueva contraseña es requerida."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            validate_password(nueva_contrasena, user)
+        except ValidationError as e:
+            return Response({"error": e.messages}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(nueva_contrasena)
+        user.save()
+
+        return Response({"message": "Contraseña actualizada correctamente."})
 
 
 @authentication_classes([JWTAuthentication])

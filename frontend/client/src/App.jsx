@@ -9,6 +9,8 @@ import RealizarInscripcionPage from "./pages/RealizarInscripcionPage";
 import { EmpresasPage } from "./pages/EmpresasPage";
 import { EmpresasFormPage } from "./pages/EmpresasFormPage";
 import InicioInscripcionPage from "./pages/InicioInscripcionPage";
+import OlvidasteContrasenha from "./pages/OlvidasteContrasenha";
+import CambiarContrasenha from "./pages/CambiarContrasenha";
 
 export function App() {
   const obtenerRutas = (ruta) => {
@@ -39,12 +41,19 @@ export function App() {
           path="/iniciar-inscripcion"
           element={<InicioInscripcionPage />}
         />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup-falso" element={<SignUpFalso />} />
         <Route
           path="/realizar-inscripcion"
           element={<RealizarInscripcionPage />}
         />
+        <Route path="/olvide-contrasenha" element={<OlvidasteContrasenha />} />
+        <Route
+          path="/cambiar-contrasenha/:uid/:token"
+          element={<CambiarContrasenha />}
+        />
+
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup-falso" element={<SignUpFalso />} />
+
         <Route path="/acceso-denegado" element={<AccesoDenegado />} />
         {rutasProtegidas.flatMap((ruta) => {
           const subrutas = ruta.subrutas || [];
