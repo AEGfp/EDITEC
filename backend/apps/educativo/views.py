@@ -337,6 +337,8 @@ def reporte_asignacion_aulas(request):
 
 
 ##REPORTE DE TRANSFERENCIAS POR PERIODO
+from django.db.models import Q
+
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def generar_reporte_transferencias(request):
@@ -362,7 +364,8 @@ def generar_reporte_transferencias(request):
     transferencias_profesores = TransferenciaProfesor.objects.select_related(
         "profesor", "sala_origen", "sala_destino"
     ).filter(
-        sala_origen__periodo_inscripcion=periodo
+        Q(sala_origen__periodo_inscripcion=periodo) |
+        Q(sala_destino__periodo_inscripcion=periodo)
     )
 
     html = render_to_string("reporte_transferencias.html", {
@@ -377,6 +380,7 @@ def generar_reporte_transferencias(request):
     if not pdf.err:
         return HttpResponse(result.getvalue(), content_type="application/pdf")
     return HttpResponse("Error al generar PDF", status=500)
+
 
 
 

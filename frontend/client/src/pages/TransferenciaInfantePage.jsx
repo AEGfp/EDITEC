@@ -117,7 +117,7 @@ function TransferenciaInfantePage() {
 
   const generarReporteTransferencias = async () => {
     try {
-      const res = await crearReporteTransferencias({ periodo_id: 1 });
+      const res = await crearReporteTransferencias();
       const blob = new Blob([res.data], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
