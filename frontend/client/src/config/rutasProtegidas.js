@@ -53,6 +53,7 @@ export default [
     entidad: "asistencias", //tabla con la que interactúa
     permiso: "lectura", //permisos minimos
     nombre: "Asistencias", //Nombre del elemento en el Sidebar
+    grupo: "Profesor",
   },
   {
     path: "/asistencias-historial",
@@ -60,6 +61,7 @@ export default [
     entidad: "asistenciasHistorial",
     permiso: "lectura",
     nombre: "Historial",
+    grupo: "Profesor",
   },
   {
     path: "asistencias-historial/:id",
@@ -73,6 +75,7 @@ export default [
     entidad: "infantes",
     permiso: "lectura",
     nombre: "Infantes",
+    grupo: "Profesor",
     /* subrutas: [
       {
         path: "/infantes-crear",
@@ -95,6 +98,7 @@ export default [
     entidad: "tutores",
     permiso: "lectura",
     nombre: "Tutores",
+    grupo: "Profesor",
     /* subrutas: [
       {
         path: "/tutores-crear",
@@ -111,6 +115,7 @@ export default [
     entidad: "informes", //tabla con la que interactúa
     permiso: "lectura", //permisos minimos
     nombre: "Informes", //Nombre del elemento en el Sidebar
+    grupo: "Profesor",
     subrutas: [
       {
         path: "/crear-informe",
@@ -134,6 +139,7 @@ export default [
     entidad: "inscripciones",
     permiso: "lectura",
     nombre: "Inscripciones",
+    grupo: "Director",
   },
   {
     path: "/inscripciones/:id",
@@ -147,6 +153,7 @@ export default [
     entidad: "periodos", //tabla con la que interactúa
     permiso: "lectura", //permisos minimos
     nombre: "Periodos", //Nombre del elemento en el Sidebar
+    grupo: "Director",
     subrutas: [
       {
         path: "/periodos-crear",
@@ -169,6 +176,7 @@ export default [
     entidad: "salas",
     permiso: "lectura",
     nombre: "Salas",
+    grupo: "Director",
     subrutas: [
       {
         path: "/salas-crear",
@@ -238,6 +246,7 @@ export default [
     nombre: "Funcionarios",
     entidad: "funcionarios",
     permiso: "lectura",
+    grupo: "Director",
     subrutas: [
       {
         path: "/funcionarios-crear",
@@ -260,6 +269,7 @@ export default [
     entidad: "empresas", //tabla con la que interactúa
     permiso: "lectura", //permisos minimos
     nombre: "Empresas", //Nombre del elemento en el Sidebar
+    grupo: "Director",
     subrutas: [
       {
         path: "/crear-empresa",
@@ -282,6 +292,7 @@ export default [
     entidad: "locales", //tabla con la que interactúa
     permiso: "lectura", //permisos minimos
     nombre: "Sucursales", //Nombre del elemento en el Sidebar
+    grupo: "Director",
     subrutas: [
       {
         path: "/crear-sucursal",
@@ -304,6 +315,7 @@ export default [
     entidad: "parametros", //tabla con la que interactúa
     permiso: "lectura", //permisos minimos
     nombre: "Parámetros Cobros", //Nombre del elemento en el Sidebar
+    grupo: "Admnistrador",
     subrutas: [
       {
         path: "/crear-parametro",
@@ -326,6 +338,7 @@ export default [
     entidad: "cuotas", //tabla con la que interactúa
     permiso: "lectura", //permisos minimos
     nombre: "Cuotas", //Nombre del elemento en el Sidebar
+    grupo: "Admnistrador",
     /*subrutas: [
       {
         path: "/permisos-crear",
@@ -348,6 +361,7 @@ export default [
     entidad: "cajasCobros",
     permiso: "lectura",
     nombre: "Cobros de Cuotas",
+    grupo: "Admnistrador",
     subrutas: [
       {
         path: "/cobros-cuotas/crear",
@@ -371,6 +385,7 @@ export default [
     nombre: "Notificaciones",
     entidad: "notificaciones",
     permiso: "lectura",
+    grupo: "Administrador",
     subrutas: [
       {
         path: "/notificaciones-crear",
@@ -394,6 +409,7 @@ export default [
     entidad: "proveedores", //tabla con la que interactúa
     permiso: "lectura", //permisos minimos
     nombre: "Proveedores", //Nombre del elemento en el Sidebar
+    grupo: "Admnistrador",
     subrutas: [
       {
         path: "/crear-proveedor",
@@ -416,6 +432,7 @@ export default [
     entidad: "comprobantes", //tabla con la que interactúa
     permiso: "lectura", //permisos minimos
     nombre: "Comprobantes de Gasto", //Nombre del elemento en el Sidebar
+    grupo: "Admnistrador",
     subrutas: [
       {
         path: "/crear-comprobante",
@@ -438,6 +455,7 @@ export default [
     entidad: "saldos", //tabla con la que interactúa
     permiso: "lectura", //permisos minimos
     nombre: "Saldos de Proveedores", //Nombre del elemento en el Sidebar
+    grupo: "Admnistrador",
     subrutas: [
       /*{
         path: "/ver-saldo",
@@ -460,6 +478,7 @@ export default [
     entidad: "cajasPagos", //tabla con la que interactúa
     permiso: "lectura", //permisos minimos
     nombre: "Caja Pagos", //Nombre del elemento en el Sidebar
+    grupo: "Admnistrador",
     subrutas: [
       {
         path: "/crear-caja-pago",
@@ -486,7 +505,9 @@ export default [
   {
     path: "/transferencias",
     componente: TransferenciaInfantePage,
-    publico: true,
+    entidad: "transferencia",
+    permiso: "escritura",
     nombre: "Transferencia",
+    grupo: "Director",
   },
 ];
