@@ -30,6 +30,7 @@ from rest_framework import serializers
 
 class InfanteView(viewsets.ModelViewSet):
     queryset = Infante.objects.all()  
+    serializer_class = InfanteSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -78,14 +79,17 @@ class InfanteView(viewsets.ModelViewSet):
 
 
 
+
 class TutorView(viewsets.ModelViewSet):
     queryset = Tutor.objects.all()
     es_el_usuario = serializers.SerializerMethodField()
 
 from django.db.models import Q
 
+
 class TutorView(viewsets.ModelViewSet):
     queryset = Tutor.objects.all()
+    serializer_class = TutorSerializer
     es_el_usuario = serializers.SerializerMethodField()
 
     def get_permissions(self):
@@ -112,6 +116,7 @@ class TutorView(viewsets.ModelViewSet):
         # ✅ Director y administrador ven todos los tutores sin filtro por "activo"
         if "director" in grupos or "administrador" in grupos:
             return qs.distinct()
+
 
         filtros = Q()
 
