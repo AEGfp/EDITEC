@@ -1,16 +1,26 @@
 import { Api } from "./api";
 
-// Endpoint para transferencia de infantes
-const ENDPOINT_INFANTE = "educativo/transferir-infante/";
-export const transferirInfante = (data) => Api.post(ENDPOINT_INFANTE, data);
+const DIRECCION = "educativo/";
+const periodo = sessionStorage.getItem("id_periodo");
+const parametro = `?periodo_id=${periodo}`;
 
-// Endpoint para transferencia de profesores
-const ENDPOINT_PROFESOR = "educativo/transferir-profesor/";
-export const transferirProfesor = (data) => Api.post(ENDPOINT_PROFESOR, data);
+// Transferencia de Infante
+export const transferirInfante = (data) =>
+  Api.post(`${DIRECCION}transferir-infante/`, data);
 
-//Endpoint para generar el reporte PDF
-const ENDPOINT_REPORTE = "educativo/reporte-transferencias/";
-export const crearReporteTransferencias = () =>
-  Api.get(ENDPOINT_REPORTE, { responseType: "blob" });
+// Transferencia de Profesor
+export const transferirProfesor = (data) =>
+  Api.post(`${DIRECCION}transferir-profesor/`, data);
 
-  
+// Obtener todas las transferencias del periodo actual (para tabla)
+export const obtenerTransferencias = () =>
+  Api.get(`${DIRECCION}reporte-transferencias/${parametro}`);
+
+// Generar reporte PDF de transferencias por periodo
+export const crearReporteTransferencias = ({ periodo_id } = {}) => {
+  const id = periodo_id || sessionStorage.getItem("id_periodo");
+  return Api.get(`${DIRECCION}reporte-transferencias/`, {
+    params: { periodo_id: id },
+    responseType: "blob",
+  });
+};

@@ -4,6 +4,8 @@ import { obtenerSalas } from "../api/salas.api";
 import { obtenerFuncionarios } from "../api/funcionarios.api";
 import { transferirInfante, transferirProfesor } from "../api/transferencia.api";
 import CampoRequerido from "../components/CampoRequerido";
+import { crearReporteTransferencias } from "../api/transferencia.api";
+
 
 function TransferenciaInfantePage() {
   const [salas, setSalas] = useState([]);
@@ -110,6 +112,23 @@ function TransferenciaInfantePage() {
       setMensajeProfesor({ tipo: "error", texto: mensaje });
     }
   };
+  const generarReporteTransferencias = async () => {
+    try {
+      const res = await crearReporteTransferencias();
+      const blob = new Blob([res.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "reporte_transferencias.pdf";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error al generar el reporte de transferencias:", error);
+    }
+  };
+
 
   return (
     <div className="formulario">
@@ -236,17 +255,15 @@ function TransferenciaInfantePage() {
           )}
         </form>
 
-        {/* BOTÓN DE REPORTE PDF */}
-        <div className="flex justify-center mt-6">
-          <a
-            href={`${import.meta.env.VITE_API_URL}/api/educativo/reporte-transferencias/?periodo_id=1`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-blue-600 text-white font-semibold px-4 py-2 rounded hover:bg-blue-700 transition"
-          >
-            Generar Reporte de Transferencias
-          </a>
-        </div>
+   {/* BOTÓN DE REPORTE PDF */}
+      <div className="flex justify-center mt-6">
+        <button
+          onClick={generarReporteTransferencias}
+          className="bg-blue-600 text-white font-semibold px-4 py-2 rounded hover:bg-blue-700 transition"
+        >
+          Generar Reporte de Transferencias
+        </button>
+      </div>
       </div>
     </div>
   );
