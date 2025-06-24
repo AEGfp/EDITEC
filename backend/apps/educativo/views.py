@@ -48,8 +48,9 @@ class InfanteView(viewsets.ModelViewSet):
             except (ValueError, TypeError):
                 pass
 
+        # ✅ Director y administrador ven todos los infantes, sin filtrar por "activo"
         if "director" in grupos or "administrador" in grupos:
-            return qs.filter(activo=True)
+            return qs
 
         infantes_qs = Infante.objects.none()
 
@@ -66,7 +67,6 @@ class InfanteView(viewsets.ModelViewSet):
 
         return infantes_qs.distinct()
 
-
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update"]:
             return InfanteCreateUpdateSerializer
@@ -74,6 +74,7 @@ class InfanteView(viewsets.ModelViewSet):
 
     def get_serializer_context(self):
         return {"request": self.request}
+
 
 
 
@@ -86,6 +87,12 @@ from django.db.models import Q
 class TutorView(viewsets.ModelViewSet):
     queryset = Tutor.objects.all()
     es_el_usuario = serializers.SerializerMethodField()
+
+    def get_permissions(self):
+        # Permitir a todos acceder al detalle (retrieve)
+        if self.action == "retrieve":
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
     def get_queryset(self):
         user = self.request.user
@@ -102,8 +109,9 @@ class TutorView(viewsets.ModelViewSet):
             except (ValueError, TypeError):
                 pass
 
+        # ✅ Director y administrador ven todos los tutores sin filtro por "activo"
         if "director" in grupos or "administrador" in grupos:
-            return qs.filter(activo=True).distinct()
+            return qs.distinct()
 
         filtros = Q()
 
@@ -120,9 +128,6 @@ class TutorView(viewsets.ModelViewSet):
 
         return qs.filter(filtros).distinct()
 
-
-
-
     def get_es_el_usuario(self, obj):
         request = self.context.get("request")
         if not request or not hasattr(request.user, "persona"):
@@ -133,12 +138,17 @@ class TutorView(viewsets.ModelViewSet):
         if self.action in ["create", "update", "partial_update"]:
             return TutorCreateUpdateSerializer
         return TutorSerializer
-    
+
     def perform_update(self, serializer):
         tutor = self.get_object()
         if self.request.user != tutor.id_persona.user:
             raise PermissionDenied("No tenés permiso para editar este tutor.")
         serializer.save()
+
+
+
+
+ 
 
 
 class TurnoView(viewsets.ModelViewSet):

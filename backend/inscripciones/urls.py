@@ -1,6 +1,8 @@
 from django.urls import path, include
 from rest_framework import routers
 from inscripciones import views
+from inscripciones.views import verificar_usuario_email_ci
+
 
 router = routers.DefaultRouter()
 router.register(r"inscripciones", views.InscripcionView, "inscripciones")
@@ -20,4 +22,7 @@ urlpatterns = [
         views.generar_reporte_inscripciones,
         name="reporte_inscripciones_pdf",
     ),
+    # urls.py
+    path("verificar-usuario-email/", verificar_usuario_email_ci),
+
 ]

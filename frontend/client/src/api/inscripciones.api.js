@@ -46,3 +46,21 @@ export const crearReporteInscripcion = ({
     },
     responseType: "blob",
   });
+  // Verificación de disponibilidad de usuario, email y CI
+export const verificarDisponibilidadUsuarioEmail = async (params) => {
+  try {
+    const response = await Api.get("verificar-usuario-email/", { params });
+    // Si alguno de los campos está en uso, lanzar error
+    if (response.data.username_existente || response.data.email_existente || response.data.ci_existente) {
+      const error = [];
+      if (response.data.username_existente) error.push("usuario");
+      if (response.data.email_existente) error.push("correo");
+      if (response.data.ci_existente) error.push("CI");
+      throw new Error(`El ${error.join(", ")} ya está en uso`);
+    }
+    return true;
+  } catch (error) {
+    throw new Error("Error al verificar disponibilidad: " + error.message);
+  }
+};
+  
