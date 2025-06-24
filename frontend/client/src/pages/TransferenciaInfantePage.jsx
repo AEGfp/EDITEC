@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { obtenerInfantes } from "../api/infantes.api";
 import { obtenerSalas } from "../api/salas.api";
 import { obtenerFuncionarios } from "../api/funcionarios.api";
-import { transferirInfante, transferirProfesor } from "../api/transferencia.api";
+import {
+  transferirInfante,
+  transferirProfesor,
+  crearReporteTransferencias,
+} from "../api/transferencia.api";
 import CampoRequerido from "../components/CampoRequerido";
-import { crearReporteTransferencias } from "../api/transferencia.api";
-
 
 function TransferenciaInfantePage() {
   const [salas, setSalas] = useState([]);
@@ -112,6 +114,7 @@ function TransferenciaInfantePage() {
       setMensajeProfesor({ tipo: "error", texto: mensaje });
     }
   };
+
   const generarReporteTransferencias = async () => {
     try {
       const res = await crearReporteTransferencias();
@@ -129,13 +132,11 @@ function TransferenciaInfantePage() {
     }
   };
 
-
   return (
     <div className="formulario">
       <div className="formulario-dentro">
         <h1 className="formulario-titulo">Transferencia de Sala</h1>
 
-        {/* Transferencia de Infante */}
         <form onSubmit={handleSubmitInfante}>
           <h4 className="formulario-elemento">Infante</h4>
           <select
@@ -196,7 +197,6 @@ function TransferenciaInfantePage() {
 
         <hr className="my-6 border-t" />
 
-        {/* Transferencia de Profesor */}
         <form onSubmit={handleSubmitProfesor}>
           <h4 className="formulario-elemento">Profesor</h4>
           <select
@@ -255,15 +255,14 @@ function TransferenciaInfantePage() {
           )}
         </form>
 
-   {/* BOTÓN DE REPORTE PDF */}
-      <div className="flex justify-center mt-6">
-        <button
-          onClick={generarReporteTransferencias}
-          className="bg-blue-600 text-white font-semibold px-4 py-2 rounded hover:bg-blue-700 transition"
-        >
-          Generar Reporte de Transferencias
-        </button>
-      </div>
+        <div className="flex justify-center mt-6">
+          <button
+            onClick={generarReporteTransferencias}
+            className="bg-blue-600 text-white font-semibold px-4 py-2 rounded hover:bg-blue-700 transition"
+          >
+            Generar Reporte de Transferencias
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -14,7 +14,8 @@ from .views import (
     TransferenciaInfanteView,
     TransferenciaProfesorView,
  #   reporte_transferencias_por_sala,
-    reporte_transferencias_general,
+
+    generar_reporte_transferencias,
 )
 
 router = DefaultRouter()
@@ -34,7 +35,7 @@ urlpatterns = [
     path("transferir-profesor/", TransferenciaProfesorView.as_view(), name="transferir-profesor"),
     path("reporte-asignacion-aulas/", reporte_asignacion_aulas, name="reporte_asignacion_aulas"),
   #  path("reporte-transferencias/<int:sala_id>/", reporte_transferencias_por_sala, name="reporte_transferencias_por_sala"),
-    path("reporte-transferencias/", reporte_transferencias_general, name="reporte_transferencias_general"), 
+    path("reporte-transferencias/", generar_reporte_transferencias, name="reporte_transferencias"),
 
 
 ]
