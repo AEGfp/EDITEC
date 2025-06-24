@@ -434,4 +434,21 @@ def limpiar_inscripcion_rechazada(inscripcion):
         else:
             persona_tutor.delete()
 
+#Agregar vista de validacion ci, user, email
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def verificar_usuario_email_ci(request):
+    username = request.GET.get("username")
+    email = request.GET.get("email")
+    ci = request.GET.get("ci")
 
+    response = {}
+
+    if username:
+        response["username_existente"] = User.objects.filter(username=username).exists()
+    if email:
+        response["email_existente"] = User.objects.filter(email=email).exists()
+    if ci:
+        response["ci_existente"] = Persona.objects.filter(ci=ci).exists()
+
+    return Response(response)

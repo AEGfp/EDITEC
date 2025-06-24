@@ -39,8 +39,6 @@ class InfanteView(viewsets.ModelViewSet):
 
         periodo_id = self.request.query_params.get("id_periodo")
 
-        qs = Infante.objects.all()
-
         if periodo_id:
             try:
                 periodo_id_int = int(periodo_id)
