@@ -30,6 +30,7 @@ from rest_framework import serializers
 
 class InfanteView(viewsets.ModelViewSet):
     queryset = Infante.objects.all()  
+    serializer_class = InfanteSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -49,7 +50,7 @@ class InfanteView(viewsets.ModelViewSet):
                 pass
 
         if "director" in grupos or "administrador" in grupos:
-            return qs.filter(activo=True)
+            return qs
 
         infantes_qs = Infante.objects.none()
 
@@ -77,14 +78,13 @@ class InfanteView(viewsets.ModelViewSet):
 
 
 
-class TutorView(viewsets.ModelViewSet):
-    queryset = Tutor.objects.all()
-    es_el_usuario = serializers.SerializerMethodField()
-
-from django.db.models import Q
+# class TutorView(viewsets.ModelViewSet):
+#     queryset = Tutor.objects.all()
+#     es_el_usuario = serializers.SerializerMethodField()
 
 class TutorView(viewsets.ModelViewSet):
     queryset = Tutor.objects.all()
+    serializer_class = TutorSerializer
     es_el_usuario = serializers.SerializerMethodField()
 
     def get_queryset(self):
@@ -103,7 +103,7 @@ class TutorView(viewsets.ModelViewSet):
                 pass
 
         if "director" in grupos or "administrador" in grupos:
-            return qs.filter(activo=True).distinct()
+            return qs
 
         filtros = Q()
 
@@ -119,9 +119,6 @@ class TutorView(viewsets.ModelViewSet):
             filtros |= Q(id__in=tutores_ids)
 
         return qs.filter(filtros).distinct()
-
-
-
 
     def get_es_el_usuario(self, obj):
         request = self.context.get("request")
