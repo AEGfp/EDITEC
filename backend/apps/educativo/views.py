@@ -29,7 +29,7 @@ from django.db.models import Q
 from rest_framework import serializers
 
 class InfanteView(viewsets.ModelViewSet):
-    queryset = Infante.objects.all()  # ✅ Necesario para DRF
+    queryset = Infante.objects.all()  
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -238,7 +238,7 @@ def reporte_documentacion(request, infante_id):
         'sala': infante.id_sala.descripcion if infante.id_sala else 'Sin sala',
         'domicilio': persona.domicilio or '',
     },
-    'tutores': tutores_data,  # ✅ pasamos tutores aquí
+    'tutores': tutores_data,  
     'fecha': timezone.now().strftime("%d/%m/%Y"),
 }
 
@@ -337,26 +337,33 @@ def reporte_asignacion_aulas(request):
 
 
 ##REPORTE DE TRANSFERENCIAS POR PERIODO
-
 @api_view(["GET"])
 @permission_classes([AllowAny])
-def reporte_transferencias_general(request):
+def generar_reporte_transferencias(request):
+    from apps.educativo.models import PeriodoInscripcion
+
     periodo_id = request.GET.get("periodo_id")
+    periodo = None
+
+    if periodo_id and periodo_id.isdigit():
+        periodo = PeriodoInscripcion.objects.filter(id=periodo_id).first()
+    else:
+        periodo = PeriodoInscripcion.objects.filter(activo=True).order_by("-id").first()
+
+    if not periodo:
+        return HttpResponse("No se encontró un período activo o válido.", status=400)
 
     transferencias_infantes = TransferenciaInfante.objects.select_related(
         "infante__id_persona", "sala_origen", "sala_destino"
-    )
-    transferencias_profesores = TransferenciaProfesor.objects.select_related(
-        "profesor", "sala_origen", "sala_destino"  # corregido aquí
+    ).filter(
+        infante__periodo_inscripcion=periodo
     )
 
-    if periodo_id and periodo_id.isdigit():
-        transferencias_infantes = transferencias_infantes.filter(
-            infante__periodo_inscripcion_id=int(periodo_id)
-        )
-        transferencias_profesores = transferencias_profesores.filter(
-            sala_origen__periodo_inscripcion_id=int(periodo_id)
-        )
+    transferencias_profesores = TransferenciaProfesor.objects.select_related(
+        "profesor", "sala_origen", "sala_destino"
+    ).filter(
+        sala_origen__periodo_inscripcion=periodo
+    )
 
     html = render_to_string("reporte_transferencias.html", {
         "fecha": timezone.now().strftime("%d/%m/%Y"),
@@ -370,6 +377,10 @@ def reporte_transferencias_general(request):
     if not pdf.err:
         return HttpResponse(result.getvalue(), content_type="application/pdf")
     return HttpResponse("Error al generar PDF", status=500)
+
+
+
+
 
 
 '''
