@@ -30,6 +30,9 @@ function TransferenciaInfantePage() {
   const [mensajeInfante, setMensajeInfante] = useState(null);
   const [mensajeProfesor, setMensajeProfesor] = useState(null);
 
+  const [cargandoInfante, setCargandoInfante] = useState(false);
+  const [cargandoProfesor, setCargandoProfesor] = useState(false);
+
   useEffect(() => {
     async function cargarDatos() {
       try {
@@ -61,6 +64,8 @@ function TransferenciaInfantePage() {
 
   const handleSubmitInfante = async (e) => {
     e.preventDefault();
+    if (cargandoInfante) return;
+
     const errores = {
       id_infante: !formInfante.id_infante,
       id_nueva_sala: !formInfante.id_nueva_sala,
@@ -72,23 +77,40 @@ function TransferenciaInfantePage() {
       return;
     }
 
+    setMensajeInfante(null);
+    setCargandoInfante(true);
+
     try {
       const res = await transferirInfante(formInfante);
-      setMensajeInfante({ tipo: "exito", texto: res.data.mensaje || "Transferencia exitosa." });
+      setMensajeInfante({
+        tipo: "exito",
+        texto: res.data.mensaje || "Transferencia exitosa.",
+      });
       setFormInfante({ id_infante: "", id_nueva_sala: "", motivo: "" });
     } catch (error) {
       console.error("Error al transferir infante:", error);
-      const mensaje =
-        error.response?.data?.non_field_errors?.[0] ||
-        error.response?.data?.detail ||
-        Object.values(error.response?.data || {}).flat()[0] ||
-        "Ocurrió un error al transferir el infante.";
+      const responseData = error.response?.data || {};
+      let mensaje = "Ocurrió un error al transferir el infante.";
+
+      if (responseData.non_field_errors) {
+        mensaje = responseData.non_field_errors[0];
+      } else if (responseData.detail) {
+        mensaje = responseData.detail;
+      } else if (typeof responseData === "object") {
+        const allErrores = Object.values(responseData).flat();
+        if (allErrores.length) mensaje = allErrores[0];
+      }
+
       setMensajeInfante({ tipo: "error", texto: mensaje });
+    } finally {
+      setCargandoInfante(false);
     }
   };
 
   const handleSubmitProfesor = async (e) => {
     e.preventDefault();
+    if (cargandoProfesor) return;
+
     const errores = {
       id_profesor: !formProfesor.id_profesor,
       id_sala_destino: !formProfesor.id_sala_destino,
@@ -100,9 +122,15 @@ function TransferenciaInfantePage() {
       return;
     }
 
+    setMensajeProfesor(null);
+    setCargandoProfesor(true);
+
     try {
       const res = await transferirProfesor(formProfesor);
-      setMensajeProfesor({ tipo: "exito", texto: res.data.mensaje || "Transferencia de profesor exitosa." });
+      setMensajeProfesor({
+        tipo: "exito",
+        texto: res.data.mensaje || "Transferencia de profesor exitosa.",
+      });
       setFormProfesor({ id_profesor: "", id_sala_destino: "", motivo: "" });
     } catch (error) {
       console.error("Error al transferir profesor:", error);
@@ -112,6 +140,8 @@ function TransferenciaInfantePage() {
         Object.values(error.response?.data || {}).flat()[0] ||
         "Ocurrió un error al transferir el profesor.";
       setMensajeProfesor({ tipo: "error", texto: mensaje });
+    } finally {
+      setCargandoProfesor(false);
     }
   };
 
@@ -181,7 +211,9 @@ function TransferenciaInfantePage() {
           {erroresInfante.motivo && <CampoRequerido />}
 
           <div className="flex justify-center mt-4">
-            <button type="submit" className="boton-guardar">Transferir Infante</button>
+            <button type="submit" className="boton-guardar" disabled={cargandoInfante}>
+              {cargandoInfante ? "Transfiriendo..." : "Transferir Infante"}
+            </button>
           </div>
 
           {mensajeInfante && (
@@ -241,7 +273,9 @@ function TransferenciaInfantePage() {
           {erroresProfesor.motivo && <CampoRequerido />}
 
           <div className="flex justify-center mt-4">
-            <button type="submit" className="boton-guardar">Transferir Profesor</button>
+            <button type="submit" className="boton-guardar" disabled={cargandoProfesor}>
+              {cargandoProfesor ? "Transfiriendo..." : "Transferir Profesor"}
+            </button>
           </div>
 
           {mensajeProfesor && (

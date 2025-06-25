@@ -12,6 +12,7 @@ from .serializers import (
     TransferenciaProfesorSerializer,
     
 )
+from apps.notificaciones.utils import notificar_transferencia_a_tutores
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -470,3 +471,23 @@ class TransferenciaInfanteView(APIView):
             return Response({"mensaje": "Transferencia de infante realizada correctamente."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+
+#VIEWS para notificar las transferencias
+class TransferenciaInfanteCreateView(APIView):
+    def post(self, request):
+        
+        serializer = TransferenciaInfanteSerializer(data=request.data)
+        if serializer.is_valid():
+            transferencia = serializer.save()
+
+            # Enviar notificación al tutor del infante transferido
+            notificar_transferencia_a_tutores(
+                infante=transferencia.infante,
+                sala_origen=transferencia.sala_origen,
+                sala_destino=transferencia.sala_destino,
+                motivo=transferencia.motivo
+            )
+
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)

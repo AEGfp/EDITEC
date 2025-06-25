@@ -3,7 +3,9 @@ import logging
 from django.conf import settings
 from django.core.mail import send_mass_mail
 from smtplib import SMTPException
-from apps.educativo.models import Infante, Tutor
+from apps.educativo.models import Infante, Tutor, TutorInfante
+from django.core.mail import send_mail
+
 
 logger = logging.getLogger(__name__)
 
@@ -48,3 +50,33 @@ def enviar_notificaciones_por_email(notificacion, max_reintentos=3):
             break
 
     logger.error("❌ Fallaron todos los intentos para enviar la notificación por correo.")
+
+
+
+
+###ENVIAR correo de transferencia de infante de dicho tutor
+def notificar_transferencia_a_tutores(infante, sala_origen, sala_destino, motivo):
+    relaciones = TutorInfante.objects.filter(infante=infante).select_related("tutor__id_persona__user")
+
+    for relacion in relaciones:
+        tutor = relacion.tutor
+        email = tutor.email or getattr(getattr(tutor.id_persona, "user", None), "email", None)
+
+        if email:
+            asunto = f"[Transferencia] {infante.id_persona}"
+            mensaje = (
+                f"Estimado/a,\n\n"
+                f"Le informamos que su infante ha sido transferido/a de sala:\n\n"
+                f"👶 Infante: {infante.id_persona}\n"
+                f"📌 Desde: {sala_origen.descripcion if sala_origen else 'Sin especificar'}\n"
+                f"📍 Hacia: {sala_destino.descripcion if sala_destino else 'Sin especificar'}\n"
+                f"📝 Motivo: {motivo}\n\n"
+                f"Saludos cordiales."
+            )
+            try:
+                send_mail(asunto, mensaje, "noreply@guarderia.com", [email])
+                logger.info(f"Correo enviado al tutor: {email}")
+            except Exception as e:
+                logger.error(f"Error enviando a {email}: {e}")
+        else:
+            logger.warning(f"Tutor sin email válido: {tutor}")
