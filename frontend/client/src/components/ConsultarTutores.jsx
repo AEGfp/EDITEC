@@ -1,15 +1,20 @@
 import { useForm } from "react-hook-form";
 import { obtenerTutor } from "../api/tutores.api";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 function ConsultarTutores({ idTutor }) {
   const { register, setValue } = useForm();
-
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
   useEffect(() => {
     async function cargarTutor() {
       try {
+        setCargando(true);
         if (idTutor) {
-          const { data } = await obtenerTutor(idTutor);
+          const { data } = await obtenerTutor(
+            idTutor,
+            "?incluir_inactivos=true"
+          );
           const persona = data.id_persona || {};
           const personaId = typeof persona === "object" ? persona.id : persona;
 
@@ -30,14 +35,19 @@ function ConsultarTutores({ idTutor }) {
           setValue("direccion_trabajo", data.direccion_trabajo);
           setValue("observaciones", data.observaciones);
         }
+        setCargando(false);
       } catch (error) {
         console.error("Error al cargar el tutor:", error);
+        setError("Error al cargar los datos del tutor.");
+        setCargando(false);
       }
     }
 
     cargarTutor();
   }, [idTutor, setValue]);
-
+  if (cargando) return <p>Cargando datos del tutor...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
+  if (!idTutor) return <p>No se especificó el ID del tutor para mostrar.</p>;
   return (
     <div className="formulario">
       <div className="formulario-dentro">

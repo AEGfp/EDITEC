@@ -39,7 +39,7 @@ class InfanteView(viewsets.ModelViewSet):
         grupos = set(user.groups.values_list("name", flat=True))
 
         periodo_id = self.request.query_params.get("id_periodo")
-
+        incluir_inactivos = self.request.query_params.get("incluir_inactivos", "false").lower() == "true" 
         qs = Infante.objects.all()
 
         if periodo_id:
@@ -51,8 +51,60 @@ class InfanteView(viewsets.ModelViewSet):
 
         # ✅ Director y administrador ven todos los infantes, sin filtrar por "activo"
         if "director" in grupos or "administrador" in grupos:
-            return qs
+            if incluir_inactivos:
+                return qs
+            return qs.filter(activo=True)
 
+        infantes_qs = Infante.objects.none()
+
+        if "profesor" in grupos and persona:
+            salas = Sala.objects.filter(profesor_encargado=persona)
+            infantes_qs = infantes_qs | qs.filter(activo=True, id_sala__in=salas)
+
+        if "tutor" in grupos and persona:
+            try:
+                tutor = Tutor.objects.get(id_persona=persona)
+                infantes_qs = infantes_qs | qs.filter(tutores__tutor=tutor)
+            except Tutor.DoesNotExist:
+                pass
+
+        return infantes_qs.distinct()
+
+    def get_serializer_class(self):
+        if self.action in ["create", "update", "partial_update"]:
+            return InfanteCreateUpdateSerializer
+        return InfanteSerializer
+
+    def get_serializer_context(self):
+        return {"request": self.request}
+
+class InfantesActivosView(viewsets.ModelViewSet):
+    queryset = Infante.objects.all()  
+    serializer_class = InfanteSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        persona = getattr(user, "persona", None)
+        grupos = set(user.groups.values_list("name", flat=True))
+
+        periodo_id = self.request.query_params.get("id_periodo")
+        incluir_inactivos = self.request.query_params.get("incluir_inactivos", "false").lower() == "true"
+
+        qs = Infante.objects.all()
+
+        if periodo_id:
+            try:
+                periodo_id_int = int(periodo_id)
+                qs = qs.filter(periodo_inscripcion_id=periodo_id_int)
+            except (ValueError, TypeError):
+                pass
+
+        if "director" in grupos or "administrador" in grupos:
+            if incluir_inactivos:
+                return qs
+            return qs.filter(activo=True)
+        
         infantes_qs = Infante.objects.none()
 
         if "profesor" in grupos and persona:
@@ -78,14 +130,9 @@ class InfanteView(viewsets.ModelViewSet):
 
 
 
-
-
-class TutorView(viewsets.ModelViewSet):
-    queryset = Tutor.objects.all()
-    es_el_usuario = serializers.SerializerMethodField()
-
-from django.db.models import Q
-
+#class TutorView(viewsets.ModelViewSet):
+#    queryset = Tutor.objects.all()
+#    es_el_usuario = serializers.SerializerMethodField()
 
 class TutorView(viewsets.ModelViewSet):
     queryset = Tutor.objects.all()
@@ -104,6 +151,7 @@ class TutorView(viewsets.ModelViewSet):
         grupos = set(user.groups.values_list("name", flat=True))
 
         qs = Tutor.objects.all()
+        incluir_inactivos = self.request.query_params.get("incluir_inactivos", "false").lower() == "true" 
         periodo_id = self.request.query_params.get("id_periodo")
 
         if periodo_id:
@@ -115,7 +163,9 @@ class TutorView(viewsets.ModelViewSet):
 
         # ✅ Director y administrador ven todos los tutores sin filtro por "activo"
         if "director" in grupos or "administrador" in grupos:
-            return qs.distinct()
+            if incluir_inactivos:
+                return qs.distinct()
+            return qs.filter(activo=True).distinct()
 
 
         filtros = Q()
@@ -150,7 +200,68 @@ class TutorView(viewsets.ModelViewSet):
             raise PermissionDenied("No tenés permiso para editar este tutor.")
         serializer.save()
 
+class TutorActivoView(viewsets.ModelViewSet):
+    queryset = Tutor.objects.all()
+    serializer_class = TutorSerializer
+    es_el_usuario = serializers.SerializerMethodField()
 
+    def get_permissions(self):
+        # Permitir a todos acceder al detalle (retrieve)
+        if self.action == "retrieve":
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def get_queryset(self):
+        user = self.request.user
+        persona = getattr(user, "persona", None)
+        grupos = set(user.groups.values_list("name", flat=True))
+
+        qs = Tutor.objects.all()
+        periodo_id = self.request.query_params.get("id_periodo")
+
+        if periodo_id:
+            try:
+                periodo_id_int = int(periodo_id)
+                qs = qs.filter(tutorados__infante__periodo_inscripcion_id=periodo_id_int)
+            except (ValueError, TypeError):
+                pass
+
+        # ✅ Director y administrador ven todos los tutores sin filtro por "activo"
+        if "director" in grupos or "administrador" in grupos:
+            return qs.filter(activo=True).distinct()
+
+
+        filtros = Q()
+
+        if "tutor" in grupos and persona:
+            filtros |= Q(id_persona=persona)
+
+        if "profesor" in grupos and persona:
+            salas_profesor = Sala.objects.filter(profesor_encargado=persona)
+            infantes_activos = Infante.objects.filter(id_sala__in=salas_profesor, activo=True)
+            tutores_ids = TutorInfante.objects.filter(
+                infante__in=infantes_activos
+            ).values_list("tutor_id", flat=True)
+            filtros |= Q(id__in=tutores_ids)
+
+        return qs.filter(filtros).distinct()
+
+    def get_es_el_usuario(self, obj):
+        request = self.context.get("request")
+        if not request or not hasattr(request.user, "persona"):
+            return False
+        return obj.id_persona == request.user.persona
+
+    def get_serializer_class(self):
+        if self.action in ["create", "update", "partial_update"]:
+            return TutorCreateUpdateSerializer
+        return TutorSerializer
+
+    def perform_update(self, serializer):
+        tutor = self.get_object()
+        if self.request.user != tutor.id_persona.user:
+            raise PermissionDenied("No tenés permiso para editar este tutor.")
+        serializer.save()
 
 
  

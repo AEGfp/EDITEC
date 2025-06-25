@@ -13,7 +13,8 @@ export const crearInfante = (infante) => {
   return Api.post(DIRECCION, infante);
 };
 
-export const obtenerInfante = (id) => Api.get(`${DIRECCION}${id}/`);
+export const obtenerInfante = (id, params = "") =>
+  Api.get(`${DIRECCION}${id}/${params}`);
 
 export const actualizarInfante = (id, datos) => {
   console.log(`📤 Actualizando infante ID ${id} con:`, datos);

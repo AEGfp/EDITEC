@@ -11,7 +11,8 @@ export const crearTutor = (tutor) => {
   return Api.post(DIRECCION, tutor);
 };
 
-export const obtenerTutor = (id) => Api.get(`${DIRECCION}${id}/`);
+export const obtenerTutor = (id, params = "") =>
+  Api.get(`${DIRECCION}${id}/${params}`);
 
 export const actualizarTutor = (id, datos) => {
   console.log("🔄 Actualizando tutor:", id, datos);

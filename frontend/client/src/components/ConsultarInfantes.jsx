@@ -1,15 +1,21 @@
 import { useForm } from "react-hook-form";
 import { obtenerInfante } from "../api/infantes.api";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import MostrarError from "./MostrarError";
 
 function ConsultarInfantes({ idInfante }) {
   const { register, setValue } = useForm();
-
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
   useEffect(() => {
     async function cargarInfante() {
       try {
+        setCargando(true);
         if (idInfante) {
-          const { data } = await obtenerInfante(idInfante);
+          const { data } = await obtenerInfante(
+            idInfante,
+            "?incluir_inactivos=true"
+          );
           const persona = data.id_persona || {};
           const personaId = typeof persona === "object" ? persona.id : persona;
 
@@ -24,8 +30,11 @@ function ConsultarInfantes({ idInfante }) {
           setValue("permiso_cambio_panhal", data.permiso_cambio_panhal);
           setValue("permiso_fotos", data.permiso_fotos);
         }
+        setCargando(false);
       } catch (error) {
         console.error("Error al cargar el infante", error);
+        setError("Error al cargar los datos");
+        setCargando(false);
       }
     }
 
@@ -35,6 +44,8 @@ function ConsultarInfantes({ idInfante }) {
   if (!idInfante) {
     return <p>No se especificó el ID del infante para mostrar.</p>;
   }
+
+  if (cargando) return <p>Cargando datos...</p>;
 
   return (
     <div className="formulario">
@@ -104,6 +115,7 @@ function ConsultarInfantes({ idInfante }) {
               {...register("permiso_fotos")}
               readOnly
             />
+            {/*error && <MostrarError mensajes={error} />*/}
           </fieldset>
         </form>
       </div>
