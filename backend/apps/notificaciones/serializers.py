@@ -27,10 +27,20 @@ class NotificacionSerializer(serializers.ModelSerializer):
             errores['contenido'] = 'El mensaje no puede estar vacío.'
 
         fecha = data.get("fecha")
+        hora = data.get("hora")
+
         if not fecha:
             errores['fecha'] = 'Fecha inválida.'
-        elif fecha < date.today():
-            errores['fecha'] = 'La fecha no puede ser anterior a hoy.'
+        elif hora:
+            try:
+                fecha_hora = datetime.combine(fecha, hora)
+                if fecha_hora < datetime.now():
+                    errores['fecha'] = 'La fecha y hora no pueden ser anteriores al momento actual.'
+            except Exception:
+                errores['fecha'] = 'Fecha y hora inválidas.'
+        else:
+            if fecha < date.today():
+                errores['fecha'] = 'La fecha no puede ser anterior a hoy.'
 
         if not evento:
             errores['evento'] = 'Debe seleccionar un evento.'
