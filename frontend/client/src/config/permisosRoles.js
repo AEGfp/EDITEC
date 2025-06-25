@@ -55,7 +55,7 @@ const permisosRoles = {
     escritura: ["director"],
   },
   cuotas: {
-    lectura: ["director", "profesor", "tutor"],
+    lectura: ["director", "administrador", "tutor"],
     escritura: ["director", "administrador"],
   },
   cajasCobros: {
@@ -91,7 +91,6 @@ const permisosRoles = {
     lectura: ["director", "administrador"],
     escritura: ["director", "administrador"],
   },
-
   transferencias: {
     lectura: ["director"],
     escritura: ["director"],
