@@ -29,7 +29,8 @@ from django.contrib.auth.models import Group
 from api.models import Persona,User
 from apps.educativo.models import Infante,Tutor, TutorInfante,Sala
 from archivos.models import Archivos
-
+from django.core.mail import send_mail
+from django.conf import settings
 
 def desanidar_data(data):
     result = {}
@@ -167,10 +168,11 @@ class InscripcionView(viewsets.ModelViewSet):
                 tutor.activo = TutorInfante.objects.filter(
                     tutor=tutor, infante__activo=True
                 ).exclude(infante=infante).exists()
-
+                if not infante.activo:
+                    infante.id_sala = None
             infante.save()
             tutor.save()
-
+        enviar_estado_inscripcion(instance)
         return super().update(request, *args, **kwargs)
 
 @api_view(["POST"])
@@ -396,6 +398,60 @@ def generar_reporte_inscripciones(request):
         return HttpResponse(result.getvalue(), content_type="application/pdf")
     return HttpResponse("Error al generar PDF", status=500)
 
+
+
+
+def enviar_estado_inscripcion(inscripcion):
+    tutor = inscripcion.id_tutor
+    infante = inscripcion.id_infante
+    estado = inscripcion.estado
+
+    nombre_tutor = f"{tutor.id_persona.nombre} {tutor.id_persona.apellido}"
+    nombre_infante = f"{infante.id_persona.nombre} {infante.id_persona.apellido}"
+
+    if estado == "aprobada":
+        asunto = "️Inscripción Aprobada"
+        mensaje = f"""
+Estimado/a {nombre_tutor},
+
+Nos complace informarle que la inscripción del infante {nombre_infante} ha sido **APROBADA**.
+
+El infante ya se encuentra activo en el sistema y asignado a su sala correspondiente.
+
+¡Muchas gracias por confiar en nosotros!
+
+Atentamente,
+Equipo Administrativo
+"""
+    elif estado == "rechazada":
+        asunto = "❌ Inscripción Rechazada"
+        mensaje = f"""
+Estimado/a {nombre_tutor},
+
+Le informamos que la inscripción del infante {nombre_infante} ha sido **RECHAZADA**.
+
+Por favor, póngase en contacto con la administración para obtener más detalles o resolver cualquier inconveniente.
+
+Atentamente,
+Equipo Administrativo
+"""
+    else:
+        return
+
+    user = getattr(tutor.id_persona, "user", None)
+    email = getattr(user, "email", None) if user else None
+
+    if not email:
+        print(f"️Tutor {nombre_tutor} no tiene email asociado.")
+        return
+
+    send_mail(
+        subject=asunto,
+        message=mensaje,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[email],
+        fail_silently=False,
+    )
 
 @transaction.atomic
 def limpiar_inscripcion_rechazada(inscripcion):

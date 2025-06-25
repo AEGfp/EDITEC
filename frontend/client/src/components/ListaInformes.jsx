@@ -21,6 +21,7 @@ export function ListaInformes() {
   useEffect(() => {
     //Cambiar el nombre de la función
     async function loadInformes() {
+      setLoading(true);
       try {
         //Cambiar la API para las demás páginas
         const res = await obtenerTodosInformes();
@@ -34,6 +35,7 @@ export function ListaInformes() {
           setInformes(res.data);
           setLoading(false);
         }
+        setLoading(false);
       } catch (err) {
         console.error(err);
         setLoading(false);
