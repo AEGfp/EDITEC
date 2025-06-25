@@ -92,8 +92,8 @@ class InfantesAsignadosConAsistenciaView(APIView):
             return Response({"error": "El usuario no tiene una persona asociada"}, status=400)
 
         salas = Sala.objects.filter(
-            hora_entrada__lte=ahora,
-            hora_salida__gte=ahora,
+            #hora_entrada__lte=ahora,
+            #hora_salida__gte=ahora,
             periodo_inscripcion=periodo_id
         )
 
@@ -107,6 +107,7 @@ class InfantesAsignadosConAsistenciaView(APIView):
         )
 
         serializer = InfanteConAsistenciaSerializer(infantes, many=True)
+        #print(serializer.data)
         return Response(serializer.data)
 
 
