@@ -28,11 +28,20 @@ export function ListaParametrosTable() {
   };
 
   const meses = [
-  "", 
-  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+    "",
+    "Enero",
+    "Febrero",
+    "Marzo",
+    "Abril",
+    "Mayo",
+    "Junio",
+    "Julio",
+    "Agosto",
+    "Septiembre",
+    "Octubre",
+    "Noviembre",
+    "Diciembre",
   ];
-
 
   // Formatea una fecha tipo "2025-06-24T00:00:00Z" a "24/06/2025"
   function formatearFecha(fechaStr) {
@@ -51,55 +60,70 @@ export function ListaParametrosTable() {
           const columnasFiltradas = keys.filter((key) => key !== "id");
 
           const arrayColumnas = columnasFiltradas.map((columna) => ({
-            name: nombresColumnas[columna] || columna.charAt(0).toUpperCase() + columna.slice(1),
+            name:
+              nombresColumnas[columna] ||
+              columna.charAt(0).toUpperCase() + columna.slice(1),
             selector: (fila) => {
-            const valor = fila[columna];
+              const valor = fila[columna];
 
-            // Mostrar nombre del mes si corresponde
-            if ((columna === "mes_inicio" || columna === "mes_fin") && typeof valor === "number") {
-              return meses[valor] || valor;
-            }
+              // Mostrar nombre del mes si corresponde
+              if (
+                (columna === "mes_inicio" || columna === "mes_fin") &&
+                typeof valor === "number"
+              ) {
+                return meses[valor] || valor;
+              }
 
-            // Si es booleano
-            if (typeof valor === "boolean") return valor;
+              // Si es booleano
+              if (typeof valor === "boolean") return valor;
 
-            // Si es un objeto (como 'periodo')
-            if (typeof valor === "object" && valor !== null) {
-              const inicio = formatearFecha(valor.fecha_inicio);
-              const fin = formatearFecha(valor.fecha_fin);
-              return `${inicio} - ${fin}`;
-            }
+              // Si es un objeto (como 'periodo')
+              if (typeof valor === "object" && valor !== null) {
+                const inicio = formatearFecha(valor.fecha_inicio);
+                const fin = formatearFecha(valor.fecha_fin);
+                return `${inicio} - ${fin}`;
+              }
 
-            // Si parece fecha
-            if (typeof valor === "string" && valor.match(/^\d{4}-\d{2}-\d{2}/)) {
-              return formatearFecha(valor);
-            }
+              // Si parece fecha
+              if (
+                typeof valor === "string" &&
+                valor.match(/^\d{4}-\d{2}-\d{2}/)
+              ) {
+                return formatearFecha(valor);
+              }
 
-            return valor;
-          },
-          cell: (fila) => {
-            const valor = fila[columna];
+              return valor;
+            },
+            cell: (fila) => {
+              const valor = fila[columna];
 
-            // Nombre del mes
-            if ((columna === "mes_inicio" || columna === "mes_fin") && typeof valor === "number") {
-              return meses[valor] || valor;
-            }
+              // Nombre del mes
+              if (
+                (columna === "mes_inicio" || columna === "mes_fin") &&
+                typeof valor === "number"
+              ) {
+                return meses[valor] || valor;
+              }
 
-            if (typeof valor === "boolean") return valor ? "Sí" : "No";
+              if (typeof valor === "boolean") return valor ? "Sí" : "No";
 
-            if (typeof valor === "object" && valor !== null) {
-              const inicio = formatearFecha(valor.fecha_inicio);
-              const fin = formatearFecha(valor.fecha_fin);
-              return `${inicio} - ${fin}`;
-            }
+              if (typeof valor === "object" && valor !== null) {
+                const inicio = formatearFecha(valor.fecha_inicio);
+                const fin = formatearFecha(valor.fecha_fin);
+                return `${inicio} - ${fin}`;
+              } else if (valor === null) {
+                return "";
+              }
 
-            if (typeof valor === "string" && valor.match(/^\d{4}-\d{2}-\d{2}/)) {
-              return formatearFecha(valor);
-            }
+              if (
+                typeof valor === "string" &&
+                valor.match(/^\d{4}-\d{2}-\d{2}/)
+              ) {
+                return formatearFecha(valor);
+              }
 
-            return valor;
-          },
-
+              return valor;
+            },
           }));
 
           agregarBotonDetalles(arrayColumnas);
