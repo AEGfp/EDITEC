@@ -70,13 +70,29 @@ export function ParametrosFormPage() {
   }, [params.id, setValue, reset]);
 
   const onSubmit = handleSubmit(async (data) => {
+  try {
     if (params.id) {
       await actualizarParametro(params.id, data);
     } else {
       await crearParametro(data);
     }
     navigate(pagina);
-  });
+  } catch (error) {
+    const backendErrors = error.response?.data;
+
+    // Mostramos primero errores generales
+    if (backendErrors?.non_field_errors?.length > 0) {
+      alert("Error: " + backendErrors.non_field_errors[0]);
+    } else {
+      // Si no hay non_field_errors, mostramos cualquier otro mensaje
+      alert("Error al guardar: " + JSON.stringify(backendErrors));
+    }
+
+    console.error("Detalles del error:", backendErrors);
+  }
+});
+
+
 
   const habilitarEdicion = async () => {
     setEditable(true);
@@ -105,15 +121,6 @@ export function ParametrosFormPage() {
         <form onSubmit={onSubmit} id="editar-parametro">
           {/*El fieldset permite bloquear la escritura*/}
           <fieldset disabled={!editable}>
-            <h4 className="formulario-elemento">Año</h4>
-            <input
-              type="number"
-              placeholder="Ingrese el año para generar las cuotas."
-              className="formulario-input"
-              {...register("anho", { required: true, valueAsNumber: true })}
-            />
-            {/*Mensaje de error si no se completa un campo obligatorio*/}
-            {errors.anho && <CampoRequerido></CampoRequerido>}
             <h4 className="formulario-elemento">Mes de inicio</h4>
             <select 
                 className="formulario-input"

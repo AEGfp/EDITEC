@@ -270,7 +270,7 @@ export default [
     permiso: "lectura", //permisos minimos
     nombre: "Empresas", //Nombre del elemento en el Sidebar
     grupo: "Director",
-    subrutas: [
+    /*subrutas: [
       {
         path: "/crear-empresa",
         componente: EmpresasFormPage,
@@ -278,8 +278,14 @@ export default [
         permiso: "escritura",
         nombre: "Crear Empresa",
       },
-    ],
+    ],*/
   },
+  {
+        path: "/crear-empresa",
+        componente: EmpresasFormPage,
+        entidad: "empresas",
+        permiso: "escritura",
+      },
   {
     path: "/empresas/:id",
     componente: EmpresasFormPage,
@@ -293,7 +299,7 @@ export default [
     permiso: "lectura", //permisos minimos
     nombre: "Sucursales", //Nombre del elemento en el Sidebar
     grupo: "Director",
-    subrutas: [
+    /*subrutas: [
       {
         path: "/crear-sucursal",
         componente: LocalesFormPage,
@@ -301,8 +307,14 @@ export default [
         permiso: "escritura",
         nombre: "Crear Sucursal",
       },
-    ],
+    ],*/
   },
+  {
+        path: "/crear-sucursal",
+        componente: LocalesFormPage,
+        entidad: "locales",
+        permiso: "escritura",
+      },
   {
     path: "/locales/:id",
     componente: LocalesFormPage,
@@ -410,7 +422,7 @@ export default [
     permiso: "lectura", //permisos minimos
     nombre: "Proveedores", //Nombre del elemento en el Sidebar
     grupo: "Admnistrador",
-    subrutas: [
+    /*subrutas: [
       {
         path: "/crear-proveedor",
         componente: ProveedoresFormPage,
@@ -418,8 +430,15 @@ export default [
         permiso: "escritura",
         nombre: "Crear Proveedor",
       },
-    ],
+    ],*/
   },
+  {
+        path: "/crear-proveedor",
+        componente: ProveedoresFormPage,
+        entidad: "proveedores",
+        permiso: "escritura",
+        nombre: "Crear Proveedor",
+      },
   {
     path: "/proveedores/:id",
     componente: ProveedoresFormPage,
@@ -433,7 +452,7 @@ export default [
     permiso: "lectura", //permisos minimos
     nombre: "Comprobantes de Gasto", //Nombre del elemento en el Sidebar
     grupo: "Admnistrador",
-    subrutas: [
+    /*subrutas: [
       {
         path: "/crear-comprobante",
         componente: ComprobantesFormPage,
@@ -441,7 +460,13 @@ export default [
         permiso: "escritura",
         nombre: "Crear Comprobante",
       },
-    ],
+    ],*/
+  },
+  {
+        path: "/crear-comprobante",
+        componente: ComprobantesFormPage,
+        entidad: "comprobantes",
+        permiso: "escritura",
   },
   {
     path: "/comprobantes/:id",
@@ -479,16 +504,21 @@ export default [
     permiso: "lectura", //permisos minimos
     nombre: "Caja Pagos", //Nombre del elemento en el Sidebar
     grupo: "Admnistrador",
-    subrutas: [
+    /*subrutas: [
       {
         path: "/crear-caja-pago",
         componente: CajasPagosFormPage,
         entidad: "cajasPagos",
         permiso: "escritura",
-        nombre: "Registrar Pago",
       },
-    ],
+    ],*/
   },
+  {
+        path: "/crear-caja-pago",
+        componente: CajasPagosFormPage,
+        entidad: "cajasPagos",
+        permiso: "escritura",
+      },
   {
     path: "/caja-pagos/:id",
     componente: CajasPagosFormPage,

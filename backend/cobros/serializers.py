@@ -33,6 +33,7 @@ class CobroCuotaInfanteSerializer(serializers.ModelSerializer):
 '''
 
 
+'''
 class ParametrosCobrosSerializer(serializers.ModelSerializer):
     periodo = PeriodoInscripcionSerializer(read_only=True)
     periodo_id = serializers.PrimaryKeyRelatedField(
@@ -47,6 +48,51 @@ class ParametrosCobrosSerializer(serializers.ModelSerializer):
             'estado', 'creado_en', 'actualizado_en'
         ]
         read_only_fields = ['creado_en', 'actualizado_en']
+'''
+class ParametrosCobrosSerializer(serializers.ModelSerializer):
+    periodo = PeriodoInscripcionSerializer(read_only=True)
+
+    class Meta:
+        model = ParametrosCobros
+        fields = [
+            'id', 'periodo', 'mes_inicio', 'mes_fin',
+            'dia_limite_pago', 'dias_gracia', 'monto_cuota', 'mora_por_dia',
+            'estado', 'creado_en', 'actualizado_en'
+        ]
+        read_only_fields = ['creado_en', 'actualizado_en']
+
+    def create(self, validated_data):
+        # Buscar período activo si no se pasa (porque no lo pedimos más)
+        periodo_activo = PeriodoInscripcion.objects.filter(activo=True).first()
+        if not periodo_activo:
+            raise serializers.ValidationError({
+                "detalle": "No hay un período activo para asignar."
+            })
+
+        validated_data["periodo"] = periodo_activo
+
+        # Verificamos si ya hay un parámetro activo para ese período
+        if validated_data.get("estado", False):
+            if ParametrosCobros.objects.filter(periodo=periodo_activo, estado=True).exists():
+                raise serializers.ValidationError({
+                    "detalle": "Ya existe un parámetro activo para este período."
+                })
+
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        periodo = instance.periodo  # mantener el existente
+
+        # Verificamos si se está marcando como activo y ya existe otro activo
+        if validated_data.get("estado", instance.estado):
+            if ParametrosCobros.objects.filter(periodo=periodo, estado=True).exclude(pk=instance.pk).exists():
+                raise serializers.ValidationError({
+                    "detalle": "Ya existe un parámetro activo para este período."
+                })
+
+        validated_data["periodo"] = periodo
+        return super().update(instance, validated_data)
+
 
 class SaldoCuotasSerializer(serializers.ModelSerializer):
     infante_nombre = serializers.SerializerMethodField()
