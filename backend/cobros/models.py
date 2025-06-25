@@ -58,10 +58,19 @@ class ParametrosCobros(models.Model):
         ]
 
     def save(self, *args, **kwargs):
-        """Asegura que solo haya un conjunto de parámetros activo por período."""
+        # Si no se asignó un periodo manualmente, buscamos el activo
+        if not self.periodo_id:
+            try:
+                self.periodo = PeriodoInscripcion.objects.get(activo=True)
+            except PeriodoInscripcion.DoesNotExist:
+                raise ValueError("No hay un periodo activo. Por favor, crea o activa uno.")
+
+        # Garantizar que no haya otro conjunto activo en ese periodo
         if self.estado:
             ParametrosCobros.objects.filter(periodo=self.periodo, estado=True).exclude(pk=self.pk).update(estado=False)
+
         super().save(*args, **kwargs)
+
 
 
 #ANTERIOR

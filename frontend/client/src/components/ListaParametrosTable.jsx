@@ -13,45 +13,107 @@ export function ListaParametrosTable() {
   const [busqueda, setBusqueda] = useState("");
   const puedeEscribir = tienePermiso("parametros", "escritura");
 
+  // Personaliza los títulos de columnas
+  const nombresColumnas = {
+    periodo: "Periodo",
+    mes_inicio: "Mes Inicio",
+    mes_fin: "Mes Fin",
+    dia_limite_pago: "Día Vencimiento",
+    dias_gracia: "Días de Gracia",
+    monto_cuota: "Monto de la Cuota",
+    mora_por_dia: "Mora por Día",
+    estado: "Activo",
+    creado_en: "Creado",
+    actualizado_en: "Actualizado",
+  };
+
+  const meses = [
+  "", 
+  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+  ];
+
+
+  // Formatea una fecha tipo "2025-06-24T00:00:00Z" a "24/06/2025"
+  function formatearFecha(fechaStr) {
+    if (!fechaStr) return "—";
+    const fecha = new Date(fechaStr);
+    return fecha.toLocaleDateString("es-ES");
+  }
+
   useEffect(() => {
-    //Cambiar el nombre de la función
     async function loadParametros() {
       try {
-        //Cambiar la API para las demás páginas
         const res = await obtenerTodosParametros();
 
         if (res.data.length > 0) {
           const keys = Object.keys(res.data[0]);
-
-          //!!! Desactivar si se quiere mostrar el id
           const columnasFiltradas = keys.filter((key) => key !== "id");
 
-          //Esta lógica puede variar un poco según las columnas que tengan
-          // que mostrar
           const arrayColumnas = columnasFiltradas.map((columna) => ({
-            name: columna.charAt(0).toUpperCase() + columna.slice(1),
-            selector: (fila) => fila[columna],
-            sortable: true,
-            cell: (fila) =>
-              typeof fila[columna] === "boolean"
-                ? fila[columna]
-                  ? "Sí"
-                  : "No"
-                : fila[columna],
+            name: nombresColumnas[columna] || columna.charAt(0).toUpperCase() + columna.slice(1),
+            selector: (fila) => {
+            const valor = fila[columna];
+
+            // Mostrar nombre del mes si corresponde
+            if ((columna === "mes_inicio" || columna === "mes_fin") && typeof valor === "number") {
+              return meses[valor] || valor;
+            }
+
+            // Si es booleano
+            if (typeof valor === "boolean") return valor;
+
+            // Si es un objeto (como 'periodo')
+            if (typeof valor === "object" && valor !== null) {
+              const inicio = formatearFecha(valor.fecha_inicio);
+              const fin = formatearFecha(valor.fecha_fin);
+              return `${inicio} - ${fin}`;
+            }
+
+            // Si parece fecha
+            if (typeof valor === "string" && valor.match(/^\d{4}-\d{2}-\d{2}/)) {
+              return formatearFecha(valor);
+            }
+
+            return valor;
+          },
+          cell: (fila) => {
+            const valor = fila[columna];
+
+            // Nombre del mes
+            if ((columna === "mes_inicio" || columna === "mes_fin") && typeof valor === "number") {
+              return meses[valor] || valor;
+            }
+
+            if (typeof valor === "boolean") return valor ? "Sí" : "No";
+
+            if (typeof valor === "object" && valor !== null) {
+              const inicio = formatearFecha(valor.fecha_inicio);
+              const fin = formatearFecha(valor.fecha_fin);
+              return `${inicio} - ${fin}`;
+            }
+
+            if (typeof valor === "string" && valor.match(/^\d{4}-\d{2}-\d{2}/)) {
+              return formatearFecha(valor);
+            }
+
+            return valor;
+          },
+
           }));
 
           agregarBotonDetalles(arrayColumnas);
           setColumnas(arrayColumnas);
-          //Cambiar el nombre de la función
           setParametros(res.data);
-          setLoading(false);
         }
+
+        setLoading(false);
       } catch (err) {
         console.error(err);
         setLoading(false);
       }
     }
-    //Cambiar el nombre de la función
+
     loadParametros();
   }, []);
 
@@ -73,7 +135,7 @@ export function ListaParametrosTable() {
           className="boton-detalles"
           onClick={(e) => {
             e.stopPropagation();
-            handleRowClick(fila); // Llama a la función de descarga
+            handleRowClick(fila);
           }}
         >
           Ver
@@ -82,7 +144,6 @@ export function ListaParametrosTable() {
     });
   }
 
-  //Cambiar el nombre de 'permiso' según la página
   const elementosFiltrados = parametros.filter((parametro) =>
     columnas.some((columna) => {
       const elem = columna.selector(parametro);
@@ -99,10 +160,8 @@ export function ListaParametrosTable() {
 
   return (
     <div>
-      {/*Cambiar el nombre de la página
-      y de data={--nombre---} según la página*/}
       <h1 className="align-baseline text-2xl font-semibold p-2 pl-3">
-        Parametros
+        Parámetros
       </h1>
       <div className="p-2 flex flex-row justify-between">
         <input
@@ -110,7 +169,7 @@ export function ListaParametrosTable() {
           placeholder="Buscar..."
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
-          className=" border border-gray-300 rounded px-3 py-1 w-full max-w-xs"
+          className="border border-gray-300 rounded px-3 py-1 w-full max-w-xs"
         />
         {puedeEscribir && (
           <button className="boton-guardar items-end" onClick={agregarElemento}>
@@ -126,7 +185,7 @@ export function ListaParametrosTable() {
         paginationComponentOptions={paginationComponentOptions}
         highlightOnHover
         customStyles={estiloTablas}
-      ></DataTable>
+      />
     </div>
   );
 }
