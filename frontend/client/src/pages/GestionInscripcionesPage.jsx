@@ -107,7 +107,7 @@ export default function GestionarInscripcionesPage() {
       {(mensaje || mensajeDinamico()) && (
         <div className="my-4 text-yellow-700 bg-yellow-100 border border-yellow-300 rounded px-4 py-2 flex justify-between items-center">
           <span>{mensaje || mensajeDinamico()}</span>
-
+          <ReporteInscripcionesPage estado="rechazada" />
           {mostrarBotonEliminar && (
             <button
               className="boton-eliminar"
