@@ -12,7 +12,7 @@ import tienePermiso from "../utils/tienePermiso";
 import { obtenerTodosIndicadores } from "../api/indicadores.api";
 import { obtenerInfantesAsignados } from "../api/asistencias.api";
 import MostrarError from "../components/MostrarError";
-
+import { obtenerInfantes } from "../api/infantes.api";
 export function InformesFormPage() {
   const {
     register,
@@ -45,10 +45,11 @@ export function InformesFormPage() {
     async function cargarIndicadores() {
       const dataIndicadores = await obtenerTodosIndicadores();
       const dataTiposInforme = await obtenerTodosTiposInforme();
-      const dataInfantes = await obtenerInfantesAsignados();
-
+      const dataInfantes = await obtenerInfantes();
+      console.log("dataInfantes", dataInfantes.data);
       setIndicadoresDisponibles(dataIndicadores.data);
       setTiposInforme(dataTiposInforme.data);
+
       setInfantes(dataInfantes.data);
 
       if (params.id) {
@@ -119,7 +120,7 @@ export function InformesFormPage() {
               {...register("id_infante", { required: true })}
             >
               <option value="">Seleccione un infante</option>
-              {infantes.map(({ infante }) => (
+              {infantes.map((infante) => (
                 <option key={infante.id} value={infante.id}>
                   {infante.id_persona?.nombre} {infante.id_persona?.apellido}{" "}
                   {infante.id_persona?.segundo_apellido}
