@@ -6,6 +6,7 @@ from inscripciones.models import PeriodoInscripcion
 from django.db import transaction
 from datetime import date
 import traceback
+from apps.notificaciones.utils import notificar_transferencia_a_tutores
 
 
 
@@ -308,15 +309,16 @@ class TransferenciaSalaSerializer(serializers.Serializer):
             # Actualizar asignación de sala
             infante.id_sala = nueva_sala
             infante.save()
+
+            # Enviar notificación al tutor
+            notificar_transferencia_a_tutores(infante, sala_origen, nueva_sala, motivo)
+
             return infante
 
         except Exception as e:
             print("🔥 Error en transferencia de infante:", e)
             traceback.print_exc()
             raise serializers.ValidationError("Error inesperado en el servidor al guardar la transferencia.")
-
-
-
 
 
     ###transferir profesor
