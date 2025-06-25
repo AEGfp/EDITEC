@@ -177,22 +177,24 @@ function NotificacionesFormPage() {
             <textarea className="formulario-input" {...register("mensaje", { required: true })} />
             {errors.mensaje && <CampoRequerido />}
 
-            <h4 className="formulario-elemento">Fecha</h4>
             <input
-              type="date"
-              className="formulario-input"
-              {...register("fecha", {
-                required: "La fecha es obligatoria.",
-                validate: (value) => {
-                  const hoy = new Date();
-                  const seleccionada = new Date(value);
-                  // Normalizar ambos a medianoche para evitar errores por hora
-                  hoy.setHours(0, 0, 0, 0);
-                  seleccionada.setHours(0, 0, 0, 0);
-                  return seleccionada >= hoy || "Ingrese una fecha válida igual o superior a la actual.";
-                },
-              })}
-            />
+            type="date"
+            className="formulario-input"
+            {...register("fecha", {
+              required: "La fecha es obligatoria.",
+              validate: (value) => {
+                const hoy = new Date();
+                hoy.setHours(0, 0, 0, 0);
+
+                const [a, m, d] = value.split("-").map(Number); // Año, Mes, Día
+                const seleccionada = new Date(a, m - 1, d); // Date(mes desde 0)
+
+                return seleccionada >= hoy || "Ingrese una fecha válida igual o superior a la actual.";
+              },
+            })}
+          />
+
+            
             {errors.fecha && <p className="text-red-500 text-sm">{errors.fecha.message}</p>}
             {erroresBackend.fecha && <p className="text-red-500 text-sm">{erroresBackend.fecha[0]}</p>}
 
