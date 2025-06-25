@@ -505,9 +505,9 @@ export default [
   {
     path: "/transferencias",
     componente: TransferenciaInfantePage,
-    entidad: "transferencia",
+    entidad: "transferencias",
     permiso: "escritura",
-    nombre: "Transferencia",
+    nombre: "Transferencias",
     grupo: "Director",
   },
 ];
