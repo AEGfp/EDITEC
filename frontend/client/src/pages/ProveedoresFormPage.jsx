@@ -97,95 +97,113 @@ export function ProveedoresFormPage() {
   //const puedeLeer=tienePermiso("permisos","lectura");
 
   return (
-    <div className="formulario">
-      <div className="formulario-dentro">
-        {/*Modificar el título según la página*/}
-        <h1 className="formulario-titulo">Proveedor</h1>
-        {/*Modificar el formulario de acuerdo a los campos necesarios*/}
-        <form onSubmit={onSubmit} id="editar-proveedor">
-          {/*El fieldset permite bloquear la escritura*/}
-          <fieldset disabled={!editable}>
-            <h4 className="formulario-elemento">Nombre Fantasía</h4>
-            <input
-              type="text"
-              placeholder="Ingrese el nombre de fantasía..."
-              className="formulario-input"
-              {...register("nombre_fantasia", { required: true })}
-            />
-            {/*Mensaje de error si no se completa un campo obligatorio*/}
-            {errors.nombre_fantasia && <CampoRequerido></CampoRequerido>}
-            <h4 className="formulario-elemento">Persona asociada</h4>
-            <select
-                  className="formulario-input"
-                  {...register("id_persona", { required: true })}
-              >
-              <option value="">Seleccione una persona</option>
-              {personas
-                .map((persona) => (
-                <option key={persona.id} value={persona.id.toString()}>
-                  {persona.nombre}
-                </option>
-                ))}
-            </select>
-            {errors.id_persona && <CampoRequerido></CampoRequerido>}
-            <h4 className="formulario-elemento">RUC </h4>
-            <input
-              type="text"
-              placeholder="Ingrese el RUC del proveedor..."
-              className="formulario-input"
-              {...register("ruc", { required: true })}
-            />
-            {errors.ruc && <CampoRequerido></CampoRequerido>}
-            <h4 className="formulario-elemento">Teléfono</h4>
-            <input
-              type="text"
-              placeholder="Ingrese un teléfono de contacto del proveedor..."
-              className="formulario-input"
-              {...register("telefono", { required: true })}
-            />
-            {errors.telefono && <CampoRequerido></CampoRequerido>}
-            <h4 className="formulario-elemento">Observaciones</h4>
-            <input
-              type="text"
-              placeholder="Ingrese alguna observación..."
-              className="formulario-input"
-              {...register("observaciones", { required: false })}
-            />
-            <div className="flex items-center mt-2">
-              <h4 className="formulario-elemento mb-0 mr-2">Activo: </h4>
-              <input
-                type="checkbox"
-                {...register("estado", { required: false })}
-              ></input>
-            </div>
-          </fieldset>
-        </form>
+    <div className="min-h-screen bg-blue-50 p-6">
+      <div className="max-w-xl mx-auto bg-white p-6 rounded-lg shadow-md border border-blue-100">
+        <h2 className="text-xl font-semibold text-blue-800 bg-blue-100 px-4 py-2 rounded mb-6 flex items-center">
+          🧾 {params.id ? "Editar Proveedor" : "Nuevo Proveedor"}
+        </h2>
 
-        {/*Los botones se activan y desactiva dependiendo del rol
-        y de la opcion*/}
-        <div className="botones-grupo">
-          {puedeEscribir && !editable && (
-            <button onClick={habilitarEdicion} className="boton-editar">
-              {" "}
-              Editar
-            </button>
-          )}
-          {puedeEscribir && editable && (
-            <button
-              type="submit"
-              form="editar-proveedor"
-              className="boton-guardar"
-            >
-              Guardar
-            </button>
-          )}
-          <br />
-          {params.id && puedeEscribir && editable && (
-            <button onClick={descartarProveedor} className="boton-eliminar">
-              Eliminar
-            </button>
-          )}
-        </div>
+        <form onSubmit={onSubmit} id="editar-proveedor">
+  <fieldset disabled={!editable} className="space-y-4">
+    <div>
+      <label className="block text-sm font-medium text-black">Nombre Fantasía</label>
+      <input
+        type="text"
+        placeholder="Ingrese el nombre de fantasía..."
+        className="formulario-input w-full"
+        {...register("nombre_fantasia", { required: true })}
+      />
+      {errors.nombre_fantasia && <CampoRequerido />}
+    </div>
+
+    <div>
+      <label className="block text-sm font-medium text-black">Persona asociada</label>
+      <select
+        className="formulario-input w-full"
+        {...register("id_persona", { required: true })}
+      >
+        <option value="">Seleccione una persona</option>
+        {personas.map((persona) => (
+          <option key={persona.id} value={persona.id.toString()}>
+            {persona.nombre}
+          </option>
+        ))}
+      </select>
+      {errors.id_persona && <CampoRequerido />}
+    </div>
+
+    <div>
+      <label className="block text-sm font-medium text-black">RUC</label>
+      <input
+        type="text"
+        placeholder="Ingrese el RUC del proveedor..."
+        className="formulario-input w-full"
+        {...register("ruc", { required: true })}
+      />
+      {errors.ruc && <CampoRequerido />}
+    </div>
+
+    <div>
+      <label className="block text-sm font-medium text-black">Teléfono</label>
+      <input
+        type="text"
+        placeholder="Ingrese un teléfono de contacto del proveedor..."
+        className="formulario-input w-full"
+        {...register("telefono", { required: true })}
+      />
+      {errors.telefono && <CampoRequerido />}
+    </div>
+
+    <div>
+      <label className="block text-sm font-medium text-black">Observaciones</label>
+      <input
+        type="text"
+        placeholder="Ingrese alguna observación..."
+        className="formulario-input w-full"
+        {...register("observaciones")}
+      />
+    </div>
+
+    <div className="flex items-center gap-2">
+      <input
+        type="checkbox"
+        {...register("estado")}
+        id="estado"
+      />
+      <label htmlFor="estado" className="text-sm text-black">Activo</label>
+    </div>
+  </fieldset>
+
+          <div className="mt-6 flex flex-col sm:flex-row sm:justify-center gap-3">
+            {puedeEscribir && !editable && (
+              <button
+                onClick={habilitarEdicion}
+                type="button"
+                className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded shadow"
+              >
+                Editar
+              </button>
+            )}
+            {puedeEscribir && editable && (
+              <button
+                type="submit"
+                form="editar-proveedor"
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded shadow"
+              >
+              💾 Guardar
+              </button>
+            )}
+            {params.id && puedeEscribir && editable && (
+              <button
+                onClick={descartarProveedor}
+                type="button"
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded shadow"
+              >
+                Eliminar
+              </button>
+            )}
+          </div>
+        </form>
       </div>
     </div>
   );

@@ -20,21 +20,18 @@ export function ListaSaldosProveedoresTable() {
 
   const puedeEscribir = tienePermiso("saldos", "escritura");
 
-  // Cargar proveedores para el select
   useEffect(() => {
-  async function cargarProveedores() {
-    try {
-      const res = await obtenerTodosProveedores();
-      console.log("Proveedores recibidos:", res.data);
-      setProveedores(res.data);
-    } catch (error) {
-      console.error("Error en fetch proveedores:", error);
+    async function cargarProveedores() {
+      try {
+        const res = await obtenerTodosProveedores();
+        setProveedores(res.data);
+      } catch (error) {
+        console.error("Error en fetch proveedores:", error);
+      }
     }
-  }
-  cargarProveedores();
-}, []);
+    cargarProveedores();
+  }, []);
 
-  // Cargar saldos con filtros
   useEffect(() => {
     async function cargarSaldos() {
       setLoading(true);
@@ -56,20 +53,9 @@ export function ListaSaldosProveedoresTable() {
             condicion_nombre: "Condición",
           };
 
-          const camposVisibles = [
-            "monto_cuota",
-            "saldo_cuota",
-            "numero_cuota",
-            "numero_comprobante_as",
-            "proveedor_nombre",
-            "condicion_nombre",
-          ];
-
-          const keys = Object.keys(res.data[0]);
-          const columnasFiltradas = keys.filter((k) => camposVisibles.includes(k));
-
-          const columnasDT = columnasFiltradas.map((col) => ({
-            name: nombresColumnas[col] || col,
+          const camposVisibles = Object.keys(nombresColumnas);
+          const columnasDT = camposVisibles.map((col) => ({
+            name: nombresColumnas[col],
             selector: (row) => row[col],
             sortable: true,
             cell: (row) => {
@@ -79,7 +65,6 @@ export function ListaSaldosProveedoresTable() {
               return val ?? "";
             },
           }));
-
           setColumnas(columnasDT);
         } else {
           setColumnas([]);
@@ -96,19 +81,12 @@ export function ListaSaldosProveedoresTable() {
     cargarSaldos();
   }, [fechaDesde, fechaHasta, proveedorId]);
 
-  // Filtrado por texto en tabla
   const elementosFiltrados = saldos.filter((saldo) =>
     columnas.some((col) =>
       col.selector(saldo)?.toString().toLowerCase().includes(busqueda.toLowerCase())
     )
   );
 
-  // Navegar a detalle saldo
-  function handleRowClick(fila) {
-    navigate(`/saldos/${fila.id}`);
-  }
-
-  // Generar PDF con filtros
   async function generarPDF() {
     try {
       const filtros = {};
@@ -125,7 +103,6 @@ export function ListaSaldosProveedoresTable() {
     }
   }
 
-  // Opciones paginación en español
   const paginationComponentOptions = {
     rowsPerPageText: "Filas por página",
     rangeSeparatorText: "de",
@@ -133,82 +110,102 @@ export function ListaSaldosProveedoresTable() {
     selectAllRowsItemText: "Todos",
   };
 
-  // Fecha por defecto: primer día y último día del mes actual
   useEffect(() => {
     const hoy = new Date();
     const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
     const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
 
-    const yyyyMMdd = (d) =>
-      d.toISOString().split("T")[0]; // formato yyyy-MM-dd para input date
+    const yyyyMMdd = (d) => d.toISOString().split("T")[0];
 
     setFechaDesde(yyyyMMdd(primerDia));
     setFechaHasta(yyyyMMdd(ultimoDia));
   }, []);
-  console.log("Proveedores cargados:", proveedores);
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold p-4">Saldos de Proveedores</h1>
+    <div className="min-h-screen bg-blue-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+          <div>
+            <h1 className="text-2xl font-bold text-blue-800 flex items-center">
+              📊 Saldos de Proveedores
+            </h1>
+            <p className="text-blue-600 text-sm">
+              Consulta de saldos pendientes según fecha y proveedor
+            </p>
+          </div>
+          {puedeEscribir && (
+            <button
+              onClick={generarPDF}
+              className="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-sm transition-colors"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+              </svg>
+              Generar PDF
+            </button>
+          )}
+        </div>
 
-      {/* Filtros */}
-      <div className="p-4 flex flex-col sm:flex-row gap-4 items-end">
-        <input
-          type="date"
-          value={fechaDesde}
-          onChange={(e) => setFechaDesde(e.target.value)}
-          className="border rounded px-2 py-1"
-        />
-        <input
-          type="date"
-          value={fechaHasta}
-          onChange={(e) => setFechaHasta(e.target.value)}
-          className="border rounded px-2 py-1"
-        />
+        {/* Filtros */}
+        <div className="mb-6 bg-white p-4 rounded-xl shadow-sm flex flex-wrap gap-4">
+          <input
+            type="date"
+            value={fechaDesde}
+            onChange={(e) => setFechaDesde(e.target.value)}
+            className="border border-blue-200 rounded-lg px-3 py-2 bg-blue-50"
+          />
+          <input
+            type="date"
+            value={fechaHasta}
+            onChange={(e) => setFechaHasta(e.target.value)}
+            className="border border-blue-200 rounded-lg px-3 py-2 bg-blue-50"
+          />
+          <select
+            value={proveedorId}
+            onChange={(e) => setProveedorId(e.target.value ? Number(e.target.value) : "")}
+            className="border border-blue-200 rounded-lg px-3 py-2 bg-blue-50"
+          >
+            <option value="">Todos los Proveedores</option>
+            {proveedores.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.nombre_fantasia}
+              </option>
+            ))}
+          </select>
+        </div>
 
-        <select
-          value={proveedorId}
-          onChange={(e) => setProveedorId(e.target.value ? Number(e.target.value) : "")}
-          className="border rounded px-2 py-1"
-        >
-          <option value="">Todos los Proveedores</option>
-          {proveedores.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.nombre_fantasia}
-            </option>
-          ))}
-        </select>
+        {/* Buscador */}
+        <div className="mb-6 bg-white p-4 rounded-xl shadow-sm">
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg className="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6M5 10a7 7 0 1114 0 7 7 0 01-14 0z"/>
+              </svg>
+            </div>
+            <input
+              type="text"
+              placeholder="Buscar saldos..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              className="block w-full pl-10 pr-3 py-2 border border-blue-200 rounded-lg bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
+            />
+          </div>
+        </div>
 
-        <button
-          onClick={generarPDF}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-        >
-          Generar PDF
-        </button>
+        {/* Tabla */}
+        <div className="bg-white shadow rounded-lg overflow-hidden border border-blue-100">
+          <DataTable
+            columns={columnas}
+            data={elementosFiltrados}
+            progressPending={loading}
+            pagination
+            paginationComponentOptions={paginationComponentOptions}
+            highlightOnHover
+            customStyles={estiloTablas}
+            onRowClicked={(row) => navigate(`/saldos/${row.id}`)}
+          />
+        </div>
       </div>
-
-      {/* Buscador */}
-      <div className="p-4">
-        <input
-          type="text"
-          placeholder="Buscar..."
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-1 w-full max-w-xs"
-        />
-      </div>
-
-      {/* Tabla */}
-      <DataTable
-        columns={columnas}
-        data={elementosFiltrados}
-        progressPending={loading}
-        pagination
-        paginationComponentOptions={paginationComponentOptions}
-        highlightOnHover
-        customStyles={estiloTablas}
-        onRowClicked={handleRowClick}
-      />
     </div>
   );
 }

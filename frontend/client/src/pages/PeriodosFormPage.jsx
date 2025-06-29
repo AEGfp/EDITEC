@@ -108,69 +108,70 @@ export default function PeriodosFormPage() {
   };
 
   return (
-    <div className="formulario">
-      <div className="formulario-dentro">
-        <h1 className="formulario-titulo">
+    <div className="min-h-screen bg-blue-50 p-6">
+      <div className="max-w-xl mx-auto bg-white shadow rounded-xl p-6 border border-blue-100">
+        <h1 className="text-xl font-bold text-white text-center bg-blue-600 py-3 rounded-md mb-6">
           {params.id
             ? "Detalles del Período de Inscripción"
             : "Nuevo Período de Inscripción"}
         </h1>
 
-        <form onSubmit={onSubmit}>
+        <form onSubmit={onSubmit} className="space-y-5">
+          {/* Fecha inicio */}
           <div>
-            <label className="formulario-elemento">Fecha de inicio:</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Fecha de inicio:
+            </label>
             <input
               type="datetime-local"
               {...register("fecha_inicio", { required: true })}
-              className="formulario-input"
+              className="w-full border border-blue-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
               disabled={!esNuevo}
             />
-
             {errors.fecha_inicio && <CampoRequerido />}
           </div>
 
+          {/* Fecha fin */}
           <div>
-            <label className="formulario-elemento">Fecha de fin:</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Fecha de fin:
+            </label>
             <input
               type="datetime-local"
               {...register("fecha_fin", { required: true })}
-              className="formulario-input"
+              className="w-full border border-blue-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
               disabled={!editable}
             />
             {errors.fecha_fin && <CampoRequerido />}
           </div>
 
-          <br />
-          <div className="botones-grupo">
-            {esPeriodoEditable && !editable && (
-              <button
-                type="button"
-                className="boton-editar"
-                onClick={() => setEditable(true)}
-              >
-                Editar
-              </button>
-            )}
+          {/* Errores backend */}
+          {errorBackend && (
+            <div className="pt-2">
+              <MostrarError errores={errorBackend} />
+            </div>
+          )}
 
-            {(esNuevo || esPeriodoEditable) && editable && (
-              <>
-                <button type="submit" className="boton-guardar">
-                  Guardar
-                </button>
-                {!esNuevo && (
-                  <button
-                    type="button"
-                    onClick={cerrarPeriodoActual}
-                    className="boton-eliminar"
-                  >
-                    Cerrar período
-                  </button>
-                )}
-              </>
-            )}
-          </div>
+   {/* Botones */}
+   <div className="flex flex-col sm:flex-row justify-center gap-4 mt-6">
+   <button
+  type="submit"
+  className="inline-flex items-center justify-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white text-base font-bold rounded-lg shadow transition duration-150"
+>
+  Guardar
+</button>
 
-          {errorBackend && <MostrarError errores={errorBackend} />}
+  {!esNuevo && (
+    <button
+      type="button"
+      onClick={cerrarPeriodoActual}
+      className="inline-flex items-center justify-center px-6 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-lg shadow transition duration-150"
+    >
+      Cerrar período
+    </button>
+  )}
+</div>
+
         </form>
       </div>
     </div>
