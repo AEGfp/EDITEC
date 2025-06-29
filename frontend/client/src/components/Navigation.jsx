@@ -3,25 +3,26 @@ import { useNavigate } from "react-router-dom";
 export function Navigation({ activarSidebar, usuario }) {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("usuario");
-    navigate("/login");
-  };
-
   return (
-    <nav className="bg-blue-950 shadow-md font-semibold px-4 text-white py-2 flex items-center justify-between">
-      <button onClick={activarSidebar} className="text-2xl cursor-pointer">
-        ☰
-      </button>
-
-      <h1 className="text-lg  text-center flex-1 items-start">EDITEC</h1>
-      <div className="flex items-center gap-4">
-        <span>{usuario?.username}</span>
-        <button onClick={handleLogout} className="boton-eliminar">
-          Cerrar sesión
+    <nav className="bg-amber-100 border-b border-amber-200 shadow-sm font-medium px-4 py-2 flex items-center justify-between">
+      {/* Botón Hamburguesa */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={activarSidebar}
+          className="text-2xl cursor-pointer px-2 text-amber-700 hover:text-amber-900 transition"
+        >
+          ☰
         </button>
+      </div>
+
+      {/* Usuario */}
+      <div className="flex items-center gap-3">
+        <div className="bg-amber-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold shadow">
+          {usuario?.username?.charAt(0).toUpperCase() || "U"}
+        </div>
+        <span className="text-amber-800 hidden sm:inline">
+          Hola, <strong>{usuario?.username}</strong>
+        </span>
       </div>
     </nav>
   );

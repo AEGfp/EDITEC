@@ -17,6 +17,7 @@ export default function AsistenciasPage() {
   const [loading, setLoading] = useState(true);
   const [marcando, setMarcando] = useState(false);
   const [busqueda, setBusqueda] = useState("");
+
   useEffect(() => {
     async function cargarInfantes() {
       try {
@@ -46,7 +47,6 @@ export default function AsistenciasPage() {
   };
 
   function handleRowClick(fila) {
-    // navigate(`/infantes/${fila.id}`);
     console.log("Click en infante", fila);
   }
 
@@ -60,34 +60,30 @@ export default function AsistenciasPage() {
       setMarcando(false);
     }
   };
-
   const columnas = [
     {
-      name: "Nombre",
+      name: "👶 Infante",
       selector: (row) =>
         row.infante.id_persona
-          ? `${row.infante.id_persona.nombre} ${
-              row.infante.id_persona.apellido
-            } ${row.infante.id_persona.segundo_apellido || ""}`.trim()
-          : "Desconocido",
+          ? `${row.infante.id_persona.nombre} ${row.infante.id_persona.apellido}`
+          : "Sin nombre",
       sortable: true,
     },
     {
-      name: "Sala",
+      name: "🏠 Sala",
       selector: (row) => row.infante.nombre_sala || "Sin sala",
       sortable: true,
     },
     {
-      name: "Asistencia",
+      name: "📅 Estado",
       selector: (row) =>
         row.asistencia?.estado
-          ? row.asistencia.estado.charAt(0).toUpperCase() +
-            row.asistencia.estado.slice(1)
+          ? row.asistencia.estado.charAt(0).toUpperCase() + row.asistencia.estado.slice(1)
           : "Sin marcar",
       sortable: true,
     },
     {
-      name: "Hora de entrada",
+      name: "🕒 Entrada",
       selector: (row) => {
         const hora = row.asistencia?.hora_entrada;
         if (!hora) return "--:--";
@@ -97,7 +93,7 @@ export default function AsistenciasPage() {
       sortable: true,
     },
     {
-      name: "Hora de salida",
+      name: "🕕 Salida",
       selector: (row) => {
         const hora = row.asistencia?.hora_salida;
         if (!hora) return "--:--";
@@ -107,7 +103,7 @@ export default function AsistenciasPage() {
       sortable: true,
     },
     {
-      name: "Registrado por",
+      name: "👤 Registrado por",
       selector: (row) =>
         row.asistencia?.nombre_usuario && row.asistencia?.apellido_usuario
           ? `${row.asistencia.nombre_usuario} ${row.asistencia.apellido_usuario}`
@@ -115,47 +111,35 @@ export default function AsistenciasPage() {
       sortable: true,
     },
     {
-      name: "Acción",
+      name: "⚙️ Acción",
       cell: (row) => {
         const asistencia = row.asistencia;
         if (!asistencia?.estado) {
           return (
             <div className="flex gap-2">
               <button
-                className="boton-guardar"
-                disabled={marcando}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  marcarAsistencia(row.infante.id, "presente");
-                }}
+                className="bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 rounded-md"
+                onClick={() => marcarAsistencia(row.infante.id, "presente")}
               >
-                ✓
+                ✅ Presente
               </button>
               <button
-                className="boton-eliminar"
-                disabled={marcando}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  marcarAsistencia(row.infante.id, "ausente");
-                }}
+                className="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded-md"
+                onClick={() => marcarAsistencia(row.infante.id, "ausente")}
               >
-                X
+                ❌ Ausente
               </button>
             </div>
           );
         }
-
+  
         if (!asistencia?.hora_salida && asistencia?.estado === "presente") {
           return (
             <button
-              className="boton-detalles"
-              disabled={marcando}
-              onClick={(e) => {
-                e.stopPropagation();
-                registrarSalida(row.asistencia.id);
-              }}
+              className="bg-blue-500 hover:bg-blue-600 text-white text-xs px-2 py-1 rounded-md"
+              onClick={() => registrarSalida(row.asistencia.id)}
             >
-              Marcar salida
+              ➡️ Marcar salida
             </button>
           );
         }
@@ -163,10 +147,12 @@ export default function AsistenciasPage() {
       },
     },
   ];
+  
+  
 
   const elementosFiltrados = infantes.filter((row) =>
     columnas
-      .filter((col) => typeof col.selector === "function") // evita columnas sin selector
+      .filter((col) => typeof col.selector === "function")
       .some((col) => {
         const valor = col.selector(row);
         return valor?.toString().toLowerCase().includes(busqueda.toLowerCase());
@@ -181,32 +167,53 @@ export default function AsistenciasPage() {
   };
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold p-2 pl-3">Infantes de mi Salas</h1>
-       <div className="p-2 flex flex-wrap items-center justify-between gap-4">
-        <input
-          type="text"
-          placeholder="Buscar..."
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-1 max-w-xs w-full sm:w-auto"
-        />
+    <div className="min-h-screen bg-blue-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+          <div className="mb-4 md:mb-0">
+            <h1 className="text-2xl font-bold text-blue-800 flex items-center">
+              <svg className="w-6 h-6 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+              </svg>
+              📝 Asistencias
+            </h1>
+            <p className="text-blue-600">Listado de asistencias registradas</p>
+          </div>
+          <div className="flex gap-2">
+            <ReporteAsistencia />
+          </div>
+        </div>
 
-        <div className="flex gap-2">
-          <ReporteAsistencia />
+        <div className="mb-6 bg-white p-4 rounded-xl shadow-sm">
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg className="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <input
+              type="text"
+              placeholder="Buscar infantes..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              className="block w-full pl-10 pr-3 py-2 border border-blue-200 rounded-lg bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
+            />
+          </div>
+        </div>
+
+        <div className="bg-white shadow rounded-lg overflow-hidden border border-blue-100">
+          <DataTable
+            columns={columnas}
+            data={elementosFiltrados}
+            progressPending={loading}
+            highlightOnHover
+            pointerOnHover
+            customStyles={estiloTablas}
+            paginationComponentOptions={paginationComponentOptions}
+            pagination
+          />
         </div>
       </div>
-      <DataTable
-        columns={columnas}
-        data={elementosFiltrados}
-        progressPending={loading}
-        highlightOnHover
-        pointerOnHover
-        //onRowClicked={handleRowClick}
-        customStyles={estiloTablas}
-        paginationComponentOptions={paginationComponentOptions}
-        pagination
-      />
     </div>
   );
 }

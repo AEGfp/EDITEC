@@ -10,228 +10,176 @@ import {
 import CampoRequerido from "../components/CampoRequerido";
 import tienePermiso from "../utils/tienePermiso";
 import { obtenerTodosIndicadores } from "../api/indicadores.api";
-import { obtenerInfantesAsignados } from "../api/asistencias.api";
-import MostrarError from "../components/MostrarError";
 import { obtenerInfantes } from "../api/infantes.api";
+import MostrarError from "../components/MostrarError";
+
 export function InformesFormPage() {
   const {
     register,
-    control,
     handleSubmit,
     formState: { errors },
     setValue,
     watch,
-  } = useForm({
-    defaultValues: {
-      indicadores: [{ id_indicador: "", ind_logrado: false }],
-    },
-  });
+  } = useForm();
 
   const [indicadoresDisponibles, setIndicadoresDisponibles] = useState([]);
   const [tiposInformes, setTiposInforme] = useState([]);
   const [infantes, setInfantes] = useState([]);
   const [descripcionVisible, setDescripcionVisible] = useState({});
-  const [editable, setEditable] = useState(false);
-  const [indicadoresInforme, setIndicadoresInforme] = useState([]);
   const [errorBackend, setErrorBackend] = useState(null);
 
   const params = useParams();
-
-  const tipoInformeSeleccionado = watch("id_tipo_informe");
   const navigate = useNavigate();
   const puedeEscribir = tienePermiso("informes", "escritura");
+  const tipoInformeSeleccionado = watch("id_tipo_informe");
 
   useEffect(() => {
-    async function cargarIndicadores() {
+    async function cargarDatos() {
       const dataIndicadores = await obtenerTodosIndicadores();
       const dataTiposInforme = await obtenerTodosTiposInforme();
       const dataInfantes = await obtenerInfantes();
-      console.log("dataInfantes", dataInfantes.data);
+
       setIndicadoresDisponibles(dataIndicadores.data);
       setTiposInforme(dataTiposInforme.data);
-
       setInfantes(dataInfantes.data);
 
       if (params.id) {
         const { data } = await obtenerInforme(params.id);
-
         setValue("id_infante", data.id_infante);
         setValue("id_tipo_informe", data.id_tipo_informe);
         setValue("fecha_informe", data.fecha_informe);
         setValue("observaciones", data.observaciones);
-        setIndicadoresInforme(data.indicadores || []);
-      } else {
-        setEditable(true);
       }
     }
-    cargarIndicadores();
+    cargarDatos();
   }, [params.id, setValue]);
 
   const indicadoresFiltrados = indicadoresDisponibles.filter(
-    (indicador) => indicador.id_tipo_informe == tipoInformeSeleccionado
+    (i) => i.id_tipo_informe == tipoInformeSeleccionado
   );
 
   const onSubmit = handleSubmit(async (data) => {
     setErrorBackend(null);
     try {
-      const usuarioStr = localStorage.getItem("usuario");
-      const usuario = JSON.parse(usuarioStr);
-      const indicadores = indicadoresFiltrados.map((indicador) => ({
-        id_indicador: indicador.id,
-        ind_logrado: data[`logrado_${indicador.id}`] === "true",
+      const usuario = JSON.parse(localStorage.getItem("usuario"));
+      const indicadores = indicadoresFiltrados.map((i) => ({
+        id_indicador: i.id,
+        ind_logrado: data[`logrado_${i.id}`] === "true",
       }));
 
-      const dataCompleto = {
+      const datos = {
         ...data,
         id_usuario_aud: usuario.id,
         indicadores,
       };
 
-      if (params.id) {
-        // await actualizarInforme(params.id, dataCompleto); // si tenés esta función
-      } else {
-        await crearInforme(dataCompleto);
-      }
+      if (params.id) await actualizarInforme(params.id, datos);
+      else await crearInforme(datos);
 
       navigate("/informes");
     } catch (error) {
-      console.error("Error al guardar informe:", error.response?.data || error);
       setErrorBackend(error.response?.data || "Error desconocido");
     }
   });
 
-  const toggleDescripcion = (id) => {
-    setDescripcionVisible((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
-
   return (
-    <div className="formulario">
-      <div className="formulario-dentro">
-        <h1 className="formulario-titulo">Informe</h1>
+    <div className="min-h-screen bg-blue-50 p-6">
+      <div className="max-w-xl mx-auto bg-white shadow rounded-xl p-6 border border-blue-100">
+      <h1 className="text-xl font-bold text-blue-900 text-center bg-blue-200 py-3 rounded-md mb-6">
+  {params.id ? "📝 Detalles del Informe" : "🧒 Nuevo Informe"}
+</h1>
 
-        <form onSubmit={onSubmit}>
-          <fieldset disabled={!editable}>
-            <h4 className="formulario-elemento">Infante</h4>
+
+
+        <form onSubmit={onSubmit} className="space-y-5">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Infante:</label>
             <select
-              className="formulario-input"
               {...register("id_infante", { required: true })}
+              className="w-full border border-blue-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
               <option value="">Seleccione un infante</option>
-              {infantes.map((infante) => (
-                <option key={infante.id} value={infante.id}>
-                  {infante.id_persona?.nombre} {infante.id_persona?.apellido}{" "}
-                  {infante.id_persona?.segundo_apellido}
+              {infantes.map((i) => (
+                <option key={i.id} value={i.id}>
+                  {i.id_persona?.nombre} {i.id_persona?.apellido}
                 </option>
               ))}
             </select>
             {errors.id_infante && <CampoRequerido />}
+          </div>
 
-            <h4 className="formulario-elemento">Tipo de Informe</h4>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Informe:</label>
             <select
-              className="formulario-input"
               {...register("id_tipo_informe", { required: true })}
+              className="w-full border border-blue-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
               <option value="">Seleccione un tipo</option>
-              {tiposInformes.map((tipo) => (
-                <option key={tipo.id} value={tipo.id}>
-                  {tipo.descripcion}
-                </option>
+              {tiposInformes.map((t) => (
+                <option key={t.id} value={t.id}>{t.descripcion}</option>
               ))}
             </select>
             {errors.id_tipo_informe && <CampoRequerido />}
+          </div>
 
-            <h4 className="formulario-elemento">Fecha del Informe</h4>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Fecha del Informe:</label>
             <input
               type="date"
-              className="formulario-input"
-              {...register("fecha_informe", {
-                required: "La fecha del informe es obligatoria",
-                validate: (value) => {
-                  if (!value) return "La fecha del informe es obligatoria";
-                  const hoy = new Date();
-                  const fecha = new Date(value);
-                  return fecha <= hoy
-                    ? true
-                    : "La fecha del informe no puede ser futura";
-                },
-              })}
+              {...register("fecha_informe", { required: true })}
+              className="w-full border border-blue-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
-            {errors.fecha_informe && (
-              <CampoRequerido mensaje={errors.fecha_informe.message} />
-            )}
+            {errors.fecha_informe && <CampoRequerido />}
+          </div>
 
-            {tipoInformeSeleccionado && (
-              <>
-                <h4 className="formulario-elemento">Indicadores</h4>
-                {indicadoresFiltrados.length === 0 && (
-                  <p className="text-gray-500">
-                    No hay indicadores para este tipo de informe.
-                  </p>
-                )}
-                {indicadoresFiltrados.map((indicador) => (
-                  <div key={indicador.id} className="mb-2">
-                    <label className="formulario-elemento">
-                      {indicador.nombre}
-                    </label>
-                    <select
-                      className="formulario-input"
-                      {...register(`logrado_${indicador.id}`, {
-                        required: true,
-                      })}
-                    >
-                      <option value="">¿Logrado?</option>
-                      <option value="true">Sí</option>
-                      <option value="false">No</option>
-                    </select>
-                    {errors[`logrado_${indicador.id}`] && <CampoRequerido />}
-
-                    <button
-                      type="button"
-                      onClick={() => toggleDescripcion(indicador.id)}
-                      className="text-blue-600 underline text-sm mt-1"
-                    >
-                      {descripcionVisible[indicador.id]
-                        ? "Ocultar descripción"
-                        : "Ver descripción"}
-                    </button>
-
-                    {descripcionVisible[indicador.id] && (
-                      <p className="text-sm text-gray-600 mt-1">
-                        {indicador.descripcion}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </>
-            )}
-            <h4 className="formulario-elemento">Observaciones</h4>
-            <textarea
-              className="formulario-input"
-              {...register("observaciones", { required: true })}
-            />
-            {errors.observaciones && <CampoRequerido />}
-            <br />
-            <br />
-            <div className="botones-grupo">
-              {/*puedeEscribir && !editable && (
-                <button
-                  onClick={() => setEditable(true)}
-                  className="boton-editar"
-                >
-                  Editar
-                </button>
-              )*/}
-              {puedeEscribir && editable && (
-                <button type="submit" className="boton-guardar">
-                  Guardar
-                </button>
+          {tipoInformeSeleccionado && indicadoresFiltrados.map((indicador) => (
+            <div key={indicador.id}>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {indicador.nombre}
+              </label>
+              <select
+                {...register(`logrado_${indicador.id}`, { required: true })}
+                className="w-full border border-blue-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              >
+                <option value="">¿Logrado?</option>
+                <option value="true">Sí</option>
+                <option value="false">No</option>
+              </select>
+              <button
+                type="button"
+                onClick={() => setDescripcionVisible((prev) => ({ ...prev, [indicador.id]: !prev[indicador.id] }))}
+                className="text-blue-600 text-xs underline mt-1"
+              >
+                {descripcionVisible[indicador.id] ? "Ocultar descripción" : "Ver descripción"}
+              </button>
+              {descripcionVisible[indicador.id] && (
+                <p className="text-sm text-gray-500 mt-1">{indicador.descripcion}</p>
               )}
+              {errors[`logrado_${indicador.id}`] && <CampoRequerido />}
             </div>
-          </fieldset>
+          ))}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Observaciones:</label>
+            <textarea
+              {...register("observaciones", { required: true })}
+              className="w-full border border-blue-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            ></textarea>
+            {errors.observaciones && <CampoRequerido />}
+          </div>
+
           {errorBackend && <MostrarError errores={errorBackend} />}
+
+          <div className="flex justify-center">
+            {puedeEscribir && (
+              <button
+              type="submit"
+              className="inline-flex items-center justify-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white text-base font-bold rounded-lg shadow transition duration-150"
+            >
+               💾 Guardar
+              </button>
+            )}
+          </div>
         </form>
       </div>
     </div>

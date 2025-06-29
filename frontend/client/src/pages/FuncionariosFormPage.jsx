@@ -85,14 +85,19 @@ export default function FuncionarioFormPage() {
   const puedeEscribir = tienePermiso("funcionarios", "escritura");
 
   return (
-    <div className="formulario">
-      <div className="formulario-dentro">
-        <h1 className="formulario-titulo">Funcionario</h1>
-        <form onSubmit={onSubmit} id="editar-funcionario">
-          <div className="flex flex-col md:flex-row justify-center items-start gap-8">
-            <div className="max-w-lg w-full">
-              <fieldset disabled={!editable}>
-                <h4 className="formulario-elemento">Usuario</h4>
+    <div className="min-h-screen bg-blue-50 flex justify-center items-center py-10">
+      <div className="bg-white rounded-xl shadow-md w-full max-w-4xl p-6">
+        <div className="bg-blue-100 rounded-md px-4 py-2 mb-6 text-center">
+          <h2 className="text-lg font-bold text-blue-700 flex items-center justify-center gap-2">
+            👤 {params.id ? "Editar Funcionario" : "Nuevo Funcionario"}
+          </h2>
+        </div>
+
+        <form onSubmit={onSubmit} id="editar-funcionario" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <fieldset disabled={!editable} className="space-y-4">
+              <div>
+                <label className="block mb-1 font-medium">Usuario</label>
                 <input
                   type="text"
                   placeholder="Nombre de usuario"
@@ -110,11 +115,11 @@ export default function FuncionarioFormPage() {
                     },
                   })}
                 />
-                {errors.username && (
-                  <MostrarError errores={errors.username.message} />
-                )}
+                {errors.username && <MostrarError errores={errors.username.message} />}
+              </div>
 
-                <h4 className="formulario-elemento">Correo</h4>
+              <div>
+                <label className="block mb-1 font-medium">Correo</label>
                 <input
                   type="email"
                   placeholder="Correo electrónico"
@@ -127,50 +132,44 @@ export default function FuncionarioFormPage() {
                     },
                   })}
                 />
-                {errors.email && (
-                  <MostrarError errores={errors.email.message} />
-                )}
-                {/*
-                //! Cambiar requisitos de contraseña
-                */}
-                {!params.id && (
-                  <>
-                    <h4 className="formulario-elemento">Contraseña</h4>
-                    <input
-                      type="password"
-                      placeholder="Contraseña"
-                      className="formulario-input"
-                      {...register("password", {
-                        required: "La contraseña es obligatoria",
-                        minLength: {
-                          value: 6,
-                          message:
-                            "La contraseña debe tener al menos 6 caracteres",
-                        },
-                      })}
-                    />
-                    {errors.password && (
-                      <MostrarError errores={errors.password.message} />
-                    )}
-                  </>
-                )}
+                {errors.email && <MostrarError errores={errors.email.message} />}
+              </div>
 
-                <h4 className="formulario-elemento">Roles</h4>
-                <div className="formulario-lista">
-                  <label>
+              {!params.id && (
+                <div>
+                  <label className="block mb-1 font-medium">Contraseña</label>
+                  <input
+                    type="password"
+                    placeholder="Contraseña"
+                    className="formulario-input"
+                    {...register("password", {
+                      required: "La contraseña es obligatoria",
+                      minLength: {
+                        value: 6,
+                        message: "La contraseña debe tener al menos 6 caracteres",
+                      },
+                    })}
+                  />
+                  {errors.password && <MostrarError errores={errors.password.message} />}
+                </div>
+              )}
+
+              <div>
+                <label className="block mb-1 font-medium">Roles</label>
+                <div className="formulario-lista space-y-1">
+                  <label className="inline-flex items-center gap-2">
                     <input
                       type="checkbox"
                       value="profesor"
                       {...register("groups", {
                         validate: (value) =>
-                          (value && value.length > 0) ||
-                          "Debe seleccionar al menos un rol",
+                          (value && value.length > 0) || "Debe seleccionar al menos un rol",
                       })}
                       disabled={!editable}
                     />
                     Profesor
                   </label>
-                  <label>
+                  <label className="inline-flex items-center gap-2">
                     <input
                       type="checkbox"
                       value="administrador"
@@ -179,87 +178,58 @@ export default function FuncionarioFormPage() {
                     />
                     Administrador
                   </label>
-                  {/*<label>
-                    <input
-                      type="checkbox"
-                      value="director"
-                      {...register("groups")}
-                      disabled={!editable}
-                    />
-                    Director
-                  </label>*/}
                 </div>
-                {errors.groups && (
-                  <span className="mensaje-error">{errors.groups.message}</span>
-                )}
-              </fieldset>
-            </div>
+                {errors.groups && <span className="text-sm text-red-600">{errors.groups.message}</span>}
+              </div>
+            </fieldset>
 
-            <div className="max-w-lg w-full">
-              <fieldset disabled={!editable}>
-                <h4 className="formulario-elemento">Nombre</h4>
-                <input
-                  type="text"
-                  className="formulario-input"
-                  {...register("persona.nombre", { required: true })}
-                />
+            <fieldset disabled={!editable} className="space-y-4">
+              <div>
+                <label className="block mb-1 font-medium">Nombre</label>
+                <input type="text" className="formulario-input" {...register("persona.nombre", { required: true })} />
                 {errors.persona?.nombre && <CampoRequerido />}
+              </div>
 
-                <h4 className="formulario-elemento">Apellido</h4>
-                <input
-                  type="text"
-                  className="formulario-input"
-                  {...register("persona.apellido", { required: true })}
-                />
+              <div>
+                <label className="block mb-1 font-medium">Apellido</label>
+                <input type="text" className="formulario-input" {...register("persona.apellido", { required: true })} />
                 {errors.persona?.apellido && <CampoRequerido />}
+              </div>
 
-                <h4 className="formulario-elemento">Segundo Apellido</h4>
-                <input
-                  type="text"
-                  className="formulario-input"
-                  {...register("persona.segundo_apellido")}
-                />
+              <div>
+                <label className="block mb-1 font-medium">Segundo Apellido</label>
+                <input type="text" className="formulario-input" {...register("persona.segundo_apellido")} />
+              </div>
 
-                <h4 className="formulario-elemento">Fecha de Nacimiento</h4>
-                <input
-                  type="date"
-                  className="formulario-input"
-                  {...register("persona.fecha_nacimiento", {
-                    required: "La fecha de nacimiento es obligatoria",
-                    validate: (value) => {
-                      if (!value)
-                        return "La fecha de nacimiento es obligatoria";
+              <div>
+                <label className="block mb-1 font-medium">Fecha de Nacimiento</label>
+                <input type="date" className="formulario-input" {...register("persona.fecha_nacimiento", {
+                  required: "La fecha de nacimiento es obligatoria",
+                  validate: (value) => {
+                    if (!value) return "La fecha de nacimiento es obligatoria";
+                    const hoy = new Date();
+                    const fechaNacimiento = new Date(value);
+                    const edadDifMs = hoy - fechaNacimiento;
+                    const edadDate = new Date(edadDifMs);
+                    const edad = Math.abs(edadDate.getUTCFullYear() - 1970);
+                    return edad >= 18 || "La persona debe ser mayor de 18 años";
+                  },
+                })} />
+                {errors.persona?.fecha_nacimiento && <MostrarError errores={errors.persona?.fecha_nacimiento.message} />}
+              </div>
 
-                      const hoy = new Date();
-                      const fechaNacimiento = new Date(value);
-                      const edadDifMs = hoy - fechaNacimiento;
-                      const edadDate = new Date(edadDifMs);
-                      const edad = Math.abs(edadDate.getUTCFullYear() - 1970);
-
-                      return (
-                        edad >= 18 || "La persona debe ser mayor de 18 años"
-                      );
-                    },
-                  })}
-                />
-                {errors.persona?.fecha_nacimiento && (
-                  <MostrarError
-                    errores={errors.persona?.fecha_nacimiento.message}
-                  />
-                )}
-
-                <h4 className="formulario-elemento">Sexo</h4>
-                <select
-                  className="formulario-input"
-                  {...register("persona.sexo", { required: true })}
-                >
+              <div>
+                <label className="block mb-1 font-medium">Sexo</label>
+                <select className="formulario-input" {...register("persona.sexo", { required: true })}>
                   <option value="">Seleccione...</option>
                   <option value="M">Masculino</option>
                   <option value="F">Femenino</option>
                 </select>
                 {errors.persona?.sexo && <CampoRequerido />}
+              </div>
 
-                <h4 className="formulario-elemento">CI</h4>
+              <div>
+                <label className="block mb-1 font-medium">CI</label>
                 <input
                   type="text"
                   className="formulario-input"
@@ -276,44 +246,38 @@ export default function FuncionarioFormPage() {
                     },
                   })}
                 />
-                {errors.persona?.ci && (
-                  <MostrarError errores={errors.persona?.ci.message} />
-                )}
+                {errors.persona?.ci && <MostrarError errores={errors.persona?.ci.message} />}
+              </div>
 
-                <h4 className="formulario-elemento">Domicilio</h4>
-                <input
-                  type="text"
-                  className="formulario-input"
-                  {...register("persona.domicilio")}
-                />
-              </fieldset>
-            </div>
+              <div>
+                <label className="block mb-1 font-medium">Domicilio</label>
+                <input type="text" className="formulario-input" {...register("persona.domicilio")} />
+              </div>
+            </fieldset>
           </div>
+
+          <div className="flex justify-center mt-6 gap-3">
+            {puedeEscribir && !editable && (
+              <button type="button" onClick={habilitarEdicion} className="boton-editar">
+                ✏️ Editar
+              </button>
+            )}
+            {puedeEscribir && editable && (
+              <>
+                <button type="submit" className="boton-guardar">
+                  💾 Guardar
+                </button>
+                {params.id && (
+                  <button type="button" onClick={descartarUsuario} className="boton-eliminar">
+                    🗑️ Eliminar
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+
+          <MostrarError errores={backendError} />
         </form>
-        <br />
-        <div className="botones-grupo">
-          {puedeEscribir && !editable && (
-            <button onClick={habilitarEdicion} className="boton-editar">
-              Editar
-            </button>
-          )}
-          {puedeEscribir && editable && (
-            <button
-              type="submit"
-              form="editar-funcionario"
-              className="boton-guardar"
-            >
-              Guardar
-            </button>
-          )}
-          <br />
-          {params.id && puedeEscribir && editable && (
-            <button onClick={descartarUsuario} className="boton-eliminar">
-              Eliminar
-            </button>
-          )}
-        </div>
-        <MostrarError errores={backendError} />
       </div>
     </div>
   );

@@ -42,36 +42,36 @@ export default function ListaInscripciones({ periodo }) {
 
   const columnas = [
     {
-      name: "Realizada por",
+      name: "📋 Realizada por",
       selector: (row) => row.nombre_tutor,
       sortable: true,
     },
     {
-      name: "Estado",
+      name: "📌 Estado",
       selector: (row) => row.estado,
       sortable: true,
       cell: (row) => agregarMayuscula(row.estado),
     },
     {
-      name: "Fecha de inscripción",
+      name: "🗓️ Fecha de inscripción",
       selector: (row) => row.fecha_inscripcion,
       sortable: true,
     },
     {
-      name: "Fecha de aprobación",
+      name: "✅ Fecha de aprobación",
       selector: (row) => row.fecha_revision,
       sortable: true,
     },
     {
-      name: "Revisada por",
+      name: "👤 Revisada por",
       selector: (row) => row.nombre_usuario,
       sortable: true,
     },
     {
-      name: "",
+      name: "👁️ Ver",
       cell: (row) => (
         <button
-          className="boton-detalles"
+          className="flex items-center gap-1 text-white bg-blue-500 hover:bg-blue-600 text-sm px-3 py-1 rounded-full shadow"
           onClick={(e) => {
             e.stopPropagation();
             navigate(`/inscripciones/${row.id}`);
@@ -104,22 +104,25 @@ export default function ListaInscripciones({ periodo }) {
       console.log("Error al intentar eliminar las inscripciones", error);
     }
   }
+
   return (
-    <div>
-      <h1 className="text-2xl font-semibold p-2 pl-3">Inscripciones</h1>
+    <div className="p-4 bg-blue-50 rounded-md shadow">
+      <h1 className="text-2xl font-semibold text-blue-800 flex items-center gap-2 mb-1">
+        📝 Inscripciones
+      </h1>
+      <p className="text-sm text-blue-600 mb-4">Revisa y gestiona las inscripciones</p>
 
       <div className="p-2 flex flex-wrap items-center justify-between gap-4">
         <input
           type="text"
-          placeholder="Buscar..."
+          placeholder="🔍 Buscar inscripciones..."
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-1 max-w-xs w-full sm:w-auto"
+          className="border border-blue-200 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white shadow-sm w-full sm:w-auto"
         />
 
         <div className="flex gap-2">
           <ReporteInscripcionesPage />
-          {/*<ReporteInscripcionesPage estado="rechazada" />*/}
         </div>
       </div>
 
