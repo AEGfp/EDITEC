@@ -3,7 +3,7 @@ import DataTable from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
 import tienePermiso from "../utils/tienePermiso";
 import { estiloTablas } from "../assets/estiloTablas";
-import { obtenerSaldosConFiltros, descargarReporteSaldosPDF } from "../api/saldo_proveedores.api";
+import { obtenerSaldosConFiltros, descargarReporteSaldosPDF, descargarReporteIvaPDF} from "../api/saldo_proveedores.api";
 import { obtenerTodosProveedores } from "../api/proveedores.api";
 
 export function ListaSaldosProveedoresTable() {
@@ -125,6 +125,23 @@ export function ListaSaldosProveedoresTable() {
     }
   }
 
+  // Generar PDF con filtros
+  async function generarIvaPDF() {
+    try {
+      const filtros = {};
+      if (fechaDesde) filtros.fecha_desde = fechaDesde;
+      if (fechaHasta) filtros.fecha_hasta = fechaHasta;
+      if (proveedorId) filtros.proveedor_id = proveedorId;
+
+      const res = await descargarReporteIvaPDF(filtros);
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: "application/pdf" }));
+      window.open(url);
+    } catch (error) {
+      console.error("Error generando PDF", error);
+      alert("No se pudo generar el reporte PDF");
+    }
+  }
+
   // Opciones paginación en español
   const paginationComponentOptions = {
     rowsPerPageText: "Filas por página",
@@ -183,7 +200,15 @@ export function ListaSaldosProveedoresTable() {
           onClick={generarPDF}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
         >
-          Generar PDF
+          Reporte Saldos
+        </button>
+
+
+      <button
+          onClick={generarIvaPDF}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+        >
+          Reporte IVA
         </button>
       </div>
 

@@ -41,6 +41,7 @@ from .serializers import (
 
 from rest_framework.response import Response
 from rest_framework import status
+from datetime import datetime
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from xhtml2pdf import pisa
@@ -53,6 +54,8 @@ from django.utils.dateparse import parse_date
 from xhtml2pdf import pisa
 import io
 from .models import ComprobanteProveedor, CajaPagos, Proveedor
+from empresas.models import Empresa
+from locales.models import Local
 from django.utils import timezone
 
 
@@ -512,6 +515,92 @@ def generar_reporte_saldos_pdf(request):
     }
 
     html = render_to_string("pagos/reporte_saldos.html", context)
+    result = io.BytesIO()
+    pdf = pisa.pisaDocument(io.BytesIO(html.encode("UTF-8")), result)
+
+    if not pdf.err:
+        return HttpResponse(result.getvalue(), content_type="application/pdf")
+    return HttpResponse("Error al generar el PDF", status=500)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def generar_libro_iva_pdf(request):
+    fecha_desde = request.GET.get("fecha_desde")
+    fecha_hasta = request.GET.get("fecha_hasta")
+    proveedor_id = request.GET.get("proveedor_id")
+
+    # Convertir strings a objetos date si están presentes
+    if fecha_desde:
+        fecha_desde = datetime.strptime(fecha_desde, "%Y-%m-%d").date()
+    if fecha_hasta:
+        fecha_hasta = datetime.strptime(fecha_hasta, "%Y-%m-%d").date()
+
+    empresa = Empresa.objects.first()
+    local = Local.objects.first()
+
+    comprobantes = ComprobanteProveedor.objects.select_related(
+        "id_proveedor", "id_tipo_comprobante", "id_condicion"
+    ).all()
+
+    if fecha_desde and fecha_hasta:
+        comprobantes = comprobantes.filter(fecha_comprobante__range=[fecha_desde, fecha_hasta])
+    if proveedor_id:
+        comprobantes = comprobantes.filter(id_proveedor_id=proveedor_id)
+
+    datos = []
+    total_gravada_10 = total_iva_10 = 0
+    total_gravada_5 = total_iva_5 = 0
+    total_exentas = total_total = 0
+
+    for c in comprobantes.order_by("fecha_comprobante"):
+        gravada_10 = c.gravadas_10 or 0
+        iva_10 = gravada_10 // 10  # Iva 10%
+        gravada_5 = c.gravadas_5 or 0
+        iva_5 = gravada_5 // 21    # Iva 5% => 5/105 = ~1/21
+        exentas = c.exentas or 0
+        total = c.total_comprobante or 0
+
+        total_gravada_10 += gravada_10
+        total_iva_10 += iva_10
+        total_gravada_5 += gravada_5
+        total_iva_5 += iva_5
+        total_exentas += exentas
+        total_total += total
+
+        datos.append({
+            "proveedor": c.id_proveedor.nombre_fantasia,
+            "ruc": c.id_proveedor.ruc,
+            "comprobante": f"{c.id_tipo_comprobante.descripcion} {c.numero_comprobante}",
+            "fecha": c.fecha_comprobante,
+            "timbrado": c.timbrado,
+            "gravada_10": gravada_10,
+            "iva_10": iva_10,
+            "gravada_5": gravada_5,
+            "iva_5": iva_5,
+            "exentas": exentas,
+            "total": total,
+        })
+
+    context = {
+        "datos": datos,
+        "fecha_desde": fecha_desde,
+        "fecha_hasta": fecha_hasta,
+        "proveedor_filtrado": Proveedor.objects.filter(id=proveedor_id).first() if proveedor_id else None,
+        "now": timezone.now(),
+        "totales": {
+            "gravada_10": total_gravada_10,
+            "iva_10": total_iva_10,
+            "gravada_5": total_gravada_5,
+            "iva_5": total_iva_5,
+            "exentas": total_exentas,
+            "total": total_total,
+        },
+        "empresa": empresa,
+        "local": local,
+    }
+
+    html = render_to_string("pagos/libro_iva_compras.html", context)
     result = io.BytesIO()
     pdf = pisa.pisaDocument(io.BytesIO(html.encode("UTF-8")), result)
 

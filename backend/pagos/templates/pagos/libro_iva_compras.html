@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Libro IVA Compras</title>
+  <style>
+    @page {
+      size: A4 landscape;
+      margin: 1.5cm;
+    }
+
+    body {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 9px;
+      color: #333;
+      margin: 0;
+    }
+
+    .encabezado {
+      text-align: center;
+    }
+
+    .encabezado h1 {
+      font-size: 16px;
+      font-weight: bold;
+      margin: 0;
+      text-transform: uppercase;
+    }
+
+    .encabezado h2 {
+      font-size: 14px;
+      font-weight: bold;
+      margin: 3px 0;
+    }
+
+    .encabezado .detalle {
+      font-size: 11px;
+      font-weight: bold;
+      line-height: 1.4;
+      margin-top: 3px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 9px;
+      margin-top: 10px;
+    }
+
+    th, td {
+      border: 1px solid #999;
+      padding: 4px;
+      text-align: center;
+      word-wrap: break-word;
+    }
+
+    th {
+      background-color: #f0f0f0;
+      font-weight: bold;
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .fila-totales {
+      font-weight: bold;
+      background-color: #e8e8e8;
+    }
+
+    .footer {
+      text-align: right;
+      font-size: 9px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ENCABEZADO FIJO -->
+  <pdf:pageHeader>
+    <div class="encabezado">
+      <h1>{{ empresa.titulo_reportes }}</h1>
+      <h2>Libro IVA Compras</h2>
+      <div class="detalle">
+        Sucursal: {{ local.titulo_reportes }}<br>
+        Periodo: {{ fecha_desde|date:"d/m/Y" }} - {{ fecha_hasta|date:"d/m/Y" }}<br>
+        Proveedor: {{ proveedor_filtrado.nombre_fantasia|default:"Todos" }}<br>
+        Fecha de generación: {{ now|date:"d/m/Y" }}
+      </div>
+    </div>
+  </pdf:pageHeader>
+
+  <!-- CONTENIDO -->
+  <table>
+    <thead>
+      <tr>
+        <th>Proveedor</th>
+        <th>RUC</th>
+        <th>Timbrado</th>
+        <th>Comprobante</th>
+        <th>Fecha</th>
+        <th>Gravada 10%</th>
+        <th>IVA 10%</th>
+        <th>Gravada 5%</th>
+        <th>IVA 5%</th>
+        <th>Exentas</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for d in datos %}
+        <tr>
+          <td>{{ d.proveedor }}</td>
+          <td>{{ d.ruc }}</td>
+          <td>{{ d.timbrado }}</td>
+          <td>{{ d.comprobante }}</td>
+          <td>{{ d.fecha|date:"d/m/Y" }}</td>
+          <td>{{ d.gravada_10|floatformat:"0g" }}</td>
+          <td>{{ d.iva_10|floatformat:"0g" }}</td>
+          <td>{{ d.gravada_5|floatformat:"0g" }}</td>
+          <td>{{ d.iva_5|floatformat:"0g" }}</td>
+          <td>{{ d.exentas|floatformat:"0g" }}</td>
+          <td>{{ d.total|floatformat:"0g" }}</td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="11">No se encontraron datos para los filtros indicados.</td>
+        </tr>
+      {% endfor %}
+
+      {% if datos %}
+        <tr class="fila-totales">
+          <td colspan="5" style="text-align: right;">Totales:</td>
+          <td>{{ totales.gravada_10|floatformat:"0g" }}</td>
+          <td>{{ totales.iva_10|floatformat:"0g" }}</td>
+          <td>{{ totales.gravada_5|floatformat:"0g" }}</td>
+          <td>{{ totales.iva_5|floatformat:"0g" }}</td>
+          <td>{{ totales.exentas|floatformat:"0g" }}</td>
+          <td>{{ totales.total|floatformat:"0g" }}</td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+
+  <!-- FOOTER CORRECTAMENTE POSICIONADO -->
+  <pdf:pageFooter>
+    <div class="footer">
+      Página <pdf:pageNumber /> de <pdf:pageCount />
+    </div>
+  </pdf:pageFooter>
+
+</body>
+</html>

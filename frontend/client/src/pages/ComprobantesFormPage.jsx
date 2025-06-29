@@ -1,4 +1,4 @@
-import { useForm } from "react-hook-form";
+import { useForm , useWatch} from "react-hook-form";
 import {
   crearComprobante,
   eliminarComprobante,
@@ -25,12 +25,15 @@ export function ComprobantesFormPage() {
     reset,
     getValues,
     trigger,
+    watch,
+    control,
   } = useForm({
       defaultValues: {
         fecha_comprobante: new Date().toISOString().slice(0, 10),
         gravadas_10: 0,
         gravadas_5: 0,
-        exentas: 0
+        exentas: 0,
+        total_comprobante: 0,
     },
   });
 
@@ -147,6 +150,7 @@ export function ComprobantesFormPage() {
     gravadas_10: data.gravadas_10 || 0,
     gravadas_5: data.gravadas_5 || 0,
     exentas: data.exentas || 0,
+    total_comprobante: data.gravadas_10 + data.gravadas_5 + data.exentas || 0,
     };
     try {
       if (params.id) {
@@ -179,6 +183,17 @@ export function ComprobantesFormPage() {
   //                          campo que tiene que leer ---- permiso necesario
   const puedeEscribir = tienePermiso("comprobantes", "escritura");
   //const puedeLeer=tienePermiso("permisos","lectura");
+
+  // Se captan los campos para la suma
+  const gravadas10 = useWatch({ control, name: "gravadas_10" });
+  const gravadas5 = useWatch({ control, name: "gravadas_5" });
+  const exentas = useWatch({ control, name: "exentas" });
+
+  // Efecto para actualizar total_comprobante cuando cambien los campos
+  useEffect(() => {
+    const total = (gravadas10 || 0) + (gravadas5 || 0) + (exentas || 0);
+    setValue("total_comprobante", total, { shouldValidate: true });
+  }, [gravadas10, gravadas5, exentas, setValue]);
 
   return (
     <div className="formulario">
@@ -385,23 +400,19 @@ export function ComprobantesFormPage() {
             <h4 className="formulario-elemento">Total</h4>
             <input
               type="number"
+              readOnly
               placeholder="Ingrese el total en números..."
               className="formulario-input"
+              
               {...register("total_comprobante", { 
                 required: true , 
                 valueAsNumber: true, 
                 min: { value: 1},
-                validate: (value) => {
-                    const g10 = Number(getValues("gravadas_10") || 0);
-                    const g5 = Number(getValues("gravadas_5") || 0);
-                    const exen = Number(getValues("exentas") || 0);
-                    const suma = g10 + g5 + exen;
-                    return value === suma || "El total no coincide con la suma de los subtotales.";
-              }
+                
             })}
             />
             {errors.total_comprobante?.type === "required" && <CampoRequerido />}
-            {errors.total_comprobante?.type === "min" && <ValidarNumero />}
+            {/*errors.total_comprobante?.type === "min" && <ValidarNumero />*/}
             {errors.total_comprobante?.message && (
               <span className="text-red-500 text-sm">{errors.total_comprobante.message}</span>
             )}

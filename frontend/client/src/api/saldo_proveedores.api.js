@@ -64,3 +64,18 @@ export const descargarReporteSaldosPDF = (filtros = {}) => {
     responseType: "blob",
   });
 };
+
+// Descargar PDF del reporte con filtros
+export const descargarReporteIvaPDF = (filtros = {}) => {
+  const params = new URLSearchParams();
+
+  if (filtros.fecha_desde) params.append("fecha_desde", filtros.fecha_desde);
+  if (filtros.fecha_hasta) params.append("fecha_hasta", filtros.fecha_hasta);
+  if (filtros.proveedor_id) params.append("proveedor_id", filtros.proveedor_id);
+
+  const queryString = params.toString();
+
+  return Api.get(`reporte-libro-iva-pdf/${queryString ? `?${queryString}` : ""}`, {
+    responseType: "blob",
+  });
+};
