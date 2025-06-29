@@ -88,19 +88,11 @@ function TransferenciaInfantePage() {
       });
       setFormInfante({ id_infante: "", id_nueva_sala: "", motivo: "" });
     } catch (error) {
-      console.error("Error al transferir infante:", error);
-      const responseData = error.response?.data || {};
-      let mensaje = "Ocurrió un error al transferir el infante.";
-
-      if (responseData.non_field_errors) {
-        mensaje = responseData.non_field_errors[0];
-      } else if (responseData.detail) {
-        mensaje = responseData.detail;
-      } else if (typeof responseData === "object") {
-        const allErrores = Object.values(responseData).flat();
-        if (allErrores.length) mensaje = allErrores[0];
-      }
-
+      const mensaje =
+        error.response?.data?.non_field_errors?.[0] ||
+        error.response?.data?.detail ||
+        Object.values(error.response?.data || {}).flat()[0] ||
+        "Ocurrió un error al transferir el infante.";
       setMensajeInfante({ tipo: "error", texto: mensaje });
     } finally {
       setCargandoInfante(false);
@@ -133,7 +125,6 @@ function TransferenciaInfantePage() {
       });
       setFormProfesor({ id_profesor: "", id_sala_destino: "", motivo: "" });
     } catch (error) {
-      console.error("Error al transferir profesor:", error);
       const mensaje =
         error.response?.data?.non_field_errors?.[0] ||
         error.response?.data?.detail ||
@@ -163,127 +154,140 @@ function TransferenciaInfantePage() {
   };
 
   return (
-    <div className="formulario">
-      <div className="formulario-dentro">
-        <h1 className="formulario-titulo">Transferencia de Sala</h1>
+    <div className="min-h-screen bg-blue-50 p-6">
+      <div className="max-w-md mx-auto bg-white rounded-xl shadow p-6">
+      <h1 className="text-lg font-semibold text-blue-800 flex justify-center text-center mb-4 bg-blue-200 rounded-md px-4 py-2">
+  🔄 Transferencia de Sala
+</h1>
 
-        <form onSubmit={handleSubmitInfante}>
-          <h4 className="formulario-elemento">Infante</h4>
-          <select
-            className="formulario-input"
-            name="id_infante"
-            value={formInfante.id_infante}
-            onChange={handleChangeInfante}
-          >
-            <option value="">Seleccione el infante</option>
-            {infantes.map((inf) => (
-              <option key={inf.id} value={inf.id}>
-                {inf.id_persona?.nombre} {inf.id_persona?.apellido}
-              </option>
-            ))}
-          </select>
-          {erroresInfante.id_infante && <CampoRequerido />}
 
-          <h4 className="formulario-elemento">Nueva Sala</h4>
-          <select
-            className="formulario-input"
-            name="id_nueva_sala"
-            value={formInfante.id_nueva_sala}
-            onChange={handleChangeInfante}
-          >
-            <option value="">Seleccione la sala</option>
-            {salas.map((sala) => (
-              <option key={sala.id} value={sala.id}>
-                {sala.descripcion} {sala.nombre_profesor ? `(${sala.nombre_profesor})` : ""}
-              </option>
-            ))}
-          </select>
-          {erroresInfante.id_nueva_sala && <CampoRequerido />}
-
-          <h4 className="formulario-elemento">Motivo</h4>
-          <textarea
-            className="formulario-input"
-            name="motivo"
-            value={formInfante.motivo}
-            onChange={handleChangeInfante}
-            placeholder="Ingrese el motivo de la transferencia"
-          />
-          {erroresInfante.motivo && <CampoRequerido />}
-
-          <div className="flex justify-center mt-4">
-            <button type="submit" className="boton-guardar" disabled={cargandoInfante}>
-              {cargandoInfante ? "Transfiriendo..." : "Transferir Infante"}
-            </button>
+        {/* Formulario Infante */}
+        <form onSubmit={handleSubmitInfante} className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-800">Infante:</label>
+            <select
+              name="id_infante"
+              value={formInfante.id_infante}
+              onChange={handleChangeInfante}
+              className="w-full border border-gray-300 rounded px-3 py-2"
+            >
+              <option value="">Seleccione el infante</option>
+              {infantes.map((inf) => (
+                <option key={inf.id} value={inf.id}>
+                  {inf.id_persona?.nombre} {inf.id_persona?.apellido}
+                </option>
+              ))}
+            </select>
+            {erroresInfante.id_infante && <CampoRequerido />}
           </div>
 
-          {mensajeInfante && (
-            <p
-              className={`mt-2 text-center ${
-                mensajeInfante.tipo === "exito" ? "text-green-600" : "text-red-600"
-              }`}
+          <div>
+            <label className="block text-sm font-semibold text-gray-800">Nueva Sala:</label>
+            <select
+              name="id_nueva_sala"
+              value={formInfante.id_nueva_sala}
+              onChange={handleChangeInfante}
+              className="w-full border border-gray-300 rounded px-3 py-2"
             >
+              <option value="">Seleccione la sala</option>
+              {salas.map((sala) => (
+                <option key={sala.id} value={sala.id}>
+                  {sala.descripcion} {sala.nombre_profesor ? `(${sala.nombre_profesor})` : ""}
+                </option>
+              ))}
+            </select>
+            {erroresInfante.id_nueva_sala && <CampoRequerido />}
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-800">Motivo:</label>
+            <textarea
+              name="motivo"
+              value={formInfante.motivo}
+              onChange={handleChangeInfante}
+              className="w-full border border-gray-300 rounded px-3 py-2"
+              placeholder="Ingrese el motivo de la transferencia"
+            />
+            {erroresInfante.motivo && <CampoRequerido />}
+          </div>
+
+          <button
+            type="submit"
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded w-full"
+            disabled={cargandoInfante}
+          >
+            {cargandoInfante ? "Transfiriendo..." : "Transferir Infante"}
+          </button>
+
+          {mensajeInfante && (
+            <p className={`text-center ${mensajeInfante.tipo === "exito" ? "text-green-600" : "text-red-600"}`}>
               {mensajeInfante.texto}
             </p>
           )}
         </form>
 
-        <hr className="my-6 border-t" />
+        <hr className="my-6" />
 
-        <form onSubmit={handleSubmitProfesor}>
-          <h4 className="formulario-elemento">Profesor</h4>
-          <select
-            className="formulario-input"
-            name="id_profesor"
-            value={formProfesor.id_profesor}
-            onChange={handleChangeProfesor}
-          >
-            <option value="">Seleccione el profesor</option>
-            {profesores.map((prof) => (
-              <option key={prof.persona?.id} value={prof.persona?.id}>
-                {prof.persona?.nombre} {prof.persona?.apellido}
-              </option>
-            ))}
-          </select>
-          {erroresProfesor.id_profesor && <CampoRequerido />}
-
-          <h4 className="formulario-elemento">Nueva Sala</h4>
-          <select
-            className="formulario-input"
-            name="id_sala_destino"
-            value={formProfesor.id_sala_destino}
-            onChange={handleChangeProfesor}
-          >
-            <option value="">Seleccione la sala</option>
-            {salas.map((sala) => (
-              <option key={sala.id} value={sala.id}>
-                {sala.descripcion}
-              </option>
-            ))}
-          </select>
-          {erroresProfesor.id_sala_destino && <CampoRequerido />}
-
-          <h4 className="formulario-elemento">Motivo</h4>
-          <textarea
-            className="formulario-input"
-            name="motivo"
-            value={formProfesor.motivo}
-            onChange={handleChangeProfesor}
-            placeholder="Ingrese el motivo de la transferencia"
-          />
-          {erroresProfesor.motivo && <CampoRequerido />}
-
-          <div className="flex justify-center mt-4">
-            <button type="submit" className="boton-guardar" disabled={cargandoProfesor}>
-              {cargandoProfesor ? "Transfiriendo..." : "Transferir Profesor"}
-            </button>
+        {/* Formulario Profesor */}
+        <form onSubmit={handleSubmitProfesor} className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-800">Profesor:</label>
+            <select
+              name="id_profesor"
+              value={formProfesor.id_profesor}
+              onChange={handleChangeProfesor}
+              className="w-full border border-gray-300 rounded px-3 py-2"
+            >
+              <option value="">Seleccione el profesor</option>
+              {profesores.map((prof) => (
+                <option key={prof.persona?.id} value={prof.persona?.id}>
+                  {prof.persona?.nombre} {prof.persona?.apellido}
+                </option>
+              ))}
+            </select>
+            {erroresProfesor.id_profesor && <CampoRequerido />}
           </div>
 
-          {mensajeProfesor && (
-            <p
-              className={`mt-2 text-center ${
-                mensajeProfesor.tipo === "exito" ? "text-green-600" : "text-red-600"
-              }`}
+          <div>
+            <label className="block text-sm font-semibold text-gray-800">Nueva Sala:</label>
+            <select
+              name="id_sala_destino"
+              value={formProfesor.id_sala_destino}
+              onChange={handleChangeProfesor}
+              className="w-full border border-gray-300 rounded px-3 py-2"
             >
+              <option value="">Seleccione la sala</option>
+              {salas.map((sala) => (
+                <option key={sala.id} value={sala.id}>
+                  {sala.descripcion}
+                </option>
+              ))}
+            </select>
+            {erroresProfesor.id_sala_destino && <CampoRequerido />}
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-800">Motivo:</label>
+            <textarea
+              name="motivo"
+              value={formProfesor.motivo}
+              onChange={handleChangeProfesor}
+              className="w-full border border-gray-300 rounded px-3 py-2"
+              placeholder="Ingrese el motivo de la transferencia"
+            />
+            {erroresProfesor.motivo && <CampoRequerido />}
+          </div>
+
+          <button
+            type="submit"
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded w-full"
+            disabled={cargandoProfesor}
+          >
+            {cargandoProfesor ? "Transfiriendo..." : "Transferir Profesor"}
+          </button>
+
+          {mensajeProfesor && (
+            <p className={`text-center ${mensajeProfesor.tipo === "exito" ? "text-green-600" : "text-red-600"}`}>
               {mensajeProfesor.texto}
             </p>
           )}
@@ -292,9 +296,9 @@ function TransferenciaInfantePage() {
         <div className="flex justify-center mt-6">
           <button
             onClick={generarReporteTransferencias}
-            className="bg-blue-600 text-white font-semibold px-4 py-2 rounded hover:bg-blue-700 transition"
+            className="bg-blue-600 text-white font-semibold px-4 py-2 rounded hover:bg-blue-700 transition w-full"
           >
-            Generar Reporte de Transferencias
+            📄 Generar Reporte de Transferencias
           </button>
         </div>
       </div>

@@ -431,14 +431,25 @@ export default [
         nombre: "Crear Proveedor",
       },
     ],*/
-  },
-  {
+    subrutas: [
+      {
         path: "/crear-proveedor",
         componente: ProveedoresFormPage,
         entidad: "proveedores",
         permiso: "escritura",
         nombre: "Crear Proveedor",
       },
+    ],
+  },
+  /*
+  {
+    path: "/crear-proveedor",
+    componente: ProveedoresFormPage,
+    entidad: "proveedores",
+    permiso: "escritura",
+    nombre: "Crear Proveedor",
+  },
+  */
   {
     path: "/proveedores/:id",
     componente: ProveedoresFormPage,

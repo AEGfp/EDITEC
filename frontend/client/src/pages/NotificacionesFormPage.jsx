@@ -23,7 +23,6 @@ function NotificacionesFormPage() {
   } = useForm();
 
   const eventoSeleccionado = watch("evento");
-  const enviarATodos = watch("enviar_a_todos");
 
   const [editable, setEditable] = useState(false);
   const [salas, setSalas] = useState([]);
@@ -96,23 +95,18 @@ function NotificacionesFormPage() {
 
   const onSubmit = async (data) => {
     try {
-      setErroresBackend({}); // Limpia errores anteriores
-  
-      const destinatarias = Array.isArray(salasSeleccionadas)
-        ? salasSeleccionadas.map((s) => Number(s.value))
-        : [];
-  
-      const excluidas = Array.isArray(salasExcluidas)
-        ? salasExcluidas.map((s) => Number(s.value))
-        : [];
-  
+      setErroresBackend({});
+
+      const destinatarias = salasSeleccionadas.map((s) => Number(s.value));
+      const excluidas = salasExcluidas.map((s) => Number(s.value));
+
       if (!data.enviar_a_todos && destinatarias.length === 0 && excluidas.length === 0) {
         setErroresBackend({
           salas_destinatarias: ["Debe seleccionar al menos una sala destinataria o excluir alguna sala."],
         });
         return;
       }
-  
+
       const payload = {
         ...data,
         contenido: data.mensaje,
@@ -122,14 +116,13 @@ function NotificacionesFormPage() {
         salas_excluidas: excluidas,
         enviar_a_todos: data.enviar_a_todos || false,
       };
-  
+
       if (params.id) {
         await actualizarNotificacion(params.id, payload);
       } else {
-        console.log("Payload enviado:", payload);
         await crearNotificacion(payload);
       }
-  
+
       navigate(pagina);
     } catch (error) {
       console.error("Error al guardar la notificación", error);
@@ -138,80 +131,108 @@ function NotificacionesFormPage() {
       }
     }
   };
-  
 
-  const habilitarEdicion = () => setEditable(true);
+  const handleEditar = () => setEditable(true);
 
-  const descartarNotificacion = async () => {
-    const confirmar = window.confirm("¿Estás seguro que quieres eliminar esta notificación?");
-    if (confirmar) {
-      await eliminarNotificacion(params.id);
-      navigate(pagina);
+  const handleEliminar = async () => {
+    if (confirm("¿Seguro que desea eliminar esta notificación?")) {
+      try {
+        await eliminarNotificacion(params.id);
+        navigate(pagina);
+      } catch (error) {
+        console.error("Error al eliminar", error);
+      }
     }
   };
 
   return (
-    <div className="formulario">
-      <div className="formulario-dentro">
-        <h1 className="formulario-titulo">Notificación</h1>
-        <form onSubmit={handleSubmit(onSubmit)} id="editar-notificacion">
-          <fieldset disabled={!editable}>
-            <h4 className="formulario-elemento">Evento</h4>
-            <select className="formulario-input" {...register("evento", { required: true })}>
+    <div className="min-h-screen bg-blue-50 p-6">
+      <div className="max-w-md mx-auto bg-white rounded-2xl shadow p-6">
+      <h1 className="text-lg font-semibold text-center text-blue-800 bg-blue-100 py-2 rounded-md mb-4">
+  {params.id
+    ? editable
+      ? "📝 Editar Notificación"  
+      : "🔔 Detalles de Notificación"  // Campana de notificación
+    : "➕ Nueva Notificación"}  
+</h1>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div>
+            <label className="font-semibold">Evento</label>
+            <select
+              className="w-full border border-gray-300 rounded px-3 py-2"
+              {...register("evento", { required: true })}
+              disabled={!editable}
+            >
               <option value="">Seleccioná un evento</option>
               <option value="cumple">Cumpleaños</option>
               <option value="cancelacion">Cancelación</option>
               <option value="personalizado">Personalizado</option>
             </select>
             {errors.evento && <CampoRequerido />}
+          </div>
 
-            <h4 className="formulario-elemento">Título</h4>
+          <div>
+            <label className="font-semibold">Título</label>
             <input
-              className="formulario-input"
+              className="w-full border border-gray-300 rounded px-3 py-2"
               {...register("titulo", { required: true })}
-              readOnly={eventoSeleccionado !== "personalizado"}
+              readOnly={!editable || eventoSeleccionado !== "personalizado"}
             />
             {errors.titulo && <CampoRequerido />}
+          </div>
 
-            <h4 className="formulario-elemento">Mensaje</h4>
-            <textarea className="formulario-input" {...register("mensaje", { required: true })} />
+          <div>
+            <label className="font-semibold">Mensaje</label>
+            <textarea
+              className="w-full border border-gray-300 rounded px-3 py-2"
+              {...register("mensaje", { required: true })}
+              readOnly={!editable}
+            />
             {errors.mensaje && <CampoRequerido />}
+          </div>
 
+          <div>
+            <label className="font-semibold">Fecha</label>
             <input
-            type="date"
-            className="formulario-input"
-            {...register("fecha", {
-              required: "La fecha es obligatoria.",
-              validate: (value) => {
-                const hoy = new Date();
-                hoy.setHours(0, 0, 0, 0);
-
-                const [a, m, d] = value.split("-").map(Number); // Año, Mes, Día
-                const seleccionada = new Date(a, m - 1, d); // Date(mes desde 0)
-
-                return seleccionada >= hoy || "Ingrese una fecha válida igual o superior a la actual.";
-              },
-            })}
-          />
-
-            
+              type="date"
+              className="w-full border border-gray-300 rounded px-3 py-2"
+              {...register("fecha", {
+                required: "La fecha es obligatoria.",
+                validate: (value) => {
+                  const hoy = new Date();
+                  hoy.setHours(0, 0, 0, 0);
+                  const [a, m, d] = value.split("-").map(Number);
+                  const seleccionada = new Date(a, m - 1, d);
+                  return seleccionada >= hoy || "Ingrese una fecha válida igual o superior a la actual.";
+                },
+              })}
+              disabled={!editable}
+            />
             {errors.fecha && <p className="text-red-500 text-sm">{errors.fecha.message}</p>}
             {erroresBackend.fecha && <p className="text-red-500 text-sm">{erroresBackend.fecha[0]}</p>}
+          </div>
 
-            <h4 className="formulario-elemento">Hora</h4>
+          <div>
+            <label className="font-semibold">Hora</label>
             <input
               type="time"
-              className="formulario-input"
+              className="w-full border border-gray-300 rounded px-3 py-2"
               {...register("hora", { required: true })}
+              disabled={!editable}
             />
             {errors.hora && <CampoRequerido />}
+          </div>
 
-            <h4 className="formulario-elemento">Enviar a todos los tutores</h4>
-            <input type="checkbox" {...register("enviar_a_todos")} />
+          <div>
+            <label className="font-semibold">Enviar a todos los tutores</label>
+            <input type="checkbox" className="ml-2" {...register("enviar_a_todos")} disabled={!editable} />
+          </div>
 
-            <h4 className="formulario-elemento">Para (Salas)</h4>
+          <div>
+            <label className="font-semibold">Para (Salas)</label>
             <Select
               isMulti
+              isDisabled={!editable}
               options={opcionesSalas}
               classNamePrefix="select"
               value={salasSeleccionadas}
@@ -225,10 +246,13 @@ function NotificacionesFormPage() {
             {erroresBackend.salas_destinatarias && (
               <p className="text-red-500 text-sm">{erroresBackend.salas_destinatarias[0]}</p>
             )}
+          </div>
 
-            <h4 className="formulario-elemento">Excluir (Salas)</h4>
+          <div>
+            <label className="font-semibold">Excluir (Salas)</label>
             <Select
               isMulti
+              isDisabled={!editable}
               options={opcionesSalas}
               classNamePrefix="select"
               value={salasExcluidas}
@@ -239,20 +263,45 @@ function NotificacionesFormPage() {
                 setValue("salas_excluidas", selected.map((s) => Number(s.value)));
               }}
             />
-          </fieldset>
-        </form>
+          </div>
 
-        <div className="botones-grupo">
-          {puedeEscribir && !editable && (
-            <button onClick={habilitarEdicion} className="boton-editar">Editar</button>
+          {puedeEscribir && (
+            <div className="pt-4 border-t mt-4">
+              {!editable && params.id && (
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={handleEditar}
+                    className="bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-5 rounded"
+                  >
+                    ✏️ Editar
+                  </button>
+                </div>
+              )}
+
+              {editable && (
+                <div className="flex justify-center space-x-4">
+                  <button
+                    type="submit"
+                    className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-5 rounded"
+                  >
+                    💾 Guardar
+                  </button>
+
+                  {params.id && (
+                    <button
+                      type="button"
+                      onClick={handleEliminar}
+                      className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-5 rounded"
+                    >
+                      🗑️ Eliminar
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           )}
-          {puedeEscribir && editable && (
-            <button type="submit" form="editar-notificacion" className="boton-guardar">Guardar</button>
-          )}
-          {params.id && puedeEscribir && editable && (
-            <button onClick={descartarNotificacion} className="boton-eliminar">Eliminar</button>
-          )}
-        </div>
+        </form>
       </div>
     </div>
   );

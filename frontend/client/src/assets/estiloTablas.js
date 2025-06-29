@@ -2,48 +2,36 @@ export const estiloTablas = {
   table: {
     style: {
       width: "100%",
-      backgroundColor: "#f8fafc", // bg-slate-50
-      border: "1px solid #d1d5db", // border-gray-300
-      borderRadius: "0.375rem", // rounded
-      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)", // shadow-md
+      backgroundColor: "#f8fafc",
+      borderRadius: "0.75rem",
+      fontSize: "0.875rem",
       overflow: "hidden",
-      fontSize: "0.875rem", // text-sm
-    },
-  },
-  head: {
-    style: {
-      //backgroundColor: "#3b82f6",
-      backgroundColor: "#1c398e",
-      color: "#ffffff",
-      fontSize: "1rem", // más pequeño que text-2xl
-      fontWeight: "600",
-      textAlign: "center",
-      height: "2.5rem",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
+      border: "none",
     },
   },
   headRow: {
     style: {
-      //backgroundColor: "#3b82f6",
-      backgroundColor: "#1c398e",
-      color: "#ffffff",
-      fontWeight: "600",
-      fontSize: "0.875rem",
+      backgroundColor: "#dbeafe", // bg-blue-100
+      color: "#1e3a8a",           // text-blue-800
+      fontWeight: "bold",
+      fontSize: "0.95rem",
+      borderTopLeftRadius: "0.75rem",
+      borderTopRightRadius: "0.75rem",
+      height: "3rem",
+      borderBottom: "2px solid #3b82f6", // ⬅️ Este es el borde azul fuerte (bg-blue-500)
     },
   },
+  
   headCells: {
     style: {
-      padding: "0.5rem 0.75rem",
+      padding: "0.75rem 1rem",
+      fontWeight: "600",
     },
   },
   rows: {
     style: {
       backgroundColor: "#ffffff",
       fontSize: "0.875rem",
-      paddingTop: "0.25rem",
-      paddingBottom: "0.25rem",
       borderBottom: "1px solid #e5e7eb",
       transition: "background-color 0.2s ease",
     },
@@ -53,7 +41,7 @@ export const estiloTablas = {
   },
   cells: {
     style: {
-      padding: "0.5rem 0.75rem",
+      padding: "0.75rem 1rem",
     },
   },
   pagination: {
