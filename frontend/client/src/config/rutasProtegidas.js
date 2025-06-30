@@ -328,7 +328,7 @@ export default [
     permiso: "lectura", //permisos minimos
     nombre: "Parámetros Cobros", //Nombre del elemento en el Sidebar
     grupo: "Admnistrador",
-    subrutas: [
+    /*subrutas: [
       {
         path: "/crear-parametro",
         componente: ParametrosFormPage,
@@ -336,8 +336,14 @@ export default [
         permiso: "escritura",
         nombre: "Crear parámetro",
       },
-    ],
+    ],*/
   },
+  {
+        path: "/crear-parametro",
+        componente: ParametrosFormPage,
+        entidad: "parametros",
+        permiso: "escritura",
+      },
   {
     path: "/parametros/:id",
     componente: ParametrosFormPage,
@@ -374,7 +380,7 @@ export default [
     permiso: "lectura",
     nombre: "Cobros de Cuotas",
     grupo: "Admnistrador",
-    subrutas: [
+    /*subrutas: [
       {
         path: "/cobros-cuotas/crear",
         componente: CobroCuotasFormPage,
@@ -382,8 +388,14 @@ export default [
         permiso: "escritura",
         nombre: "Registrar Cobro",
       },
-    ],
+    ],*/
   },
+  {
+        path: "/cobros-cuotas/crear",
+        componente: CobroCuotasFormPage,
+        entidad: "cajasCobros",
+        permiso: "escritura",
+      },
   {
     path: "/cobros-cuotas/crear/:id",
     componente: CobroCuotasFormPage,
@@ -431,25 +443,14 @@ export default [
         nombre: "Crear Proveedor",
       },
     ],*/
-    subrutas: [
-      {
-        path: "/crear-proveedor",
-        componente: ProveedoresFormPage,
-        entidad: "proveedores",
-        permiso: "escritura",
-        nombre: "Crear Proveedor",
-      },
-    ],
   },
-  /*
+  
   {
     path: "/crear-proveedor",
     componente: ProveedoresFormPage,
     entidad: "proveedores",
     permiso: "escritura",
-    nombre: "Crear Proveedor",
   },
-  */
   {
     path: "/proveedores/:id",
     componente: ProveedoresFormPage,

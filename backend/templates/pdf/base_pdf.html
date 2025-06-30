@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ titulo_reporte|default:"Reporte" }}</title>
+  <style>
+    @page {
+      margin: 1.5cm;
+    }
+
+    body {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 9px;
+      color: #333;
+      margin: 0;
+    }
+
+    .encabezado {
+      text-align: center;
+    }
+
+    .encabezado h1 {
+      font-size: 16px;
+      font-weight: bold;
+      margin: 0;
+      text-transform: uppercase;
+    }
+
+    .encabezado h2 {
+      font-size: 14px;
+      font-weight: bold;
+      margin: 3px 0;
+    }
+
+    .encabezado .detalle {
+      font-size: 11px;
+      font-weight: bold;
+      line-height: 1.4;
+      margin-top: 3px;
+    }
+
+    .footer {
+      text-align: right;
+      font-size: 9px;
+    }
+
+    {% block extra_css %}{% endblock %}
+  </style>
+</head>
+<body>
+
+  <!-- ENCABEZADO FIJO -->
+  <pdf:pageHeader>
+    <div class="encabezado">
+      <h1>{{ empresa.titulo_reportes }}</h1>
+      <h2>{{ local.titulo_reportes }}</h2>
+      <h2>{{ titulo_reporte }}</h2>
+      <div class="detalle">
+        Fecha de generación: {{ now|date:"d/m/Y" }}<br>
+        {% block detalles %}{% endblock %}
+      </div>
+    </div>
+  </pdf:pageHeader>
+
+  <!-- CONTENIDO DINÁMICO -->
+  {% block contenido %}{% endblock %}
+
+  <!-- FOOTER CON NÚMERO DE PÁGINA -->
+  <pdf:pageFooter>
+    <div class="footer">
+      Página <pdf:pageNumber /> de <pdf:pageCount />
+    </div>
+  </pdf:pageFooter>
+
+</body>
+</html>
