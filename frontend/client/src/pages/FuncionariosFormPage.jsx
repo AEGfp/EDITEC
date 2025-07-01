@@ -89,7 +89,7 @@ export default function FuncionarioFormPage() {
       <div className="bg-white rounded-xl shadow-md w-full max-w-4xl p-6">
         <div className="bg-blue-100 rounded-md px-4 py-2 mb-6 text-center">
           <h2 className="text-lg font-bold text-blue-700 flex items-center justify-center gap-2">
-            👤 {params.id ? "Editar Funcionario" : "Nuevo Funcionario"}
+            👤 {params.id ? "Funcionario" : "Nuevo Funcionario"}
           </h2>
         </div>
 

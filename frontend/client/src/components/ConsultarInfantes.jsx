@@ -7,6 +7,7 @@ function ConsultarInfantes({ idInfante }) {
   const { register, setValue } = useForm();
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
+  
   useEffect(() => {
     async function cargarInfante() {
       try {
@@ -41,81 +42,105 @@ function ConsultarInfantes({ idInfante }) {
     cargarInfante();
   }, [idInfante, setValue]);
 
-  if (!idInfante) {
-    return <p>No se especificó el ID del infante para mostrar.</p>;
-  }
-
-  if (cargando) return <p>Cargando datos...</p>;
+  if (cargando) return <p className="p-4">Cargando datos...</p>;
+  if (error) return <p className="text-red-500 p-4">{error}</p>;
+  if (!idInfante) return <p className="p-4">No se especificó el ID del infante para mostrar.</p>;
 
   return (
-    <div className="formulario">
-      <div className="formulario-dentro">
-        <h1 className="formulario-titulo">Datos del Infante</h1>
+    <div className="min-h-screen bg-blue-50 flex justify-center items-center py-10">
+      <div className="bg-white rounded-xl shadow-md w-full max-w-xl p-6">
+        <div className="bg-blue-100 rounded-md px-4 py-2 mb-6 text-center">
+          <h2 className="text-lg font-bold text-blue-700 flex items-center justify-center gap-2">
+            👶 Datos del Infante
+          </h2>
+        </div>
+
         <form>
           <input type="hidden" {...register("id_persona")} />
+          
+          <fieldset disabled className="space-y-4">
+            <div>
+              <label className="block mb-1 font-medium">Nombre</label>
+              <input
+                className="formulario-input w-full"
+                {...register("nombre")}
+                type="text"
+              />
+            </div>
 
-          <fieldset disabled>
-            <h4 className="formulario-elemento">Nombre</h4>
-            <input
-              className="formulario-input"
-              {...register("nombre")}
-              type="text"
-            />
+            <div>
+              <label className="block mb-1 font-medium">Apellido</label>
+              <input
+                className="formulario-input w-full"
+                {...register("apellido")}
+                type="text"
+              />
+            </div>
 
-            <h4 className="formulario-elemento">Apellido</h4>
-            <input
-              className="formulario-input"
-              {...register("apellido")}
-              type="text"
-            />
+            <div>
+              <label className="block mb-1 font-medium">Cédula de Identidad</label>
+              <input
+                className="formulario-input w-full"
+                {...register("ci")}
+                type="text"
+              />
+            </div>
 
-            <h4 className="formulario-elemento">C.I.</h4>
-            <input
-              className="formulario-input"
-              {...register("ci")}
-              type="text"
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block mb-1 font-medium">¿Alergia?</label>
+                <input
+                  className="formulario-input w-full"
+                  type="text"
+                  {...register("ind_alergia")}
+                  readOnly
+                />
+              </div>
 
-            <h4 className="formulario-elemento">¿Alergia?</h4>
-            <input
-              className="formulario-input"
-              type="text"
-              {...register("ind_alergia")}
-              readOnly
-            />
+              <div>
+                <label className="block mb-1 font-medium">¿Intolerancia a la lactosa?</label>
+                <input
+                  className="formulario-input w-full"
+                  type="text"
+                  {...register("ind_intolerancia_lactosa")}
+                  readOnly
+                />
+              </div>
+            </div>
 
-            <h4 className="formulario-elemento">¿Intolerancia a la lactosa?</h4>
-            <input
-              className="formulario-input"
-              type="text"
-              {...register("ind_intolerancia_lactosa")}
-              readOnly
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block mb-1 font-medium">¿Celiaquismo?</label>
+                <input
+                  className="formulario-input w-full"
+                  type="text"
+                  {...register("ind_celiaquismo")}
+                  readOnly
+                />
+              </div>
 
-            <h4 className="formulario-elemento">¿Celiaquismo?</h4>
-            <input
-              className="formulario-input"
-              type="text"
-              {...register("ind_celiaquismo")}
-              readOnly
-            />
+              <div>
+                <label className="block mb-1 font-medium">Permiso para cambiar pañal</label>
+                <input
+                  className="formulario-input w-full"
+                  type="text"
+                  {...register("permiso_cambio_panhal")}
+                  readOnly
+                />
+              </div>
+            </div>
 
-            <h4 className="formulario-elemento">Permiso para cambiar pañal</h4>
-            <input
-              className="formulario-input"
-              type="text"
-              {...register("permiso_cambio_panhal")}
-              readOnly
-            />
+            <div>
+              <label className="block mb-1 font-medium">Permiso para fotos</label>
+              <input
+                className="formulario-input w-full"
+                type="text"
+                {...register("permiso_fotos")}
+                readOnly
+              />
+            </div>
 
-            <h4 className="formulario-elemento">Permiso para fotos</h4>
-            <input
-              className="formulario-input"
-              type="text"
-              {...register("permiso_fotos")}
-              readOnly
-            />
-            {/*error && <MostrarError mensajes={error} />*/}
+            {error && <MostrarError mensajes={error} />}
           </fieldset>
         </form>
       </div>
