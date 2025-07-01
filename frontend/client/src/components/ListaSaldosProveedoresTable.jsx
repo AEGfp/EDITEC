@@ -3,7 +3,7 @@ import DataTable from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
 import tienePermiso from "../utils/tienePermiso";
 import { estiloTablas } from "../assets/estiloTablas";
-import { obtenerSaldosConFiltros, descargarReporteSaldosPDF, descargarReporteIvaPDF} from "../api/saldo_proveedores.api";
+import { obtenerSaldosConFiltros, descargarReporteSaldosPDF, descargarReporteIvaPDF, descargarReporteGralPDF} from "../api/saldo_proveedores.api";
 import { obtenerTodosProveedores } from "../api/proveedores.api";
 
 export function ListaSaldosProveedoresTable() {
@@ -120,6 +120,21 @@ export function ListaSaldosProveedoresTable() {
     }
   }
 
+  async function generarGralPDF() {
+    try {
+      const filtros = {};
+      if (fechaDesde) filtros.fecha_desde = fechaDesde;
+      if (fechaHasta) filtros.fecha_hasta = fechaHasta;
+
+      const res = await descargarReporteGralPDF(filtros);
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: "application/pdf" }));
+      window.open(url);
+    } catch (error) {
+      console.error("Error generando PDF", error);
+      alert("No se pudo generar el reporte PDF");
+    }
+  }
+
   const paginationComponentOptions = {
     rowsPerPageText: "Filas por página",
     rangeSeparatorText: "de",
@@ -172,6 +187,17 @@ export function ListaSaldosProveedoresTable() {
               Reporte IVA
             </button> 
           )}
+          {/*puedeEscribir && (
+            <button
+              onClick={generarGralPDF}
+              className="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-sm transition-colors"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+              </svg>
+              Reporte General
+            </button> 
+          )*/}
         </div>
 
         {/* Filtros */}

@@ -14,6 +14,7 @@ from .views import (
     generar_reporte_saldo_proveedores,
     generar_reporte_saldos_pdf,
     generar_libro_iva_pdf,
+    generar_reporte_general_pdf,
 )
 from api import views
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -35,6 +36,7 @@ urlpatterns = [
     path('reporte-saldos/', generar_reporte_saldo_proveedores, name='reporte_saldos'),
     path('reporte-saldos-pdf/', generar_reporte_saldos_pdf, name='reporte_saldos_pdf'),
     path('reporte-libro-iva-pdf/', generar_libro_iva_pdf, name='reporte_libro_iva_pdf'),
+    path('reporte-general-pdf/', generar_reporte_general_pdf, name='reporte_general_pdf'),
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("login/", views.LoginView.as_view(), name="login"),

@@ -8,7 +8,6 @@ import tienePermiso from "../utils/tienePermiso";
 export function ListaCajasPagosTable() {
   const navigate = useNavigate();
   const [cajas, setCajas] = useState([]);
-  const [columnas, setColumnas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busqueda, setBusqueda] = useState("");
   const puedeEscribir = tienePermiso("cajasPagos", "escritura");
@@ -17,55 +16,7 @@ export function ListaCajasPagosTable() {
     async function loadCajas() {
       try {
         const res = await obtenerTodasCajasPagos();
-
-        if (res.data.length > 0) {
-          const keys = Object.keys(res.data[0]);
-          const columnasFiltradas = keys.filter((key) => key !== "id");
-
-          const arrayColumnas = columnasFiltradas.map((columna) => ({
-            name: columna.charAt(0).toUpperCase() + columna.slice(1),
-            selector: (fila) => fila[columna],
-            sortable: true,
-            cell: (fila) =>
-              typeof fila[columna] === "boolean"
-                ? fila[columna] ? "Sí" : "No"
-                : fila[columna],
-          }));
-
-          arrayColumnas.push({
-            name: "",
-            selector: (fila) => fila,
-            right: true,
-            cell: (fila) => (
-              <button
-                className="inline-flex items-center px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md transition"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleRowClick(fila);
-                }}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 mr-1"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                Detalles
-              </button>
-            ),
-          });
-
-          setColumnas(arrayColumnas);
-          setCajas(res.data);
-        }
+        setCajas(res.data);
       } catch (err) {
         console.error(err);
       } finally {
@@ -84,9 +35,79 @@ export function ListaCajasPagosTable() {
     navigate(`/crear-caja-pago/`);
   }
 
+  const columnas = [
+    {
+      name: "Pago N°",
+      selector: (fila) => fila.id,
+      sortable: true,
+      width: "100px",
+    },
+    {
+      name: "Fecha de Pago",
+      selector: (fila) => fila.fecha_pago,
+      sortable: true,
+      cell: (fila) =>
+        new Date(fila.fecha_pago).toLocaleDateString("es-PY"),
+    },
+    {
+      name: "Proveedor",
+      selector: (fila) => fila.proveedor_nombre,
+      sortable: true,
+      wrap: true,
+      grow: 2,
+    },
+    {
+      name: "N° Cuota",
+      selector: (fila) => fila.nro_cuota,
+      sortable: true,
+      center: true,
+    },
+    {
+      name: "Total Pago",
+      selector: (fila) => fila.total_pago,
+      sortable: true,
+      right: true,
+      cell: (fila) =>
+        fila.total_pago.toLocaleString("es-PY", {
+          style: "currency",
+          currency: "PYG",
+          minimumFractionDigits: 0,
+        }),
+    },
+    {
+      name: "",
+      right: true,
+      cell: (fila) => (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleRowClick(fila);
+          }}
+          className="inline-flex items-center px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md transition"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-4 w-4 mr-1"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          Detalles
+        </button>
+      ),
+    },
+  ];
+
   const elementosFiltrados = cajas.filter((caja) =>
     columnas.some((columna) => {
-      const elem = columna.selector(caja);
+      const elem = columna.selector?.(caja);
       return elem?.toString().toLowerCase().includes(busqueda.toLowerCase());
     })
   );
@@ -185,4 +206,4 @@ export function ListaCajasPagosTable() {
       </div>
     </div>
   );
-} 
+}

@@ -54,7 +54,9 @@ from django.utils.dateparse import parse_date
 from xhtml2pdf import pisa
 import io
 from .models import ComprobanteProveedor, CajaPagos, Proveedor
+from cobros.models import SaldoCuotas
 from empresas.models import Empresa
+from empresas.utils import obtener_datos_institucionales
 from locales.models import Local
 from django.utils import timezone
 
@@ -493,6 +495,119 @@ def generar_libro_iva_pdf(request):
     }
 
     html = render_to_string("pagos/libro_iva_compras.html", context)
+    result = io.BytesIO()
+    pdf = pisa.pisaDocument(io.BytesIO(html.encode("UTF-8")), result)
+
+    if not pdf.err:
+        return HttpResponse(result.getvalue(), content_type="application/pdf")
+    return HttpResponse("Error al generar el PDF", status=500)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def generar_reporte_general_pdf(request):
+
+    fecha_desde = request.GET.get("fecha_desde")
+    fecha_hasta = request.GET.get("fecha_hasta")
+
+    # -------- DATOS DE PROVEEDORES (COMO VENTAS) --------
+    comprobantes = ComprobanteProveedor.objects.select_related(
+        "id_proveedor", "id_condicion", "id_tipo_comprobante"
+    ).prefetch_related("saldos__pagos")
+
+    if fecha_desde and fecha_hasta:
+        comprobantes = comprobantes.filter(fecha_comprobante__range=[fecha_desde, fecha_hasta])
+
+    proveedores = Proveedor.objects.filter(comprobantes__in=comprobantes).distinct()
+    proveedores_data = []
+    total_proveedores = 0
+
+    for proveedor in proveedores:
+        comprobantes_prov = comprobantes.filter(id_proveedor=proveedor)
+        comprobantes_list = []
+        subtotal = 0
+
+        for comp in comprobantes_prov:
+            cuotas_list = []
+            for saldo in comp.saldos.all().order_by("numero_cuota"):
+                pagos = saldo.pagos.all()
+                fecha_pago = pagos.last().fecha_pago if pagos.exists() else None
+                cuotas_list.append({
+                    "numero_cuota": saldo.numero_cuota,
+                    "debito": saldo.monto_cuota,
+                    "credito": saldo.monto_cuota - saldo.saldo_cuota,
+                    "saldo": saldo.saldo_cuota,
+                    "fecha_pago": fecha_pago,
+                })
+                subtotal += saldo.saldo_cuota
+
+            comprobantes_list.append({
+                "numero_comprobante": comp.numero_comprobante,
+                "fecha": comp.fecha_comprobante,
+                "tipo_comprobante": comp.id_tipo_comprobante.descripcion,
+                "condicion": comp.id_condicion.descripcion,
+                "cuotas": cuotas_list
+            })
+
+        total_proveedores += subtotal
+        proveedores_data.append({
+            "proveedor": proveedor,
+            "comprobantes": comprobantes_list,
+            "subtotal": subtotal
+        })
+
+    # -------- DATOS DE CUOTAS (COMO COBROS) --------
+    cuotas = SaldoCuotas.objects.select_related('id_infante__id_persona').all()
+    if fecha_desde:
+        cuotas = cuotas.filter(fecha_vencimiento__gte=fecha_desde)
+    if fecha_hasta:
+        cuotas = cuotas.filter(fecha_vencimiento__lte=fecha_hasta)
+
+    resumen_cuotas = []
+    total_cuota = 0
+    total_mora = 0
+    total_pagado = 0
+    cuotas_pagadas = 0
+    cuotas_pendientes = 0
+
+    for cuota in cuotas:
+        resumen_cuotas.append({
+            'infante': f"{cuota.id_infante.id_persona.nombre} {cuota.id_infante.id_persona.apellido}",
+            'anho': cuota.anho,
+            'mes': cuota.mes,
+            'fecha_vencimiento': cuota.fecha_vencimiento,
+            'monto_cuota': cuota.monto_cuota,
+            'monto_mora': cuota.monto_mora,
+            'total': cuota.monto_total,
+            'estado': cuota.estado,
+        })
+        total_cuota += cuota.monto_cuota
+        total_mora += cuota.monto_mora
+        total_pagado += cuota.monto_total
+        if cuota.estado == 'PAGADA':
+            cuotas_pagadas += 1
+        else:
+            cuotas_pendientes += 1
+
+    context = {
+        **obtener_datos_institucionales(),
+        "titulo_reporte": "Reporte General",
+        "fecha_desde": fecha_desde,
+        "fecha_hasta": fecha_hasta,
+        "now": timezone.now(),
+
+        "proveedores_data": proveedores_data,
+        "total_proveedores": total_proveedores,
+
+        "resumen_cuotas": resumen_cuotas,
+        "total_cuota": total_cuota,
+        "total_mora": total_mora,
+        "total_pagado": total_pagado,
+        "cuotas_pagadas": cuotas_pagadas,
+        "cuotas_pendientes": cuotas_pendientes,
+    }
+
+    html = render_to_string("pagos/reporte_general.html", context)
     result = io.BytesIO()
     pdf = pisa.pisaDocument(io.BytesIO(html.encode("UTF-8")), result)
 

@@ -62,23 +62,8 @@ class CondicionSerializer(serializers.ModelSerializer):
 
 # Serializer para los comprobantes de proveedores
 class ComprobanteProveedorSerializer(serializers.ModelSerializer):
-    '''id_tipo_comprobante = serializers.SlugRelatedField(
-        slug_field = 'descripcion',
-        queryset = TipoComprobante.objects.filter(estado=True))
 
-    id_condicion = serializers.SlugRelatedField(
-        slug_field = 'descripcion',
-        queryset = Condicion.objects.filter(estado=True))
-    
-    id_local = serializers.SlugRelatedField(
-        slug_field = 'descripcion',
-        queryset = Local.objects.filter(estado=True))
-
-    class Meta:
-        model = ComprobanteProveedor
-        fields = ['__all__'] '''
-    
-    proveedor_nombre = serializers.CharField(source='id_proveedor.descripcion', read_only=True)
+    proveedor_nombre = serializers.CharField(source='id_proveedor.nombre_fantasia', read_only=True)
     tipo_comprobante_nombre = serializers.CharField(source='id_tipo_comprobante.descripcion', read_only=True)
     condicion_nombre = serializers.CharField(source='id_condicion.descripcion', read_only=True)
     local_nombre = serializers.CharField(source='id_local.descripcion', read_only=True)
@@ -207,6 +192,7 @@ class SaldoProveedoresSerializer(serializers.ModelSerializer):
 
 # Serializer de las cajas pagos
 class CajaPagosSerializer(serializers.ModelSerializer):
+    proveedor_nombre = serializers.CharField(source='id_saldo.id_comprobante.id_proveedor.nombre_fantasia', read_only=True)
     monto_saldo = serializers.DecimalField(
         source="id_saldo.saldo_cuota", max_digits=10, decimal_places=2, read_only=True
     )

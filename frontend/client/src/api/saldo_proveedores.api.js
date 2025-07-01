@@ -79,3 +79,17 @@ export const descargarReporteIvaPDF = (filtros = {}) => {
     responseType: "blob",
   });
 };
+
+// Descargar PDF del reporte con filtros
+export const descargarReporteGralPDF = (filtros = {}) => {
+  const params = new URLSearchParams();
+
+  if (filtros.fecha_desde) params.append("fecha_desde", filtros.fecha_desde);
+  if (filtros.fecha_hasta) params.append("fecha_hasta", filtros.fecha_hasta);
+
+  const queryString = params.toString();
+
+  return Api.get(`reporte-general-pdf/${queryString ? `?${queryString}` : ""}`, {
+    responseType: "blob",
+  });
+};

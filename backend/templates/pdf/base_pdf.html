@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>{{ titulo_reporte|default:"Reporte" }}</title>
+
   <style>
     @page {
       margin: 1.5cm;
@@ -43,12 +44,11 @@
       text-align: right;
       font-size: 9px;
     }
-
-    {% block extra_css %}{% endblock %}
   </style>
+
+  {% block extra_css %}{% endblock %}
 </head>
 <body>
-
   <!-- ENCABEZADO FIJO -->
   <pdf:pageHeader>
     <div class="encabezado">
@@ -71,6 +71,5 @@
       Página <pdf:pageNumber /> de <pdf:pageCount />
     </div>
   </pdf:pageFooter>
-
 </body>
 </html>

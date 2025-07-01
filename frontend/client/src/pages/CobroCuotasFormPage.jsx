@@ -292,11 +292,11 @@ export function CobroCuotasFormPage() {
               Guardar
             </button>
           )}
-          {id && puedeEscribir && (
+          {/*id && puedeEscribir && (
             <button onClick={descartarCobro} className="boton-eliminar">
               Eliminar
             </button>
-          )}
+          )*/}
         </div>
       </div>
     </div>

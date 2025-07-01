@@ -18,30 +18,50 @@ export function ListaEmpresasTable() {
       try {
         const res = await obtenerTodasEmpresas();
         if (res.data.length > 0) {
-          const keys = Object.keys(res.data[0]);
-          const columnasFiltradas = keys.filter((key) => key !== "id");
-          const arrayColumnas = columnasFiltradas.map((columna) => ({
-            name: columna.charAt(0).toUpperCase() + columna.slice(1),
-            selector: (fila) => fila[columna],
-            sortable: true,
-            cell: (fila) =>
-              typeof fila[columna] === "boolean"
-                ? fila[columna]
-                  ? "Sí"
-                  : "No"
-                : fila[columna],
-          }));
+          const columnasDefinidas = [
+            {
+              name: "Nombre",
+              selector: (fila) => fila.descripcion,
+              sortable: true,
+            },
+            {
+              name: "Dirección",
+              selector: (fila) => fila.direccion,
+              sortable: true,
+            },
+            {
+              name: "Teléfono",
+              selector: (fila) => fila.telefono,
+              sortable: true,
+            },
+            {
+              name: "RUC",
+              selector: (fila) => fila.ruc,
+              sortable: true,
+            },
+            {
+              name: "Estado",
+              selector: (fila) => fila.estado,
+              sortable: true,
+              cell: (fila) => (
+                <span className={fila.estado ? "text-green-600" : "text-red-600"}>
+                  {fila.estado ? "Activo" : "Inactivo"}
+                </span>
+              ),
+            },
+          ];
 
-          agregarBotonDetalles(arrayColumnas);
-          setColumnas(arrayColumnas);
+          agregarBotonDetalles(columnasDefinidas);
+          setColumnas(columnasDefinidas);
           setEmpresas(res.data);
-          setLoading(false);
         }
+        setLoading(false);
       } catch (err) {
         console.error(err);
         setLoading(false);
       }
     }
+
     loadEmpresas();
   }, []);
 

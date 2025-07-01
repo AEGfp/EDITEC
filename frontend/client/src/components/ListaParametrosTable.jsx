@@ -69,7 +69,7 @@ export function ListaParametrosTable() {
                 return meses[valor] || valor;
               }
 
-              if (typeof valor === "boolean") return valor ? "Sí" : "No";
+              if (typeof valor === "boolean") return valor ? "Activo" : "Inactivo";
 
               if (typeof valor === "object" && valor !== null) {
                 const inicio = formatearFecha(valor.fecha_inicio);

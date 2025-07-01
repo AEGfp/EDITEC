@@ -159,9 +159,17 @@ export function ProveedoresFormPage() {
         type="text"
         placeholder="Ingrese un teléfono de contacto del proveedor..."
         className="formulario-input w-full"
-        {...register("telefono", { required: true })}
+        {...register("telefono", { 
+          required: true,
+          validate: {
+                    length: (value) => {
+                      const strValue = String(value);
+                      return /^\d{9,10}$/.test(strValue) || "El telefono debe tener entre 9 o 10 dígitos numéricos";
+                    }}
+        
+        })}
       />
-      {errors.telefono && <CampoRequerido />}
+      {errors.telefono && (<CampoRequerido mensaje={errors.telefono.message} />)}
     </div>
 
     <div>
