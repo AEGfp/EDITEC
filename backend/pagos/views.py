@@ -152,28 +152,6 @@ class SaldoProveedoresView(viewsets.ModelViewSet):
                 pass
 
         return queryset
-'''lass SaldoProveedoresView(viewsets.ModelViewSet):
-    queryset = SaldoProveedores.objects.all()
-    serializer_class = SaldoProveedoresSerializer'''
-
-
-'''class ComprobantesConSaldoAPIView(APIView):
-    permission_classes = [AllowAny]
-
-    def get(self, request):
-        comprobantes = ComprobanteProveedor.objects.filter(
-            saldos__saldo_cuota__gt=0
-        ).distinct()
-
-        data = [
-            {
-                "id": c.id,
-                "descripcion": str(c),  #!Modificar para front
-            }
-            for c in comprobantes
-        ]
-        return Response(data)
-    '''
 class ComprobantesConSaldoAPIView(APIView):
     permission_classes = [AllowAny]
 
@@ -238,32 +216,6 @@ def cuotas_disponibles(request):
         for c in cuotas
     ]
     return Response(data)
-
-'''def cuotas_disponibles(request):
-    id_comprobante = request.query_params.get("id_comprobante")
-
-    if not id_comprobante:
-        return Response(
-            {"error": "Falta el parámetro 'id_comprobante'."},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-    cuotas = SaldoProveedores.objects.filter(
-        id_comprobante=id_comprobante,
-        saldo_cuota__gt=0
-    ).order_by('numero_cuota')
-
-    data = [
-        {
-            "numero_cuota": c.numero_cuota,
-            "saldo_cuota": c.saldo_cuota,
-            "monto_cuota": c.monto_cuota,
-            "id_saldo": c.id
-        }
-        for c in cuotas
-    ]
-    return Response(data)'''
-
 
 
 @permission_classes([AllowAny])
@@ -372,77 +324,7 @@ def generar_reporte_saldo_proveedores(request):
         return HttpResponse(result.getvalue(), content_type='application/pdf')
     return HttpResponse("Error al generar PDF", status=500)
 
-'''
-@permission_classes([AllowAny])
-def generar_reporte_saldos_pdf(request):
-    fecha_desde = request.GET.get("fecha_desde")
-    fecha_hasta = request.GET.get("fecha_hasta")
-    proveedor_id = request.GET.get("proveedor_id")
 
-    comprobantes = ComprobanteProveedor.objects.select_related(
-        "id_proveedor", "id_condicion", "id_tipo_comprobante"
-    ).prefetch_related("saldos__pagos")
-
-    # Filtros
-    if fecha_desde and fecha_hasta:
-        comprobantes = comprobantes.filter(fecha_comprobante__range=[fecha_desde, fecha_hasta])
-    if proveedor_id:
-        comprobantes = comprobantes.filter(id_proveedor_id=proveedor_id)
-
-    proveedores = Proveedor.objects.filter(comprobantes__in=comprobantes).distinct()
-
-    proveedores_data = []
-    total_general = 0
-
-    for proveedor in proveedores:
-        comprobantes_prov = comprobantes.filter(id_proveedor=proveedor)
-
-        comprobantes_list = []
-        subtotal_proveedor = 0
-
-        for comp in comprobantes_prov:
-            for saldo in comp.saldos.all():
-                pagos = saldo.pagos.all()
-                fecha_pago = pagos.last().fecha_pago if pagos.exists() else None
-
-                comprobantes_list.append({
-                    "numero_comprobante": comp.numero_comprobante,
-                    "fecha": comp.fecha_comprobante,
-                    "gravadas_10": comp.gravadas_10,
-                    "gravadas_5": comp.gravadas_5,
-                    "exentas": comp.exentas,
-                    "tipo_comprobante": comp.id_tipo_comprobante.descripcion,
-                    "condicion": comp.id_condicion.descripcion,
-                    "debito": saldo.monto_cuota,
-                    "credito": saldo.monto_cuota - saldo.saldo_cuota,
-                    "saldo": saldo.saldo_cuota,
-                    "fecha_pago": fecha_pago
-                })
-                subtotal_proveedor += saldo.saldo_cuota
-
-        total_general += subtotal_proveedor
-
-        proveedores_data.append({
-            "proveedor": proveedor,
-            "comprobantes": comprobantes_list,
-            "subtotal": subtotal_proveedor
-        })
-
-    context = {
-        "proveedores_data": proveedores_data,
-        "fecha_desde": fecha_desde,
-        "fecha_hasta": fecha_hasta,
-        "total_general": total_general,
-        "now": timezone.now(),
-    }
-
-    html = render_to_string("pagos/reporte_saldos.html", context)
-    result = io.BytesIO()
-    pdf = pisa.pisaDocument(io.BytesIO(html.encode("UTF-8")), result)
-
-    if not pdf.err:
-        return HttpResponse(result.getvalue(), content_type="application/pdf")
-    return HttpResponse("Error al generar el PDF", status=500)'''
 
 @permission_classes([AllowAny])
 def generar_reporte_saldos_pdf(request):
@@ -554,13 +436,23 @@ def generar_libro_iva_pdf(request):
     total_exentas = total_total = 0
 
     for c in comprobantes.order_by("fecha_comprobante"):
-        gravada_10 = c.gravadas_10 or 0
-        iva_10 = gravada_10 // 10  # Iva 10%
-        gravada_5 = c.gravadas_5 or 0
-        iva_5 = gravada_5 // 21    # Iva 5% => 5/105 = ~1/21
+        # Obtener los valores del comprobante (totales con IVA)
+        total_gravada_10_con_iva = c.gravadas_10 or 0
+        total_gravada_5_con_iva = c.gravadas_5 or 0
         exentas = c.exentas or 0
-        total = c.total_comprobante or 0
 
+        # Calcular gravada real e IVA al 10%
+        gravada_10 = round(total_gravada_10_con_iva / 1.1) if total_gravada_10_con_iva else 0
+        iva_10 = round(total_gravada_10_con_iva / 11) if total_gravada_10_con_iva else 0
+
+        # Calcular gravada real e IVA al 5%
+        gravada_5 = round(total_gravada_5_con_iva / 1.05) if total_gravada_5_con_iva else 0
+        iva_5 = round(total_gravada_5_con_iva / 21) if total_gravada_5_con_iva else 0
+
+        # Calcular el total del comprobante
+        total = gravada_10 + iva_10 + gravada_5 + iva_5 + exentas
+
+        # Acumular totales
         total_gravada_10 += gravada_10
         total_iva_10 += iva_10
         total_gravada_5 += gravada_5

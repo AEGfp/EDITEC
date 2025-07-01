@@ -138,9 +138,19 @@ export function ProveedoresFormPage() {
         type="text"
         placeholder="Ingrese el RUC del proveedor..."
         className="formulario-input w-full"
-        {...register("ruc", { required: true })}
+        {...register("ruc", { 
+          required: true,
+           pattern: {
+            value: /^\d{5,8}-\d{1}$/,
+            message: "El RUC debe seguir un patrón similar a 123456-7",
+          },
+        
+        })}
       />
       {errors.ruc && <CampoRequerido />}
+      {errors.ruc && (
+              <CampoRequerido mensaje={errors.ruc.message} />
+            )}
     </div>
 
     <div>

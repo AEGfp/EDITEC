@@ -285,24 +285,25 @@ export function ComprobantesFormPage() {
             {errors.numero_comprobante?.type === "pattern" && <FormatoNumero />}
             {/*errors.numero_comprobante?.type === "maxLength" && <ValidarNumero />*/} 
             <h4 className="formulario-elemento">N° Timbrado</h4>
-            <input
-              type="number"
-              placeholder="Ingrese el timbrado del comprobante..."
-              className="formulario-input"
-              {...register("timbrado", { 
-                required: true , 
-                valueAsNumber: true, 
-                min: { value: 1},
-                validate: (value) => {
-                  return value.toString().length <= 8 || "El número del timbrado debe contener como máximo 8 dígitos";
-              }
-              })}
-            />
-            {errors.timbrado?.type === "required" && <CampoRequerido />}
-            {errors.timbrado?.type === "min" && <ValidarNumero />}
-            {errors.timbrado?.message && (
-              <span className="text-red-500 text-sm">{errors.timbrado.message}</span>
-            )}
+              <input
+                type="number"
+                placeholder="Ingrese el timbrado del comprobante..."
+                className="formulario-input"
+                {...register("timbrado", { 
+                  required: "El timbrado es obligatorio",
+                  valueAsNumber: true,
+                  validate: {
+                    length: (value) => {
+                      const strValue = String(value);
+                      return /^\d{8}$/.test(strValue) || "El timbrado debe tener exactamente 8 dígitos numéricos";
+                    },
+                  },
+                })}
+              />
+              {errors.timbrado && (
+                <CampoRequerido mensaje={errors.timbrado.message} />
+              )}
+                          
             <h4 className="formulario-elemento">Concepto</h4>
             <input
               type="text"

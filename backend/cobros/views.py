@@ -52,29 +52,6 @@ from django.db.models import Sum, F, DecimalField, ExpressionWrapper
 import pytz
 from io import BytesIO
 
-#ANTERIOR
-# View para los parámetros
-'''@permission_classes([AllowAny])
-class ParametrosCobrosView(viewsets.ModelViewSet):
-    queryset = ParametrosCobros.objects.all()
-    serializer_class = ParametrosCobrosSerializer
-
-
-# View para los saldos de las cuotas
-@permission_classes([AllowAny])
-class SaldoCuotasView(viewsets.ModelViewSet):
-    queryset = SaldoCuotas.objects.all()
-    serializer_class = SaldoCuotasSerializer
-
-
-# View para los cobros de cuotas
-@permission_classes([AllowAny])
-class CobroCuotaInfanteView(viewsets.ModelViewSet):
-    queryset = CobroCuotaInfante.objects.all()
-    serializer_class = CobroCuotaInfanteSerializer
-'''
-
-#NUEVO
 @permission_classes([AllowAny])
 class ParametrosCobrosView(viewsets.ModelViewSet):
     queryset = ParametrosCobros.objects.all()
@@ -126,72 +103,6 @@ class CobroCuotaInfanteView(viewsets.ModelViewSet):
 
 
 
-#ANTERIOR
-'''
-@api_view(["POST"])
-@permission_classes([AllowAny])
-# Función para generar las cuotas de un infante basado en los parámetros
-def generar_cuotas(request):
-        id_infante = request.data.get("id_infante")
-
-        # Se valida que se tenga un id del infante
-        if not id_infante:
-            return Response({"Error:": "Se requiere seleccionar un infante para generar las cuotas"}, status=400)
-        
-        try: 
-            infante = Infante.objects.get(id = id_infante)
-
-            # Se valida que exista el infante
-        except Infante.DoesNotExist:
-            return Response({"Error": "El infante no se encuentra en la base de datos"}, status=404)
-        
-        # Se obtienen los parámetros
-        parametros = ParametrosCobros.objects.filter(estado=True).first()
-        
-        # Se validan que existan parámetros activos
-        if not parametros:
-            return Response({"Error": "No existen parámetros activos para la generación de las cuotas"}, status=400)
-        
-        # Se obtiene la fecha actual
-        hoy = date.today()
-        c_generadas = [] # Lista vacía para las cuotas
-        num = 1 # Para el número de cuotas
-
-        for mes in range(parametros.mes_inicio, parametros.mes_fin + 1):
-            if SaldoCuotas.objects.filter(id_infante = infante, anho= parametros.anho, mes = mes).exists():
-                continue
-
-            dia_vencimiento = min(parametros.dia_limite_pago, monthrange(parametros.anho, mes)[1])
-            fecha_vencimiento = date(parametros.anho, mes, dia_vencimiento)
-
-            try:
-                cuota = SaldoCuotas.objects.create(
-                    id_infante = infante,
-                    anho = parametros.anho,
-                    mes = mes,
-                    fecha_vencimiento = fecha_vencimiento,
-                    nro_cuota = num,
-                    monto_cuota = parametros.monto_cuota,
-                    monto_mora = 0,
-                    monto_total = parametros.monto_cuota,
-                    saldo = parametros.monto_cuota,
-                )
-                c_generadas.append(cuota)
-
-            except IntegrityError as e:
-                print(f"Cuota duplicada para {infante} {mes}/{parametros.anho}")
-                continue
-            num = num + 1
-
-        serializer = SaldoCuotasSerializer(c_generadas, many= True)
-
-        if not c_generadas:
-            return Response({"detalle": "No se generaron nuevas cuotas. Ya existen para el infante."}, status=200)
-
-        return Response(serializer.data, status=201)
-'''
-
-#NUEVO
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def generar_cuotas(request):
@@ -212,22 +123,7 @@ def generar_cuotas(request):
     periodo = PeriodoInscripcion.objects.filter(activo=True, fecha_inicio__lte=timezone.now(), fecha_fin__gte=timezone.now()).first()
     if not periodo:
         return Response({"error": "No hay un período de inscripción activo"}, status=400)
-    
-    # Verificar fechas del período
-    '''if not (periodo.fecha_inicio <= now <= periodo.fecha_fin):
-        return Response(
-            {"error": f"El período no está en el rango de fechas válido: {periodo.fecha_inicio} a {periodo.fecha_fin}"},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-    # Verificar que el infante esté inscrito
-    inscripcion = Inscripcion.objects.filter(infante=infante).first()
-    if not inscripcion:
-        return Response(
-            {"error": "El infante no está inscrito en el período activo"},
-            status=status.HTTP_400_BAD_REQUEST
-        )'''
-    
+        
     # Obtener los parámetros activos del período
     parametros = ParametrosCobros.objects.filter(periodo=periodo, estado=True).first()
     if not parametros:
@@ -337,56 +233,6 @@ class CobroCuotaView(viewsets.ModelViewSet):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-'''
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def registrar_cobro_cuota(request):
-    cuota_id = request.data.get("cuota")
-    monto_cobrado = request.data.get("monto_cobrado")
-    fecha_cobro = request.data.get("fecha_cobro")  # formato: 'YYYY-MM-DD'
-
-    if not all([cuota_id, monto_cobrado, fecha_cobro]):
-        return Response({"error": "cuota_id, monto_cobrado y fecha_cobro son requeridos"}, status=400)
-
-    try:
-        cuota = SaldoCuotas.objects.get(id=cuota_id)
-    except SaldoCuotas.DoesNotExist:
-        return Response({"error": "Cuota no encontrada"}, status=404)
-
-    parametros = ParametrosCobros.objects.filter(estado=True).first()
-    if not parametros:
-        return Response({"error": "No hay parámetros activos en el periodo actual para los cálculos"}, status=400)
-
-    # Calcular fecha límite con días de gracia
-    fecha_cobro_dt = date.fromisoformat(fecha_cobro)
-    fecha_limite_sin_mora = cuota.fecha_vencimiento + timedelta(days=parametros.dias_gracia)
-
-    # Calcular mora si corresponde
-    mora = 0
-    if fecha_cobro_dt > fecha_limite_sin_mora:
-        dias_mora = (fecha_cobro_dt - fecha_limite_sin_mora).days
-        mora = dias_mora * parametros.mora_por_dia
-
-    # Actualizar saldo y estado de la cuota
-    total_cobrado = Decimal(monto_cobrado) + Decimal(mora)
-    cuota.monto_mora = mora
-    cuota.monto_total = cuota.monto_cuota + mora
-    cuota.saldo = max(Decimal("0.00"), cuota.monto_total - Decimal(monto_cobrado))
-    cuota.fecha_pago = fecha_cobro_dt
-    cuota.estado = cuota.saldo == 0
-    cuota.save()
-
-    # Registrar el cobro
-    cobro = CobroCuotaInfante.objects.create(
-        cuota=cuota,
-        fecha_cobro=fecha_cobro_dt,
-        monto_cobrado=monto_cobrado,
-        observacion=f"Cobro con mora de {mora}" if mora > 0 else "Cobro sin mora"
-    )
-
-    serializer = CobroCuotaInfanteSerializer(cobro)
-    return Response(serializer.data, status=201)
-'''
 
 @permission_classes([AllowAny])
 def generar_pdf_resumen_cobros(request, id_infante):

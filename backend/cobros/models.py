@@ -7,22 +7,6 @@ from inscripciones.models import PeriodoInscripcion
 from django.core.exceptions import ValidationError
 import logging
 
-#ANTERIOR
-# Clase que corresponde a la entidad de Parámetros
-'''class ParametrosCobros(models.Model):
-    anho = models.IntegerField()
-    mes_inicio = models.IntegerField()
-    mes_fin = models.IntegerField()
-    dia_limite_pago = models.IntegerField(default=31) # Para día de vencimiento
-    dias_gracia = models.IntegerField(default=5)  # Para días de gracia
-    monto_cuota = models.DecimalField(max_digits=10, decimal_places=2)
-    mora_por_dia = models.DecimalField(max_digits=10, decimal_places=2)
-    estado = models.BooleanField(default=True)
-
-    def __str__(self):
-        return f"Parámetros registrados"'''
-
-#NUEVO
 class ParametrosCobros(models.Model):
     periodo = models.ForeignKey(PeriodoInscripcion, on_delete=models.PROTECT, related_name="parametros")
     #anho = models.IntegerField()
@@ -72,31 +56,6 @@ class ParametrosCobros(models.Model):
         super().save(*args, **kwargs)
 
 
-
-#ANTERIOR
-# Clase de la entidad para cuotas generadas
-'''class SaldoCuotas(models.Model):
-    id_infante = models.ForeignKey(Infante, on_delete=models.PROTECT)
-    anho = models.IntegerField()
-    mes = models.IntegerField()
-    nro_cuota = models.IntegerField()
-    fecha_generacion = models.DateField(auto_now_add=True)
-    fecha_vencimiento = models.DateField()
-    monto_cuota = models.DecimalField(max_digits=10, decimal_places=2)
-    monto_mora = models.DecimalField(max_digits=10, decimal_places=2)
-    monto_total = models.DecimalField(max_digits=10, decimal_places=2)
-    saldo = models.DecimalField(max_digits=10, decimal_places=2)
-    estado = models.BooleanField(default=False)
-    fecha_pago = models.DateField(null=True, blank=True)
-
-    class Meta:
-        unique_together = ("id_infante", "anho", "mes")
-
-    def __str__(self):
-        return f"{self.id_infante.nombre} {self.id_infante.apellido} - Cuota N° {self.nro_cuota}: {self.mes}/{self.anho}"
-'''
-
-#NUEVO
 class EstadoCuota(models.TextChoices):
     PENDIENTE = "PENDIENTE", "Pendiente"
     VENCIDA = "VENCIDA", "Vencida"
@@ -153,17 +112,6 @@ class SaldoCuotas(models.Model):
             self.estado = EstadoCuota.PENDIENTE
         self.save()
 
-#ANTERIOR
-# Clase para entidad de pagos de cuotas
-'''class CobroCuotaInfante(models.Model):
-    cuota = models.ForeignKey(SaldoCuotas, on_delete=models.CASCADE, related_name="cobros")
-    fecha_cobro = models.DateField()
-    monto_cobrado = models.DecimalField(max_digits=10, decimal_places=2)
-    observacion = models.TextField(blank=True, null=True)
-
-    def __str__(self):
-        return f"Cobro de {self.monto_cobrado} para cuota {self.cuota}"
-'''
 
 logger = logging.getLogger(__name__)
 #NUEVO
@@ -204,3 +152,12 @@ class CobroCuotaInfante(models.Model):
         except Exception as e:
             logger.error(f"Error inesperado al guardar CobroCuotaInfante: {str(e)}")
             raise
+    
+    def delete(self, *args, **kwargs):
+        # Al eliminar el cobro, actualizar el estado de la cuota
+        cuota = self.cuota
+        cuota.fecha_pago = None
+        cuota.actualizar_estado()  # Esto ya tiene tu lógica PENDIENTE/VENCIDA
+        cuota.save(update_fields=['estado', 'fecha_pago'])
+
+        super().delete(*args, **kwargs)
