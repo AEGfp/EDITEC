@@ -3,8 +3,12 @@ import DataTable from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
 import tienePermiso from "../utils/tienePermiso";
 import { estiloTablas } from "../assets/estiloTablas";
-import { obtenerSaldosCuotasConFiltros, descargarReporteCuotasPDF} from "../api/saldocuotas.api";
+import {
+  obtenerSaldosCuotasConFiltros,
+  descargarReporteCuotasPDF,
+} from "../api/saldocuotas.api";
 import { obtenerInfantes } from "../api/infantes.api";
+import { FaSearch, FaFilePdf } from "react-icons/fa";
 
 export function ListaSaldosCuotasTable() {
   const navigate = useNavigate();
@@ -21,12 +25,10 @@ export function ListaSaldosCuotasTable() {
 
   const puedeEscribir = tienePermiso("cuotas", "escritura");
 
-  // Cargar infantes para el select
   useEffect(() => {
     async function cargarInfantes() {
       try {
         const res = await obtenerInfantes();
-        console.log("Infantes recibidos:", res.data);
         setInfantes(res.data);
       } catch (error) {
         console.error("Error en fetch infantes:", error);
@@ -35,7 +37,6 @@ export function ListaSaldosCuotasTable() {
     cargarInfantes();
   }, []);
 
-  // Cargar saldos con filtros
   useEffect(() => {
     async function cargarSaldos() {
       setLoading(true);
@@ -60,28 +61,15 @@ export function ListaSaldosCuotasTable() {
             fecha_pago: "Fecha Pago",
           };
 
-          const camposVisibles = [
-            "infante_nombre",
-            "nro_cuota",
-            "fecha_vencimiento",
-            "dias_atraso",
-            "monto_cuota",
-            "monto_mora",
-            "estado",
-            "fecha_pago",
-          ];
-
-          const keys = Object.keys(res.data[0]);
-          const columnasFiltradas = keys.filter((k) => camposVisibles.includes(k));
-
-          const columnasDT = columnasFiltradas.map((col) => ({
-            name: nombresColumnas[col] || col,
+          const camposVisibles = Object.keys(nombresColumnas);
+          const columnasDT = camposVisibles.map((col) => ({
+            name: nombresColumnas[col],
             selector: (row) => row[col],
             sortable: true,
             cell: (row) => {
               const val = row[col];
               if (col === "monto_cuota" || col === "monto_mora") {
-                return new Intl.NumberFormat("es-PY").format(val);
+                return `Gs ${Number(val).toLocaleString("es-PY")}`;
               }
               if (col === "fecha_vencimiento" || col === "fecha_pago") {
                 return val ? new Date(val).toLocaleDateString("es-PY") : "---";
@@ -106,14 +94,12 @@ export function ListaSaldosCuotasTable() {
     cargarSaldos();
   }, [fechaDesde, fechaHasta, infanteId, estado]);
 
-  // Filtrado por texto en tabla
   const elementosFiltrados = saldos.filter((saldo) =>
     columnas.some((col) =>
       col.selector(saldo)?.toString().toLowerCase().includes(busqueda.toLowerCase())
     )
   );
 
-  // Generar PDF con filtros
   async function generarPDF() {
     try {
       const filtros = {};
@@ -131,12 +117,10 @@ export function ListaSaldosCuotasTable() {
     }
   }
 
-  // Navegar a detalle cuota
   function handleRowClick(fila) {
     navigate(`/cuotas/${fila.id}`);
   }
 
-  // Opciones paginación en español
   const paginationComponentOptions = {
     rowsPerPageText: "Filas por página",
     rangeSeparatorText: "de",
@@ -144,7 +128,6 @@ export function ListaSaldosCuotasTable() {
     selectAllRowsItemText: "Todos",
   };
 
-  // Fecha por defecto: primer día y último día del mes actual
   useEffect(() => {
     const hoy = new Date();
     const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
@@ -156,27 +139,32 @@ export function ListaSaldosCuotasTable() {
   }, []);
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold p-4">Saldos de Cuotas</h1>
+    <div className="px-6 pt-4">
+      <h1 className="text-2xl font-semibold text-blue-800 flex items-center gap-2">
+        💰 Saldos de Cuotas
+      </h1>
+      <p className="text-sm text-blue-500 mb-3">
+        Detalle de cuotas con estado de pago y mora
+      </p>
 
       {/* Filtros */}
-      <div className="p-4 flex flex-col sm:flex-row gap-4 items-end">
+      <div className="bg-white shadow rounded-lg p-4 flex flex-col md:flex-row md:flex-wrap gap-4 mb-4">
         <input
           type="date"
           value={fechaDesde}
           onChange={(e) => setFechaDesde(e.target.value)}
-          className="border rounded px-2 py-1"
+          className="border border-blue-200 rounded px-2 py-1"
         />
         <input
           type="date"
           value={fechaHasta}
           onChange={(e) => setFechaHasta(e.target.value)}
-          className="border rounded px-2 py-1"
+          className="border border-blue-200 rounded px-2 py-1"
         />
         <select
           value={infanteId}
           onChange={(e) => setInfanteId(e.target.value ? Number(e.target.value) : "")}
-          className="border rounded px-2 py-1"
+          className="border border-blue-200 rounded px-2 py-1"
         >
           <option value="">Todos los Infantes</option>
           {infantes.map((i) => (
@@ -188,7 +176,7 @@ export function ListaSaldosCuotasTable() {
         <select
           value={estado}
           onChange={(e) => setEstado(e.target.value)}
-          className="border rounded px-2 py-1"
+          className="border border-blue-200 rounded px-2 py-1"
         >
           <option value="">Todos los Estados</option>
           <option value="PENDIENTE">Pendiente</option>
@@ -197,34 +185,41 @@ export function ListaSaldosCuotasTable() {
         </select>
         <button
           onClick={generarPDF}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
         >
-          Generar PDF
+          <FaFilePdf /> Generar PDF
         </button>
       </div>
 
       {/* Buscador */}
-      <div className="p-4">
-        <input
-          type="text"
-          placeholder="Buscar..."
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-1 w-full max-w-xs"
-        />
+      <div className="mb-4">
+        <div className="relative w-full md:w-1/2">
+          <span className="absolute left-3 top-2.5 text-gray-400">
+            <FaSearch />
+          </span>
+          <input
+            type="text"
+            placeholder="Buscar..."
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-blue-200 rounded-lg bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-300"
+          />
+        </div>
       </div>
 
       {/* Tabla */}
-      <DataTable
-        columns={columnas}
-        data={elementosFiltrados}
-        progressPending={loading}
-        pagination
-        paginationComponentOptions={paginationComponentOptions}
-        highlightOnHover
-        customStyles={estiloTablas}
-        onRowClicked={handleRowClick}
-      />
+      <div className="bg-white shadow rounded-lg overflow-hidden">
+        <DataTable
+          columns={columnas}
+          data={elementosFiltrados}
+          progressPending={loading}
+          pagination
+          paginationComponentOptions={paginationComponentOptions}
+          highlightOnHover
+          customStyles={estiloTablas}
+          onRowClicked={handleRowClick}
+        />
+      </div>
     </div>
   );
 }
