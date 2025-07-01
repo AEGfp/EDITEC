@@ -10,7 +10,6 @@ from .serializers import (
     TutorCreateUpdateSerializer,
     TransferenciaSalaSerializer,
     TransferenciaProfesorSerializer,
-    TransferenciaInfanteSerializer,
     
 )
 from apps.notificaciones.utils import notificar_transferencia_a_tutores
