@@ -158,175 +158,217 @@ function InfantesFormPage() {
   };
 
   return (
-    <div className="formulario">
-      <div className="formulario-dentro">
-        <h1 className="formulario-titulo">Infante</h1>
-        <form onSubmit={handleSubmit(onSubmit)} id="editar-infante">
+    <div className="min-h-screen bg-blue-50 flex justify-center items-center py-10">
+      <div className="bg-white rounded-xl shadow-md w-full max-w-2xl p-6">
+        <div className="bg-blue-100 rounded-md px-4 py-2 mb-6 text-center">
+          <h2 className="text-lg font-bold text-blue-700 flex items-center justify-center gap-2">
+            👶 {params.id ? "Infante" : "Nuevo Infante"}
+          </h2>
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} id="editar-infante" className="space-y-4">
           <input type="hidden" {...register("id_persona")} />
 
-          <fieldset disabled={!editable}>
-            <h4 className="formulario-elemento">Nombre</h4>
-            <input
-              className="formulario-input"
-              {...register("nombre", {
-                required: "El nombre es obligatorio",
-                minLength: {
-                  value: 2,
-                  message: "El nombre debe tener al menos 2 letras",
-                },
-              })}
-            />
-            {errors.nombre && <MostrarError errores={errors.nombre.message} />}
+          <fieldset disabled={!editable} className="space-y-4">
+            <div>
+              <label className="block mb-1 font-medium">Nombre</label>
+              <input
+                className="formulario-input"
+                {...register("nombre", {
+                  required: "El nombre es obligatorio",
+                  minLength: {
+                    value: 2,
+                    message: "El nombre debe tener al menos 2 letras",
+                  },
+                })}
+              />
+              {errors.nombre && <MostrarError errores={errors.nombre.message} />}
+            </div>
 
-            <h4 className="formulario-elemento">Apellido</h4>
-            <input
-              className="formulario-input"
-              {...register("apellido", {
-                required: "El apellido es obligatorio",
-                minLength: {
-                  value: 2,
-                  message: "El apellido debe tener al menos 2 letras",
-                },
-              })}
-            />
-            {errors.apellido && (
-              <MostrarError errores={errors.apellido.message} />
-            )}
+            <div>
+              <label className="block mb-1 font-medium">Apellido</label>
+              <input
+                className="formulario-input"
+                {...register("apellido", {
+                  required: "El apellido es obligatorio",
+                  minLength: {
+                    value: 2,
+                    message: "El apellido debe tener al menos 2 letras",
+                  },
+                })}
+              />
+              {errors.apellido && (
+                <MostrarError errores={errors.apellido.message} />
+              )}
+            </div>
 
-            <h4 className="formulario-elemento">CI</h4>
-            <input
-              className="formulario-input"
-              {...register("ci", {
-                required: "El CI es obligatorio",
-                pattern: {
-                  value: /^[0-9]+[A-D]?$/,
-                  message:
-                    "Debe contener solo números y opcionalmente una letra A-D al final",
-                },
-                minLength: {
-                  value: 5,
-                  message: "El CI debe tener al menos 5 caracteres",
-                },
-              })}
-            />
-            {errors.ci && <MostrarError errores={errors.ci.message} />}
+            <div>
+              <label className="block mb-1 font-medium">Cédula de Identidad</label>
+              <input
+                className="formulario-input"
+                {...register("ci", {
+                  required: "El CI es obligatorio",
+                  pattern: {
+                    value: /^[0-9]+[A-D]?$/,
+                    message:
+                      "Debe contener solo números y opcionalmente una letra A-D al final",
+                  },
+                  minLength: {
+                    value: 5,
+                    message: "El CI debe tener al menos 5 caracteres",
+                  },
+                })}
+              />
+              {errors.ci && <MostrarError errores={errors.ci.message} />}
+            </div>
 
-            <h4 className="formulario-elemento">Fecha de Nacimiento</h4>
-            <input
-              className="formulario-input"
-              type="date"
-              {...register("fecha_nacimiento", {
-                required: "La fecha de nacimiento es obligatoria",
-                validate: (value) => {
-                  if (!value) return "La fecha es obligatoria";
+            <div>
+              <label className="block mb-1 font-medium">Fecha de Nacimiento</label>
+              <input
+                className="formulario-input"
+                type="date"
+                {...register("fecha_nacimiento", {
+                  required: "La fecha de nacimiento es obligatoria",
+                  validate: (value) => {
+                    if (!value) return "La fecha es obligatoria";
 
-                  const hoy = new Date();
-                  const fechaNacimiento = new Date(value);
+                    const hoy = new Date();
+                    const fechaNacimiento = new Date(value);
 
-                  const edadEnMeses =
-                    (hoy.getFullYear() - fechaNacimiento.getFullYear()) * 12 +
-                    (hoy.getMonth() - fechaNacimiento.getMonth());
+                    const edadEnMeses =
+                      (hoy.getFullYear() - fechaNacimiento.getFullYear()) * 12 +
+                      (hoy.getMonth() - fechaNacimiento.getMonth());
 
-                  return edadEnMeses >= 6 && edadEnMeses <= 48
-                    ? true
-                    : "El infante debe tener entre 6 meses y 4 años";
-                },
-              })}
-            />
-            {errors.fecha_nacimiento && (
-              <MostrarError errores={errors.fecha_nacimiento.message} />
-            )}
+                    return edadEnMeses >= 6 && edadEnMeses <= 48
+                      ? true
+                      : "El infante debe tener entre 6 meses y 4 años";
+                  },
+                })}
+              />
+              {errors.fecha_nacimiento && (
+                <MostrarError errores={errors.fecha_nacimiento.message} />
+              )}
+            </div>
 
-            <h4 className="formulario-elemento">Sexo</h4>
-            <select
-              className="formulario-input"
-              {...register("sexo", { required: "Debe seleccionar un sexo" })}
-            >
-              <option value="">Seleccione</option>
-              <option value="M">Masculino</option>
-              <option value="F">Femenino</option>
-              <option value="O">Otro</option>
-            </select>
-            {errors.sexo && <MostrarError errores={errors.sexo.message} />}
+            <div>
+              <label className="block mb-1 font-medium">Sexo</label>
+              <select
+                className="formulario-input"
+                {...register("sexo", { required: "Debe seleccionar un sexo" })}
+              >
+                <option value="">Seleccione</option>
+                <option value="M">Masculino</option>
+                <option value="F">Femenino</option>
+                <option value="O">Otro</option>
+              </select>
+              {errors.sexo && <MostrarError errores={errors.sexo.message} />}
+            </div>
 
-            <h4 className="formulario-elemento">¿Alergia?</h4>
-            <select className="formulario-input" {...register("ind_alergia")}>
-              <option value="N">No</option>
-              <option value="S">Sí</option>
-            </select>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block mb-1 font-medium">¿Alergia?</label>
+                <select className="formulario-input" {...register("ind_alergia")}>
+                  <option value="N">No</option>
+                  <option value="S">Sí</option>
+                </select>
+              </div>
 
-            <h4 className="formulario-elemento">¿Intolerancia a la lactosa?</h4>
-            <select
-              className="formulario-input"
-              {...register("ind_intolerancia_lactosa")}
-            >
-              <option value="N">No</option>
-              <option value="S">Sí</option>
-            </select>
+              <div>
+                <label className="block mb-1 font-medium">¿Intolerancia a la lactosa?</label>
+                <select
+                  className="formulario-input"
+                  {...register("ind_intolerancia_lactosa")}
+                >
+                  <option value="N">No</option>
+                  <option value="S">Sí</option>
+                </select>
+              </div>
+            </div>
 
-            <h4 className="formulario-elemento">¿Celiaquismo?</h4>
-            <select
-              className="formulario-input"
-              {...register("ind_celiaquismo")}
-            >
-              <option value="N">No</option>
-              <option value="S">Sí</option>
-            </select>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block mb-1 font-medium">¿Celiaquismo?</label>
+                <select
+                  className="formulario-input"
+                  {...register("ind_celiaquismo")}
+                >
+                  <option value="N">No</option>
+                  <option value="S">Sí</option>
+                </select>
+              </div>
 
-            <h4 className="formulario-elemento">
-              ¿Permiso para cambiar pañal?
-            </h4>
-            <select
-              className="formulario-input"
-              {...register("permiso_cambio_panhal")}
-            >
-              <option value="N">No</option>
-              <option value="S">Sí</option>
-            </select>
+              <div>
+                <label className="block mb-1 font-medium">¿Permiso para cambiar pañal?</label>
+                <select
+                  className="formulario-input"
+                  {...register("permiso_cambio_panhal")}
+                >
+                  <option value="N">No</option>
+                  <option value="S">Sí</option>
+                </select>
+              </div>
+            </div>
 
-            <h4 className="formulario-elemento">¿Permiso para fotos?</h4>
-            <select className="formulario-input" {...register("permiso_fotos")}>
-              <option value="N">No</option>
-              <option value="S">Sí</option>
-            </select>
+            <div>
+              <label className="block mb-1 font-medium">¿Permiso para fotos?</label>
+              <select className="formulario-input" {...register("permiso_fotos")}>
+                <option value="N">No</option>
+                <option value="S">Sí</option>
+              </select>
+            </div>
           </fieldset>
+
+          <div className="flex flex-wrap justify-center gap-3 mt-6">
+            {params.id && (
+              <button
+                onClick={generarReporteInfante}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-2"
+              >
+                📄 Generar Reporte
+              </button>
+            )}
+
+            {params.id && (
+              <div className="w-full md:w-auto">
+                <ReporteAsistencia infante={params.id} />
+              </div>
+            )}
+
+            {!editable && watch("es_propio") && (
+              <button 
+                onClick={habilitarEdicion} 
+                className="bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-2"
+              >
+                ✏️ Editar
+              </button>
+            )}
+
+            {editable && watch("es_propio") && (
+              <button
+                type="submit"
+                form="editar-infante"
+                className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-2"
+              >
+                💾 Guardar
+              </button>
+            )}
+
+            {params.id && watch("es_propio") && editable && (
+              <button 
+                onClick={descartarInfante} 
+                className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-2"
+              >
+                🗑️ Eliminar
+              </button>
+            )}
+          </div>
         </form>
 
-        <div className="botones-grupo ">
-          <button
-            onClick={generarReporteInfante}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
-          >
-            Generar Reporte
-          </button>
-
-          <div >
-          <ReporteAsistencia infante={params.id}/>
-        </div>
-
-          {!editable && watch("es_propio") && (
-            <button onClick={habilitarEdicion} className="boton-editar">
-              Editar
-            </button>
-          )}
-
-          {editable && watch("es_propio") && (
-            <button
-              type="submit"
-              form="editar-infante"
-              className="boton-guardar"
-            >
-              Guardar
-            </button>
-          )}
-
-          {params.id && watch("es_propio") && editable && (
-            <button onClick={descartarInfante} className="boton-eliminar">
-              Eliminar
-            </button>
-          )}
-        </div>
-        {errorBackend && <MostrarError errores={errorBackend} />}
+        {errorBackend && (
+          <div className="mt-4">
+            <MostrarError errores={errorBackend} />
+          </div>
+        )}
       </div>
     </div>
   );

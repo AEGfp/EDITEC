@@ -25,14 +25,18 @@ export default function CamposDocumentos() {
   };
 
   return (
-    <>
-      <h2 className="formulario-titulo">Documentos del Infante</h2>
+    <div className="max-w-4xl mx-auto p-8 bg-white rounded-xl shadow-lg">
+      {/* Título */}
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold text-blue-700">DOCUMENTOS DEL INFANTE</h1>
+        <div className="w-24 h-1 mx-auto bg-blue-400 rounded-full mt-2" />
+      </div>
 
-      <div className="flex flex-col gap-6">
-        <div>
-          <h4 className="formulario-elemento">
-            Fotocopia de cédula de el tutor
-          </h4>
+      {/* Formulario */}
+      <div className="space-y-6">
+        {/* Fotocopia de cédula del tutor */}
+        <div className="border-b border-gray-200 pb-4">
+          <h4 className="font-medium mb-2">Fotocopia de cédula del tutor:</h4>
           <CamposArchivo
             register={register}
             setValue={setValue}
@@ -42,10 +46,9 @@ export default function CamposDocumentos() {
           />
         </div>
 
-        <div>
-          <h4 className="formulario-elemento">
-            Fotocopia de cédula del infante
-          </h4>
+        {/* Fotocopia de cédula del infante */}
+        <div className="border-b border-gray-200 pb-4">
+          <h4 className="font-medium mb-2">Fotocopia de cédula del infante:</h4>
           <CamposArchivo
             register={register}
             setValue={setValue}
@@ -54,10 +57,10 @@ export default function CamposDocumentos() {
             esRequerido={true}
           />
         </div>
-        <div>
-          <h4 className="formulario-elemento">
-            Documento de relación del tutor con la UNA
-          </h4>
+
+        {/* Documento de relación con la UNA */}
+        <div className="border-b border-gray-200 pb-4">
+          <h4 className="font-medium mb-2">Documento de relación del tutor con la UNA:</h4>
           <CamposArchivo
             register={register}
             setValue={setValue}
@@ -66,10 +69,10 @@ export default function CamposDocumentos() {
             esRequerido={true}
           />
         </div>
-        <div>
-          <h4 className="formulario-elemento">
-            Libreta de vacunación del infante
-          </h4>
+
+        {/* Libreta de vacunación */}
+        <div className="border-b border-gray-200 pb-4">
+          <h4 className="font-medium mb-2">Libreta de vacunación del infante:</h4>
           <CamposArchivo
             register={register}
             setValue={setValue}
@@ -79,36 +82,37 @@ export default function CamposDocumentos() {
           />
         </div>
 
-        <div>
-          <h4 className="formulario-elemento">
-            Certificados de discapacidad (si aplica)
-          </h4>
+        {/* Certificados de discapacidad */}
+        <div className="border-b border-gray-200 pb-4">
+          <h4 className="font-medium mb-2">Certificados de discapacidad (si aplica):</h4>
           {archivosDiscapacidad.map((i, index) => (
-            <div key={index} className="mb-2">
-              <CamposArchivo
-                register={register}
-                setValue={setValue}
-                watch={watch}
-                nombreCampo={`archivo_discapacidad_${index}`}
-              />
-              <button
-                type="button"
-                className="boton-eliminar"
-                onClick={() => eliminarArchivoDiscapacidad(index)}
-              >
-                Eliminar
-              </button>
+            <div key={index} className="mb-4">
+              <div className="flex items-center gap-4">
+                <CamposArchivo
+                  register={register}
+                  setValue={setValue}
+                  watch={watch}
+                  nombreCampo={`archivo_discapacidad_${index}`}
+                />
+                <button
+                  type="button"
+                  className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors"
+                  onClick={() => eliminarArchivoDiscapacidad(index)}
+                >
+                  Eliminar
+                </button>
+              </div>
             </div>
           ))}
           <button
             type="button"
-            className="boton-guardar"
+            className="mt-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors font-medium"
             onClick={agregarArchivoDiscapacidad}
           >
-            Agregar
+            + Agregar otro certificado
           </button>
         </div>
       </div>
-    </>
+    </div>
   );
 }

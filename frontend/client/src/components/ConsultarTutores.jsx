@@ -6,6 +6,7 @@ function ConsultarTutores({ idTutor }) {
   const { register, setValue } = useForm();
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
+
   useEffect(() => {
     async function cargarTutor() {
       try {
@@ -45,116 +46,165 @@ function ConsultarTutores({ idTutor }) {
 
     cargarTutor();
   }, [idTutor, setValue]);
-  if (cargando) return <p>Cargando datos del tutor...</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
-  if (!idTutor) return <p>No se especificó el ID del tutor para mostrar.</p>;
+
+  if (cargando) return <p className="p-4">Cargando datos del tutor...</p>;
+  if (error) return <p className="text-red-500 p-4">{error}</p>;
+  if (!idTutor) return <p className="p-4">No se especificó el ID del tutor para mostrar.</p>;
+
   return (
-    <div className="formulario">
-      <div className="formulario-dentro">
-        <h1 className="formulario-titulo">Tutor</h1>
+    <div className="min-h-screen bg-blue-50 flex justify-center items-center py-10">
+      <div className="bg-white rounded-xl shadow-md w-full max-w-4xl p-6">
+        <div className="bg-blue-100 rounded-md px-4 py-2 mb-6 text-center">
+          <h2 className="text-lg font-bold text-blue-700 flex items-center justify-center gap-2">
+            👨‍🏫 Información del Tutor
+          </h2>
+        </div>
+
         <form>
           <input type="hidden" {...register("id_persona")} />
-          <fieldset disabled>
-            <div className="flex flex-col md:flex-row gap-8">
-              <div className="flex-1">
-                <h4 className="formulario-elemento">Nombre</h4>
-                <input className="formulario-input" {...register("nombre")} />
+          <fieldset disabled className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Columna izquierda */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block mb-1 font-medium">Nombre</label>
+                  <input 
+                    className="formulario-input w-full" 
+                    {...register("nombre")} 
+                  />
+                </div>
 
-                <h4 className="formulario-elemento">Apellido</h4>
-                <input className="formulario-input" {...register("apellido")} />
+                <div>
+                  <label className="block mb-1 font-medium">Apellido</label>
+                  <input 
+                    className="formulario-input w-full" 
+                    {...register("apellido")} 
+                  />
+                </div>
 
-                <h4 className="formulario-elemento">CI</h4>
-                <input className="formulario-input" {...register("ci")} />
+                <div>
+                  <label className="block mb-1 font-medium">Cédula de Identidad</label>
+                  <input 
+                    className="formulario-input w-full" 
+                    {...register("ci")} 
+                  />
+                </div>
 
-                <h4 className="formulario-elemento">Fecha de nacimiento</h4>
-                <input
-                  type="date"
-                  className="formulario-input"
-                  {...register("fecha_nacimiento")}
-                />
+                <div>
+                  <label className="block mb-1 font-medium">Fecha de nacimiento</label>
+                  <input
+                    type="date"
+                    className="formulario-input w-full"
+                    {...register("fecha_nacimiento")}
+                  />
+                </div>
 
-                <h4 className="formulario-elemento">Sexo</h4>
-                <select className="formulario-input" {...register("sexo")}>
-                  <option value="">Seleccione</option>
-                  <option value="M">Masculino</option>
-                  <option value="F">Femenino</option>
-                </select>
+                <div>
+                  <label className="block mb-1 font-medium">Sexo</label>
+                  <select 
+                    className="formulario-input w-full" 
+                    {...register("sexo")}
+                  >
+                    <option value="">Seleccione</option>
+                    <option value="M">Masculino</option>
+                    <option value="F">Femenino</option>
+                  </select>
+                </div>
 
-                <h4 className="formulario-elemento">Teléfono casa</h4>
-                <input
-                  className="formulario-input"
-                  {...register("telefono_casa")}
-                />
+                <div>
+                  <label className="block mb-1 font-medium">Teléfono casa</label>
+                  <input
+                    className="formulario-input w-full"
+                    {...register("telefono_casa")}
+                  />
+                </div>
 
-                <h4 className="formulario-elemento">Email</h4>
-                <input
-                  className="formulario-input"
-                  type="email"
-                  {...register("email")}
-                />
+                <div>
+                  <label className="block mb-1 font-medium">Email</label>
+                  <input
+                    className="formulario-input w-full"
+                    type="email"
+                    {...register("email")}
+                  />
+                </div>
               </div>
-              <div className="flex-1">
-                <h4 className="formulario-elemento">Teléfono particular</h4>
-                <input
-                  className="formulario-input"
-                  {...register("telefono_particular")}
-                />
 
-                <h4 className="formulario-elemento">Teléfono trabajo</h4>
-                <input
-                  className="formulario-input"
-                  {...register("telefono_trabajo")}
-                />
-
-                <h4 className="formulario-elemento">Nombre empresa trabajo</h4>
-                <input
-                  className="formulario-input"
-                  {...register("nombre_empresa_trabajo")}
-                />
-
-                <h4 className="formulario-elemento">Dirección trabajo</h4>
-                <input
-                  className="formulario-input"
-                  {...register("direccion_trabajo")}
-                />
-                <div className="formulario-elemento">
-                  <h3>Relación:</h3>
+              {/* Columna derecha */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block mb-1 font-medium">Teléfono particular</label>
+                  <input
+                    className="formulario-input w-full"
+                    {...register("telefono_particular")}
+                  />
                 </div>
 
-                <div className="formulario-lista">
-                  <label>
-                    <input
-                      type="checkbox"
-                      {...register("es_docente")}
-                      disabled
-                    />
-                    <span className="ml-1">Es docente</span>
-                  </label>
-
-                  <label>
-                    <input
-                      type="checkbox"
-                      {...register("es_estudiante")}
-                      disabled
-                    />
-                    <span className="ml-1">Es estudiante</span>
-                  </label>
-
-                  <label>
-                    <input
-                      type="checkbox"
-                      {...register("es_funcionario")}
-                      disabled
-                    />
-                    <span className="ml-1">Es funcionario</span>
-                  </label>
+                <div>
+                  <label className="block mb-1 font-medium">Teléfono trabajo</label>
+                  <input
+                    className="formulario-input w-full"
+                    {...register("telefono_trabajo")}
+                  />
                 </div>
 
-                <h4 className="formulario-elemento">Observaciones</h4>
-                <textarea
-                  className="formulario-input"
-                  {...register("observaciones")}
-                />
+                <div>
+                  <label className="block mb-1 font-medium">Nombre empresa trabajo</label>
+                  <input
+                    className="formulario-input w-full"
+                    {...register("nombre_empresa_trabajo")}
+                  />
+                </div>
+
+                <div>
+                  <label className="block mb-1 font-medium">Dirección trabajo</label>
+                  <input
+                    className="formulario-input w-full"
+                    {...register("direccion_trabajo")}
+                  />
+                </div>
+
+                <div className="pt-2">
+                  <h3 className="font-medium mb-2">Relación:</h3>
+                  <div className="space-y-2">
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        className="mr-2"
+                        {...register("es_docente")}
+                        disabled
+                      />
+                      Es docente
+                    </label>
+
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        className="mr-2"
+                        {...register("es_estudiante")}
+                        disabled
+                      />
+                      Es estudiante
+                    </label>
+
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        className="mr-2"
+                        {...register("es_funcionario")}
+                        disabled
+                      />
+                      Es funcionario
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block mb-1 font-medium">Observaciones</label>
+                  <textarea
+                    className="formulario-input w-full min-h-[100px]"
+                    {...register("observaciones")}
+                  />
+                </div>
               </div>
             </div>
           </fieldset>

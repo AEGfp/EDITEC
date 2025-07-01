@@ -100,7 +100,7 @@ export function ProveedoresFormPage() {
     <div className="min-h-screen bg-blue-50 p-6">
       <div className="max-w-xl mx-auto bg-white p-6 rounded-lg shadow-md border border-blue-100">
         <h2 className="text-xl font-semibold text-blue-800 bg-blue-100 px-4 py-2 rounded mb-6 flex items-center">
-          🧾 {params.id ? "Editar Proveedor" : "Nuevo Proveedor"}
+          🧾 {params.id ? "Proveedor" : "Nuevo Proveedor"}
         </h2>
 
         <form onSubmit={onSubmit} id="editar-proveedor">
