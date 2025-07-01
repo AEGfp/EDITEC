@@ -21,16 +21,38 @@ export function ListaCajaCobrosTable() {
         if (res.data.length > 0) {
           const columnasDefinidas = [
             {
-              name: "Cuota ID",
-              selector: (fila) => fila.cuota_id,
+              name: "Cobro N°",
+              selector: (fila) => fila.id,
               sortable: true,
             },
             {
-              name: "Monto Cobrado",
-              selector: (fila) => fila.monto_cobrado,
+              name: "Fecha",
+              selector: (fila) => fila.fecha_cobro,
               sortable: true,
-              style: { textAlign: "right" },
-              cell: (fila) => `Gs ${fila.monto_cobrado.toLocaleString()}`,
+              cell: (fila) =>
+                new Date(fila.fecha_cobro).toLocaleDateString("es-ES", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                }),
+            },
+            {
+              name: "Infante",
+              selector: (fila) => fila.cuota?.infante_nombre || "",
+              sortable: true,
+            },
+            {
+              name: "Cuota N° / Mes",
+              selector: (fila) => fila.cuota?.nro_cuota,
+              sortable: true,
+              cell: (fila) => {
+                const cuota = fila.cuota;
+                if (!cuota) return "-";
+                const fecha = new Date(cuota.fecha_vencimiento);
+                const mes = fecha.toLocaleString("es-ES", { month: "long" });
+                const anho = fecha.getFullYear();
+                return `#${cuota.nro_cuota} / ${mes.charAt(0).toUpperCase() + mes.slice(1)} ${anho}`;
+              },
             },
             {
               name: "Método de Pago",
@@ -38,14 +60,7 @@ export function ListaCajaCobrosTable() {
               sortable: true,
             },
             {
-              name: "Fecha Cobro",
-              selector: (fila) => fila.fecha_cobro,
-              sortable: true,
-              cell: (fila) =>
-                new Date(fila.fecha_cobro).toLocaleDateString("es-ES"),
-            },
-            {
-              name: "Observación",
+              name: "Observaciones",
               selector: (fila) => fila.observacion || "",
               sortable: true,
             },

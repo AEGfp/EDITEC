@@ -14,47 +14,67 @@ export function ListaComprobantesTable() {
   const puedeEscribir = tienePermiso("comprobantes", "escritura");
 
   useEffect(() => {
-    //Cambiar el nombre de la función
     async function loadComprobantes() {
       try {
-        //Cambiar la API para las demás páginas
         const res = await obtenerTodosComprobantes();
 
- //       setEmpresas(res.data); //!agg
-//        setLoading(false); //!agg
-
         if (res.data.length > 0) {
-          const keys = Object.keys(res.data[0]);
+          const columnasDefinidas = [
+            {
+              name: "Proveedor",
+              selector: (fila) => fila.proveedor_nombre,
+              sortable: true,
+              wrap: true,
+              grow: 2,
+            },
+            {
+              name: "Fecha comprobante",
+              selector: (fila) => fila.fecha_comprobante,
+              sortable: true,
+              cell: (fila) => new Date(fila.fecha_comprobante).toLocaleDateString("es-PY"),
+            },
+            {
+              name: "Número",
+              selector: (fila) => fila.numero_comprobante,
+              sortable: true,
+              wrap: true,
+            },
+            {
+              name: "Tipo",
+              selector: (fila) => fila.tipo_comprobante_nombre,
+              sortable: true,
+            },
+            {
+              name: "Condición",
+              selector: (fila) => fila.condicion_nombre,
+              sortable: true,
+              wrap: true,
+              grow: 2,
+            },
+            {
+              name: "Total",
+              selector: (fila) => fila.total_comprobante,
+              sortable: true,
+              right: true,
+              cell: (fila) =>
+                fila.total_comprobante.toLocaleString("es-PY", {
+                  style: "currency",
+                  currency: "PYG",
+                  minimumFractionDigits: 0,
+                }),
+            },
+          ];
 
-          //!!! Desactivar si se quiere mostrar el id
-          const columnasFiltradas = keys.filter((key) => key !== "id");
-
-          //Esta lógica puede variar un poco según las columnas que tengan
-          // que mostrar
-          const arrayColumnas = columnasFiltradas.map((columna) => ({
-            name: columna.charAt(0).toUpperCase() + columna.slice(1),
-            selector: (fila) => fila[columna],
-            sortable: true,
-            cell: (fila) =>
-              typeof fila[columna] === "boolean"
-                ? fila[columna]
-                  ? "Sí"
-                  : "No"
-                : fila[columna],
-          }));
-
-          agregarBotonDetalles(arrayColumnas);
-          setColumnas(arrayColumnas);
-          //Cambiar el nombre de la función
+          agregarBotonDetalles(columnasDefinidas);
+          setColumnas(columnasDefinidas);
           setComprobantes(res.data);
-          setLoading(false);
         }
+        setLoading(false);
       } catch (err) {
         console.error(err);
         setLoading(false);
       }
     }
-    //Cambiar el nombre de la función
     loadComprobantes();
   }, []);
 
@@ -69,7 +89,6 @@ export function ListaComprobantesTable() {
   function agregarBotonDetalles(arrayColumnas) {
     arrayColumnas.push({
       name: "",
-      selector: (fila) => fila,
       right: true,
       cell: (fila) => (
         <button
@@ -102,14 +121,12 @@ export function ListaComprobantesTable() {
       ),
     });
   }
-  
 
-  //Cambiar el nombre de 'permiso' según la página
   const elementosFiltrados = comprobantes.filter((comprobante) =>
     columnas.some((columna) => {
       const elem = columna.selector(comprobante);
       return elem?.toString().toLowerCase().includes(busqueda.toLowerCase());
-    })  
+    })
   );
 
   const paginationComponentOptions = {
@@ -119,7 +136,6 @@ export function ListaComprobantesTable() {
     selectAllRowsItemText: "Todos",
   };
 
-  
   return (
     <div className="min-h-screen bg-blue-50 p-6">
       <div className="max-w-7xl mx-auto">

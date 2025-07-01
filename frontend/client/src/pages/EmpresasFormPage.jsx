@@ -123,13 +123,22 @@ export function EmpresasFormPage() {
           <div>
             <label className="block mb-1 font-medium">RUC</label>
             <input
-              type="text"
-              placeholder="Ingrese el RUC..."
-              className="formulario-input"
-              {...register("ruc", { required: true })}
-              disabled={!editable}
-            />
-            {errors.ruc && <CampoRequerido />}
+                    type="text"
+                    placeholder="Ingrese el RUC de la empresa..."
+                    className="formulario-input w-full"
+                    {...register("ruc", { 
+                      required: true,
+                       pattern: {
+                        value: /^\d{5,8}-\d{1}$/,
+                        message: "El RUC debe seguir un patrón similar a 123456-7",
+                      },
+                    
+                    })}
+                  />
+                  {errors.ruc && <CampoRequerido />}
+                  {errors.ruc && (
+                          <CampoRequerido mensaje={errors.ruc.message} />
+                        )}
           </div>
 
           <div>
@@ -150,10 +159,21 @@ export function EmpresasFormPage() {
               type="text"
               placeholder="Ingrese el teléfono de la empresa..."
               className="formulario-input"
-              {...register("telefono", { required: true })}
+              {...register("telefono", { 
+                required: true,
+                validate: {
+                    length: (value) => {
+                      const strValue = String(value);
+                      return /^\d{9,10}$/.test(strValue) || "El telefono debe tener entre 9 o 10 dígitos numéricos";
+                    }}
+
+              })}
+        
               disabled={!editable}
             />
-            {errors.telefono && <CampoRequerido />}
+            {errors.telefono && (
+                            <CampoRequerido mensaje={errors.telefono.message} />
+                          )}
           </div>
 
           <div className="flex justify-center mt-6 gap-3">

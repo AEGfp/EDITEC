@@ -305,25 +305,18 @@ export function CobroCuotasFormPage() {
             </div>
           </fieldset>
 
-          <div className="flex justify-center gap-3 mt-6">
-            {!id && puedeEscribir && editable && (
-              <button 
-                type="submit" 
-                form="cobro-cuota" 
-                className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-2"
-              >
-                💾 Guardar
-              </button>
-            )}
-            {id && puedeEscribir && (
-              <button 
-                onClick={descartarCobro} 
-                className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-2"
-              >
-                🗑️ Eliminar
-              </button>
-            )}
-          </div>
+        <div className="botones-grupo">
+          {!id && puedeEscribir && editable && (
+            <button type="submit" form="cobro-cuota" className="boton-guardar">
+              Guardar
+            </button>
+          )}
+          {/*id && puedeEscribir && (
+            <button onClick={descartarCobro} className="boton-eliminar">
+              Eliminar
+            </button>
+          )*/}
+        </div>
         </form>
       </div>
     </div>

@@ -1,0 +1,110 @@
+{% extends "pdf/base_pdf.html" %}
+
+{% block extra_css %}
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #333;
+      padding: 4px;
+      font-size: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #eee;
+      font-weight: bold;
+    }
+    h3 {
+      margin-top: 15px;
+      font-size: 11px;
+    }
+  </style>
+{% endblock %}
+
+{% block detalles %}
+  Desde: {{ fecha_desde }} - Hasta: {{ fecha_hasta }}
+{% endblock %}
+
+{% block contenido %}
+
+<h3>Saldos de Proveedores</h3>
+{% for proveedor_data in proveedores_data %}
+  <strong>{{ proveedor_data.proveedor.nombre_razon_social }}</strong> (Subtotal: {{ proveedor_data.subtotal }})
+  {% for comp in proveedor_data.comprobantes %}
+    <p>
+      <strong>Comprobante:</strong> {{ comp.numero_comprobante }} -
+      {{ comp.tipo_comprobante }} -
+      {{ comp.fecha|date:"d/m/Y" }} -
+      {{ comp.condicion }}
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>Cuota</th>
+          <th>Débito</th>
+          <th>Crédito</th>
+          <th>Saldo</th>
+          <th>Fecha Pago</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cuota in comp.cuotas %}
+        <tr>
+          <td>{{ cuota.numero_cuota }}</td>
+          <td>{{ cuota.debito }}</td>
+          <td>{{ cuota.credito }}</td>
+          <td>{{ cuota.saldo }}</td>
+          <td>{{ cuota.fecha_pago|date:"d/m/Y" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endfor %}
+{% endfor %}
+<p><strong>Total General Proveedores:</strong> {{ total_proveedores }}</p>
+
+<h3>Resumen de Cuotas de Infantes</h3>
+<table>
+  <thead>
+    <tr>
+      <th>Infante</th>
+      <th>Año</th>
+      <th>Mes</th>
+      <th>Fecha Vencimiento</th>
+      <th>Monto</th>
+      <th>Mora</th>
+      <th>Total</th>
+      <th>Estado</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for cuota in resumen_cuotas %}
+    <tr>
+      <td>{{ cuota.infante }}</td>
+      <td>{{ cuota.anho }}</td>
+      <td>{{ cuota.mes }}</td>
+      <td>{{ cuota.fecha_vencimiento|date:"d/m/Y" }}</td>
+      <td>{{ cuota.monto_cuota }}</td>
+      <td>{{ cuota.monto_mora }}</td>
+      <td>{{ cuota.total }}</td>
+      <td>{{ cuota.estado }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<p>
+  <strong>Total Cuotas:</strong> {{ total_cuota }} |
+  <strong>Total Mora:</strong> {{ total_mora }} |
+  <strong>Total Pagado:</strong> {{ total_pagado }}
+</p>
+<p>
+  <strong>Cuotas Pagadas:</strong> {{ cuotas_pagadas }} |
+  <strong>Cuotas Pendientes:</strong> {{ cuotas_pendientes }}
+</p>
+
+{% endblock %}
