@@ -81,7 +81,7 @@ export function LocalesFormPage() {
       <div className="bg-white rounded-xl shadow-md w-full max-w-xl p-6">
         <div className="bg-blue-100 rounded-md px-4 py-2 mb-6 text-center">
           <h2 className="text-lg font-bold text-blue-700 flex items-center justify-center gap-2">
-            🏢 {params.id ? "Editar Sucursal" : "Nueva Sucursal"}
+            🏢 {params.id ? "Sucursal" : "Nueva Sucursal"}
           </h2>
         </div>
 

@@ -180,111 +180,130 @@ export function CobroCuotasFormPage() {
   const puedeEscribir = tienePermiso("cajasCobros", "escritura");
 
   return (
-    <div className="formulario">
-      <div className="formulario-dentro">
-        <h1 className="formulario-titulo">Cobro de Cuota</h1>
-        <form onSubmit={onSubmit} id="cobro-cuota">
-          <fieldset disabled={!editable}>
-            <h4 className="formulario-elemento">Infante</h4>
-            {editable ? (
-              <select
-                className="formulario-input"
-                {...register("infante_id", { required: true })}
-              >
-                <option value="">Seleccione un infante</option>
-                {infantes.map((infante) => (
-                  <option key={infante.id} value={infante.id.toString()}>
-                    {infante.id_persona
-                      ? `${infante.id_persona.nombre} ${infante.id_persona.apellido}`
-                      : "Sin nombre"}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <input
-                type="text"
-                className="formulario-input"
-                readOnly
-                {...register("infante_nombre")}
-              />
-            )}
-            {errors.infante_id && editable && <CampoRequerido />}
-            {errors.infante_nombre && !editable && <CampoRequerido />}
+    <div className="min-h-screen bg-blue-50 flex justify-center items-center py-10">
+      <div className="bg-white rounded-xl shadow-md w-full max-w-2xl p-6">
+        <div className="bg-blue-100 rounded-md px-4 py-2 mb-6 text-center">
+          <h2 className="text-lg font-bold text-blue-700 flex items-center justify-center gap-2">
+            💰 {id ? "Detalle de Cobro" : "Nuevo Cobro de Cuota"}
+          </h2>
+        </div>
 
-            <h4 className="formulario-elemento">Cuota</h4>
-            {editable ? (
-              <select
-                className="formulario-input"
-                value={cuotaIdValue}
-                onChange={(e) => {
-                  setValue("cuota_id", e.target.value);
-                  handleCuotaChange(e.target.value);
-                }}
-              >
-                <option value="">Seleccione una cuota</option>
-                {cuotas.map((cuota) => (
-                  <option
-                    key={cuota.id}
-                    value={cuota.id}
-                    style={{ color: cuota.estado === "PAGADA" ? "gray" : "black" }}
+        <form onSubmit={onSubmit} id="cobro-cuota" className="space-y-4">
+          <fieldset disabled={!editable} className="space-y-4">
+            <div>
+              <label className="block mb-1 font-medium">Infante</label>
+              {editable ? (
+                <select
+                  className="formulario-input w-full"
+                  {...register("infante_id", { required: true })}
+                >
+                  <option value="">Seleccione un infante</option>
+                  {infantes.map((infante) => (
+                    <option key={infante.id} value={infante.id.toString()}>
+                      {infante.id_persona
+                        ? `${infante.id_persona.nombre} ${infante.id_persona.apellido}`
+                        : "Sin nombre"}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  className="formulario-input w-full"
+                  readOnly
+                  {...register("infante_nombre")}
+                />
+              )}
+              {errors.infante_id && editable && <CampoRequerido />}
+              {errors.infante_nombre && !editable && <CampoRequerido />}
+            </div>
+
+            <div>
+              <label className="block mb-1 font-medium">Cuota</label>
+              {editable ? (
+                <select
+                  className="formulario-input w-full"
+                  value={cuotaIdValue}
+                  onChange={(e) => {
+                    setValue("cuota_id", e.target.value);
+                    handleCuotaChange(e.target.value);
+                  }}
+                >
+                  <option value="">Seleccione una cuota</option>
+                  {cuotas.map((cuota) => (
+                    <option
+                      key={cuota.id}
+                      value={cuota.id}
+                      style={{ color: cuota.estado === "PAGADA" ? "gray" : "black" }}
+                    >
+                      Cuota {cuota.nro_cuota} – Gs{cuota.monto_cuota + (cuota.monto_mora || 0)} ({cuota.estado})
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  className="formulario-input w-full"
+                  readOnly
+                  {...register("cuota_detalle")}
+                />
+              )}
+              {errors.cuota_id && editable && <CampoRequerido />}
+              {errors.cuota_detalle && !editable && <CampoRequerido />}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block mb-1 font-medium">Monto a Cobrar</label>
+                <input
+                  type="number"
+                  className="formulario-input w-full"
+                  readOnly={!editable}
+                  {...register("monto_cobrado", {
+                    required: true,
+                  })}
+                />
+                {errors.monto_cobrado?.type === "required" && <CampoRequerido />}
+                <p className="text-sm text-gray-500 mt-1">Monto total: Gs{montoTotal.toLocaleString()}</p>
+              </div>
+
+              <div>
+                <label className="block mb-1 font-medium">Método de Pago</label>
+                {editable ? (
+                  <select 
+                    className="formulario-input w-full" 
+                    {...register("metodo_pago", { required: true })}
                   >
-                    Cuota {cuota.nro_cuota} – Gs{cuota.monto_cuota + (cuota.monto_mora || 0)} ({cuota.estado})
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <input
-                type="text"
-                className="formulario-input"
-                readOnly
-                {...register("cuota_detalle")}
-              />
-            )}
-            {errors.cuota_id && editable && <CampoRequerido />}
-            {errors.cuota_detalle && !editable && <CampoRequerido />}
+                    <option value="EFECTIVO">Efectivo</option>
+                    <option value="TRANSFERENCIA">Transferencia</option>
+                    <option value="TARJETA">Tarjeta</option>
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    className="formulario-input w-full"
+                    readOnly
+                    {...register("metodo_pago")}
+                  />
+                )}
+                {errors.metodo_pago && <CampoRequerido />}
+              </div>
+            </div>
 
-            <h4 className="formulario-elemento">Monto a Cobrar</h4>
-            <input
-              type="number"
-              className="formulario-input"
-              readOnly={!editable}
-              {...register("monto_cobrado", {
-                required: true,
-              })}
-            />
-            {errors.monto_cobrado?.type === "required" && <CampoRequerido />}
-            <p className="text-sm text-gray-500">Monto total: Gs{montoTotal}</p>
-
-            <h4 className="formulario-elemento">Método de Pago</h4>
-            {editable ? (
-              <select className="formulario-input" {...register("metodo_pago", { required: true })}>
-                <option value="EFECTIVO">Efectivo</option>
-                <option value="TRANSFERENCIA">Transferencia</option>
-                <option value="TARJETA">Tarjeta</option>
-              </select>
-            ) : (
-              <input
-                type="text"
-                className="formulario-input"
-                readOnly
-                {...register("metodo_pago")}
-              />
-            )}
-            {errors.metodo_pago && <CampoRequerido />}
-
-            <h4 className="formulario-elemento">Observación</h4>
-            <textarea
-              className="formulario-input"
-              readOnly={!editable}
-              {...register("observacion", {
-                maxLength: 200,
-                onBlur: (e) => {
-                  if (e.target.value === "") setValue("observacion", "");
-                },
-              })}
-            ></textarea>
+            <div>
+              <label className="block mb-1 font-medium">Observación</label>
+              <textarea
+                className="formulario-input w-full min-h-[100px]"
+                readOnly={!editable}
+                {...register("observacion", {
+                  maxLength: 200,
+                  onBlur: (e) => {
+                    if (e.target.value === "") setValue("observacion", "");
+                  },
+                })}
+              ></textarea>
+            </div>
           </fieldset>
-        </form>
 
         <div className="botones-grupo">
           {!id && puedeEscribir && editable && (

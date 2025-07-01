@@ -54,36 +54,47 @@ export default function AsistenciaDetallePage() {
   if (!asistencia) return <p className="p-4">Cargando asistencia...</p>;
 
   return (
-    <div className="formulario">
-      <div className="formulario-dentro">
-        <h1 className="formulario-titulo">Detalle de Asistencia</h1>
-        <form onSubmit={onSubmit} id="form-asistencia">
-          <fieldset disabled={!puedeEditar}>
-            <h4 className="formulario-elemento">Nombre del infante</h4>
+    <div className="min-h-screen bg-blue-50 flex justify-center items-center py-10">
+      <div className="bg-white rounded-xl shadow-md w-full max-w-xl p-6">
+        <div className="bg-blue-100 rounded-md px-4 py-2 mb-6 text-center">
+          <h2 className="text-lg font-bold text-blue-700 flex items-center justify-center gap-2">
+            📝 Detalle de Asistencia
+          </h2>
+        </div>
+
+        <form onSubmit={onSubmit} id="form-asistencia" className="space-y-4">
+          <div>
+            <label className="block mb-1 font-medium">Nombre del infante</label>
             <input
               className="formulario-input"
               value={`${asistencia.nombre_infante} ${asistencia.apellido_infante}`}
               disabled
               readOnly
             />
+          </div>
 
-            <h4 className="formulario-elemento">Fecha</h4>
+          <div>
+            <label className="block mb-1 font-medium">Fecha</label>
             <input
               className="formulario-input"
               value={asistencia.fecha_formateada}
               disabled
               readOnly
             />
+          </div>
 
-            <h4 className="formulario-elemento">Estado</h4>
+          <div>
+            <label className="block mb-1 font-medium">Estado</label>
             <input
               className="formulario-input"
               value={asistencia.estado}
               disabled
               readOnly
             />
+          </div>
 
-            <h4 className="formulario-elemento">Registrado por</h4>
+          <div>
+            <label className="block mb-1 font-medium">Registrado por</label>
             <input
               className="formulario-input"
               value={`${asistencia.nombre_usuario || ""} ${
@@ -92,38 +103,45 @@ export default function AsistenciaDetallePage() {
               disabled
               readOnly
             />
+          </div>
 
-            <h4 className="formulario-elemento">Hora de entrada</h4>
-            <input
-              type="time"
-              className="formulario-input"
-              {...register("hora_entrada", { required: true })}
-            />
-            {errors.hora_entrada && <CampoRequerido />}
-
-            <h4 className="formulario-elemento">Hora de salida</h4>
-            <input
-              type="time"
-              className="formulario-input"
-              {...register("hora_salida", {
-                validate: (value) => {
-                  if (!value || !horaEntrada) return true;
-                  if (value <= horaEntrada) {
-                    return "La hora de salida debe ser posterior a la de entrada";
-                  }
-                  return true;
-                },
-              })}
-            />
-            {errors.hora_salida && (
-              <MostrarError errores={errors.hora_salida.message} />
-            )}
-          </fieldset>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block mb-1 font-medium">Hora de entrada</label>
+              <input
+                type="time"
+                className="formulario-input"
+                {...register("hora_entrada", { required: true })}
+                disabled={!puedeEditar}
+              />
+              {errors.hora_entrada && <CampoRequerido />}
+            </div>
+            <div>
+              <label className="block mb-1 font-medium">Hora de salida</label>
+              <input
+                type="time"
+                className="formulario-input"
+                {...register("hora_salida", {
+                  validate: (value) => {
+                    if (!value || !horaEntrada) return true;
+                    if (value <= horaEntrada) {
+                      return "La hora de salida debe ser posterior a la de entrada";
+                    }
+                    return true;
+                  },
+                })}
+                disabled={!puedeEditar}
+              />
+              {errors.hora_salida && (
+                <MostrarError errores={errors.hora_salida.message} />
+              )}
+            </div>
+          </div>
 
           {puedeEditar && (
-            <div className="botones-grupo mt-4">
+            <div className="flex justify-center mt-6">
               <button type="submit" className="boton-guardar">
-                Guardar
+                💾 Guardar
               </button>
             </div>
           )}
