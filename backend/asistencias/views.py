@@ -17,6 +17,7 @@ import io
 from xhtml2pdf import pisa
 from apps.educativo.models import Tutor
 from rest_framework import status
+from django.shortcuts import get_object_or_404
 # Create your views here.
 #! Cambiar permisos
 @authentication_classes([JWTAuthentication])
@@ -66,7 +67,7 @@ class AsistenciaView(viewsets.ModelViewSet):
     def marcar_salida(self, request, pk=None):
         usuario = request.user
         try:
-            asistencia = self.get_object() 
+            asistencia = get_object_or_404(Asistencia, pk=pk)
         except Asistencia.DoesNotExist:
             return Response({"error": "No se encontró la asistencia"}, status=404)
 

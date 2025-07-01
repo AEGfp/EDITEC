@@ -2,7 +2,8 @@ from django.contrib.auth.models import User, Group
 from rest_framework import serializers
 from .models import Permiso, Persona 
 from django.db import transaction
-
+from django.contrib.auth.password_validation import validate_password
+from rest_framework.validators import UniqueValidator
 
 class PersonaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,7 +20,7 @@ class PersonaSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     persona = PersonaSerializer()
-    password = serializers.CharField(write_only=True,required=False)
+    password = serializers.CharField(write_only=True,required=False,validators=[validate_password])
     groups = serializers.SlugRelatedField(
         many=True,
         queryset=Group.objects.all(),
