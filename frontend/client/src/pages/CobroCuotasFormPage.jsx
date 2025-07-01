@@ -317,6 +317,7 @@ export function CobroCuotasFormPage() {
             </button>
           )*/}
         </div>
+        </form>
       </div>
     </div>
   );
