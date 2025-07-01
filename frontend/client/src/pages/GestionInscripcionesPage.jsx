@@ -7,6 +7,7 @@ import {
 } from "../api/periodos.api";
 import { limpiarInscripciones } from "../api/inscripciones.api";
 import { useNavigate } from "react-router-dom";
+import ReporteInscripcionesPage from "./ReporteInscripcionesPage";
 
 export default function GestionarInscripcionesPage() {
   const [periodo, setPeriodo] = useState(null);
