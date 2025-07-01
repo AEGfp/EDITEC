@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
-from .models import Permiso, Persona  # , PerfilUsuario
+from .models import Permiso, Persona 
 from django.db import transaction
 
 
@@ -14,13 +14,7 @@ class PersonaSerializer(serializers.ModelSerializer):
         if Persona.objects.filter(ci=value).exclude(pk=persona_instance.pk if persona_instance else None).exists():
             raise serializers.ValidationError("Este CI ya está registrado para otra persona.")
         return value
-"""
-# ! REVISAR
-class PerfilUsuarioSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PerfilUsuario
-        fields = "__all__"
-"""
+
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -30,7 +24,6 @@ class UserSerializer(serializers.ModelSerializer):
         many=True,
         queryset=Group.objects.all(),
         slug_field="name",
-        #! Revisar
         required=False,
     )
     email=serializers.EmailField(required=True)

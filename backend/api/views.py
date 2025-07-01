@@ -122,6 +122,7 @@ class FuncionariosView(APIView):
         serializer = UserSerializer(usuarios, many=True)
         return Response(serializer.data)
 
+@authentication_classes([JWTAuthentication])
 @permission_classes([AllowAny])
 class PersonaView(viewsets.ModelViewSet):
     serializer_class = PersonaSerializer
@@ -142,6 +143,7 @@ class PerfilUsuarioView(viewsets.ModelViewSet):
     serializer_class = PerfilUsuarioSerializer
     queryset = PerfilUsuario.objects.all()
 """
+@authentication_classes([JWTAuthentication])
 @permission_classes([AllowAny])
 class SolicitarResetContrasena(APIView):
     def post(self, request):
@@ -164,6 +166,7 @@ class SolicitarResetContrasena(APIView):
         return Response({"message": "Si el correo está registrado, recibirás un enlace para restablecer tu contraseña."})
 
 
+@authentication_classes([JWTAuthentication])
 @permission_classes([AllowAny])
 class ResetPasswordView(APIView):
     def post(self, request, uidb64, token):

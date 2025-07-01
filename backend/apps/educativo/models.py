@@ -13,7 +13,6 @@ class Infante(models.Model):
     ind_celiaquismo = models.CharField(max_length= 200)
     permiso_cambio_panhal = models.CharField(max_length= 200)
     permiso_fotos = models.CharField(max_length= 200)
-    #! Agregar obligatorio
     id_sala = models.ForeignKey("Sala", on_delete=models.SET_NULL, null=True, blank=True, related_name="infantes")
     periodo_inscripcion = models.ForeignKey(
         "inscripciones.PeriodoInscripcion",
