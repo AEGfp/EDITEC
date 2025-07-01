@@ -4,6 +4,7 @@ import DataTable from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
 import { estiloTablas } from "../assets/estiloTablas";
 import tienePermiso from "../utils/tienePermiso";
+import { FaSearch, FaPlus } from "react-icons/fa";
 
 export function ListaCajaCobrosTable() {
   const navigate = useNavigate();
@@ -18,7 +19,6 @@ export function ListaCajaCobrosTable() {
       try {
         const res = await obtenerTodasCajasCobros();
         if (res.data.length > 0) {
-          // Columnas específicas para CobroCuotaInfante
           const columnasDefinidas = [
             {
               name: "Cuota ID",
@@ -29,9 +29,7 @@ export function ListaCajaCobrosTable() {
               name: "Monto Cobrado",
               selector: (fila) => fila.monto_cobrado,
               sortable: true,
-              style: {
-                textAlign: 'right',
-              },
+              style: { textAlign: "right" },
               cell: (fila) => `Gs ${fila.monto_cobrado.toLocaleString()}`,
             },
             {
@@ -43,15 +41,15 @@ export function ListaCajaCobrosTable() {
               name: "Fecha Cobro",
               selector: (fila) => fila.fecha_cobro,
               sortable: true,
-              cell: (fila) => new Date(fila.fecha_cobro).toLocaleDateString('es-ES'),
+              cell: (fila) =>
+                new Date(fila.fecha_cobro).toLocaleDateString("es-ES"),
             },
             {
               name: "Observación",
-              selector: (fila) => fila.observacion || '',
+              selector: (fila) => fila.observacion || "",
               sortable: true,
             },
           ];
-
           agregarBotonDetalles(columnasDefinidas);
           setColumnas(columnasDefinidas);
           setCajas(res.data);
@@ -77,23 +75,29 @@ export function ListaCajaCobrosTable() {
     arrayColumnas.push({
       name: "",
       selector: (fila) => fila,
-      style: {
-        textAlign: 'right', // Alinea el botón a la derecha
-      },
+      right: true,
       cell: (fila) => (
         <button
-          className="boton-detalles"
+          className="flex items-center px-3 py-1.5 text-sm font-medium text-white bg-blue-500 rounded-lg shadow hover:bg-blue-600 transition-colors"
           onClick={(e) => {
             e.stopPropagation();
             handleRowClick(fila);
           }}
         >
+          <svg
+            className="w-4 h-4 mr-1"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M10 3.5c-5.05 0-8 5.25-8 6.5s2.95 6.5 8 6.5 8-5.25 8-6.5-2.95-6.5-8-6.5zm0 11a4.5 4.5 0 110-9 4.5 4.5 0 010 9zm0-7a2.5 2.5 0 100 5 2.5 2.5 0 000-5z"/>
+          </svg>
           Detalles
         </button>
       ),
     });
   }
-
+  
   const elementosFiltrados = cajas.filter((caja) =>
     columnas.some((columna) => {
       const elem = columna.selector(caja);
@@ -109,33 +113,49 @@ export function ListaCajaCobrosTable() {
   };
 
   return (
-    <div>
-      <h1 className="align-baseline text-2xl font-semibold p-2 pl-3">
-        Cobros de Cuotas
+    <div className="px-6 pt-4">
+      <h1 className="text-2xl font-semibold text-blue-800 flex items-center gap-2">
+        📋 Cobros de Cuotas
       </h1>
-      <div className="p-2 flex flex-row justify-between">
-        <input
-          type="text"
-          placeholder="Buscar..."
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-1 w-full max-w-xs"
-        />
-        {puedeEscribir && (
-          <button className="boton-guardar items-end" onClick={agregarElemento}>
-            Agregar...
+      <p className="text-sm text-blue-500 mb-3">
+        Lista de cobros registrados en el sistema
+      </p>
+
+      <div className="bg-white shadow rounded-lg p-4">
+        <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-2">
+          <div className="relative w-full md:w-1/2">
+            <span className="absolute left-3 top-2.5 text-gray-400">
+              <FaSearch />
+            </span>
+            <input
+              type="text"
+              placeholder="Buscar cobros..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-blue-200 rounded-lg bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-300"
+            />
+          </div>
+          {puedeEscribir && (
+            <button
+            className="flex items-center px-3 py-1.5 text-sm font-medium text-white bg-blue-500 rounded-lg shadow hover:bg-blue-600 transition-colors"
+            onClick={agregarElemento}
+          >
+            <FaPlus className="mr-1" /> Agregar cobro
           </button>
-        )}
+          
+          )}
+        </div>
+
+        <DataTable
+          columns={columnas}
+          data={elementosFiltrados}
+          progressPending={loading}
+          pagination
+          paginationComponentOptions={paginationComponentOptions}
+          highlightOnHover
+          customStyles={estiloTablas}
+        />
       </div>
-      <DataTable
-        columns={columnas}
-        data={elementosFiltrados}
-        progressPending={loading}
-        pagination
-        paginationComponentOptions={paginationComponentOptions}
-        highlightOnHover
-        customStyles={estiloTablas}
-      />
     </div>
   );
 }

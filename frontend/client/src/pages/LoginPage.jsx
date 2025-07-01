@@ -37,7 +37,12 @@ export function LoginPage() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    const res = await loginUsuario({ username, password, setError, setLoading });
+    const res = await loginUsuario({
+      username,
+      password,
+      setError,
+      setLoading,
+    });
     if (res) {
       navigate(desdeInscripcion ? "/realizar-inscripcion" : "/home", {
         state: desdeInscripcion ? { omitirUsuario: true } : undefined,
@@ -49,21 +54,17 @@ export function LoginPage() {
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-sky-50 to-blue-50">
       <div className="w-full max-w-lg p-10 space-y-8 bg-white rounded-2xl shadow-xl border-4 border-blue-200">
         <div className="text-center">
-        
           <h2 className="text-2xl font-semibold text-blue-500">
             Inicio de Sesión
           </h2>
         </div>
         <div className="flex justify-center mb-4">
-  <img
-    src={logo}
-    alt="Logo Editec"
-    className="w-56 sm:w-64 h-auto object-contain drop-shadow-xl"
-  />
-</div>
-
-
-
+          <img
+            src={logo}
+            alt="Logo Editec"
+            className="w-56 sm:w-64 h-auto object-contain drop-shadow-xl"
+          />
+        </div>
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div className="space-y-3">
@@ -86,7 +87,6 @@ export function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-             
               className="w-full px-5 py-3 text-lg border-2 border-blue-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-400"
             />
           </div>
@@ -99,9 +99,24 @@ export function LoginPage() {
             >
               {loading ? (
                 <span className="flex justify-center">
-                  <svg className="w-6 h-6 mr-2 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="w-6 h-6 mr-2 animate-spin"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   Procesando...
                 </span>
@@ -118,20 +133,19 @@ export function LoginPage() {
                 onClick={() => navigate("/iniciar-inscripcion")}
                 className="w-full px-6 py-3 text-xl font-bold text-blue-700 bg-blue-100 border-2 border-blue-300 rounded-xl hover:bg-blue-200 transition-all"
               >
-                Inscribirse
+                Inscribir
               </button>
             )}
           </div>
         </form>
         <div className="min-h-[56px]">
-  {(verificacionError || error) && (
-    <div className="p-4 text-base text-center text-red-700 bg-red-100 border border-red-300 rounded-md">
-      {verificacionError || error}
-    </div>
-  )}
-</div>
-      </div>    
-
+          {(verificacionError || error) && (
+            <div className="p-4 text-base text-center text-red-700 bg-red-100 border border-red-300 rounded-md">
+              {verificacionError || error}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
