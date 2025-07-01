@@ -31,6 +31,7 @@ from apps.educativo.models import Infante,Tutor, TutorInfante,Sala
 from archivos.models import Archivos
 from django.core.mail import send_mail
 from django.conf import settings
+from empresas.utils import obtener_datos_institucionales
 
 def desanidar_data(data):
     result = {}
@@ -378,6 +379,8 @@ def generar_reporte_inscripciones(request):
         ]
 
     context = {
+        **obtener_datos_institucionales(),
+        "titulo_reporte": "Reporte de Inscripciones",
         "resumen_completo": resumen_completo,
         "total": total,
         "estado_filtro": estado_filtro,

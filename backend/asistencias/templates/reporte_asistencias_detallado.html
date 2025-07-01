@@ -1,4 +1,152 @@
-<!DOCTYPE html>
+{% extends "pdf/base_pdf.html" %}
+
+{% block extra_css %}
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 10px;
+        margin-top: 10px;
+    }
+
+    th, td {
+        border: 1px solid #ccc;
+        padding: 5px 6px;
+        text-align: center;
+        word-break: break-word;
+    }
+
+    th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    .presente {
+        color: green;
+        font-weight: bold;
+    }
+
+    .ausente {
+        color: red;
+        font-weight: bold;
+    }
+
+    .section {
+        margin-bottom: 18px;
+    }
+
+    .section-title {
+        font-weight: bold;
+        font-size: 11px;
+        margin-bottom: 6px;
+        border-bottom: 1px solid #000;
+        padding-bottom: 2px;
+    }
+
+    .info-row {
+        margin: 2px 0;
+        font-size: 10px;
+    }
+
+    .info-label {
+        font-weight: bold;
+        display: inline-block;
+        width: 130px;
+    }
+
+    .no-data {
+        text-align: center;
+        color: #888;
+        font-style: italic;
+        padding: 10px 0;
+    }
+</style>
+{% endblock %}
+
+{% block detalles %}
+    Infante: {{ infante.nombre_completo }} | CI: {{ infante.ci|default:"-" }}
+    {% if fecha_hoy %} | Fecha del reporte: {{ fecha_hoy }}{% endif %}
+{% endblock %}
+
+{% block contenido %}
+
+<!-- Datos del Infante -->
+<div class="section">
+    <div class="info-row"><span class="info-label">Nombre completo:</span> {{ infante.nombre_completo|default:"-" }}</div>
+    <div class="info-row"><span class="info-label">CI:</span> {{ infante.ci|default:"-" }}</div>
+    <div class="info-row"><span class="info-label">Fecha nacimiento:</span> {{ infante.fecha_nacimiento|default:"-" }}</div>
+    <div class="info-row"><span class="info-label">Edad:</span> {{ infante.edad|default:"-" }} años</div>
+</div>
+
+<!-- Resumen de Estados -->
+<div class="section">
+    <div class="section-title">RESUMEN DE ESTADOS</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Estado</th>
+                <th>Cantidad</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in resumen_estados %}
+            <tr>
+                <td>{{ item.estado|capfirst }}</td>
+                <td>{{ item.cantidad }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td><strong>Total</strong></td>
+                <td><strong>{{ total }}</strong></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Detalles -->
+<div class="section">
+    <div class="section-title">DETALLES DE ASISTENCIA</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Hora Entrada</th>
+                <th>Hora Salida</th>
+                <th>Estado</th>
+                <th>Usuario Auditor</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for asistencia in detalles %}
+            <tr>
+                <td>{{ asistencia.fecha_formateada }}</td>
+                <td>{{ asistencia.hora_entrada_formateada|default:"-" }}</td>
+                <td>{{ asistencia.hora_salida_formateada|default:"-" }}</td>
+                <td class="{% if asistencia.estado == 'presente' %}presente{% else %}ausente{% endif %}">
+                    {{ asistencia.estado|capfirst }}
+                </td>
+                <td>{{ asistencia.nombre_usuario }} {{ asistencia.apellido_usuario }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="no-data">No hay asistencias registradas</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}
+
+<!--<!DOCTYPE html>
 <html lang="es">
 
 <head>
@@ -132,7 +280,7 @@
 
     <h1 class="report-title">Reporte Detallado de Asistencia del Infante</h1>
 
-    <!-- Datos del Infante -->
+    
     <div class="section">
         <div class="info-row"><span class="info-label">Fecha del reporte: {{ fecha_hoy }}</div>
         <div class="info-row"><span class="info-label">Nombre completo:</span> {{ infante.nombre_completo|default:"-" }}
@@ -143,7 +291,6 @@
         <div class="info-row"><span class="info-label">Edad:</span> {{ infante.edad|default:"-" }} años</div>
     </div>
 
-    <!-- Resumen de Estados -->
     <div class="section">
         <div class="section-title">RESUMEN DE ESTADOS</div>
         <table>
@@ -168,7 +315,6 @@
         </table>
     </div>
 
-    <!-- Detalles -->
     <div class="section">
         <div class="section-title">DETALLES DE ASISTENCIA</div>
         <table>
@@ -202,4 +348,4 @@
     </div>
 </body>
 
-</html>
+</html>-->

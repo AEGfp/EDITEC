@@ -18,6 +18,7 @@ from xhtml2pdf import pisa
 from apps.educativo.models import Tutor
 from rest_framework import status
 from django.shortcuts import get_object_or_404
+from empresas.utils import obtener_datos_institucionales
 # Create your views here.
 #! Cambiar permisos
 @authentication_classes([JWTAuthentication])
@@ -170,6 +171,8 @@ def generar_reporte_asistencias(request):
 
         fecha_hoy= date.today().strftime("%d/%m/%Y")
         context = {
+            **obtener_datos_institucionales(),
+            "titulo_reporte": "Reporte de Asistencias",
             "resumen_estados": resumen_estados,
             "total": total,
             "detalles": serializer.data,
@@ -193,6 +196,8 @@ def generar_reporte_asistencias(request):
         serializer = AsistenciaSerializer(asistencias, many=True)
 
         context = {
+            **obtener_datos_institucionales(),
+            "titulo_reporte": "Reporte de Asistencias",
             "resumen_estados": resumen_estados,
             "total": total,
             "detalles": serializer.data,

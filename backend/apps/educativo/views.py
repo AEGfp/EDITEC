@@ -10,6 +10,7 @@ from .serializers import (
     TutorCreateUpdateSerializer,
     TransferenciaSalaSerializer,
     TransferenciaProfesorSerializer,
+    TransferenciaInfanteSerializer,
     
 )
 from apps.notificaciones.utils import notificar_transferencia_a_tutores
@@ -28,6 +29,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from django.db.models import Q
 from rest_framework import serializers
+from empresas.utils import obtener_datos_institucionales
 
 class InfanteView(viewsets.ModelViewSet):
     queryset = Infante.objects.all()  
@@ -352,6 +354,8 @@ def reporte_documentacion(request, infante_id):
             })
 
         context = {
+            **obtener_datos_institucionales(),
+            "titulo_reporte": "Ficha del Infante",
     'infante': {
         'nombre_completo': f"{persona.nombre} {persona.apellido} {persona.segundo_apellido or ''}".strip(),
         'ci': persona.ci,
